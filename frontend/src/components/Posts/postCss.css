@@ -1,0 +1,28 @@
+/* postCss.css */
+
+.medium-font {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.medium-heading {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.medium-paragraph {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: #333;
+}
+
+.medium-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.truncate-description p {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

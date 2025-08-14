@@ -1,0 +1,465 @@
+import CreatePost from "./components/Posts/CreatePost";
+import UpdatePost from "./components/Posts/UpdatePost";
+import { BrowserRouter, Route, Routes,Navigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { checkAuthStatusAPI } from "./APIServices/users/usersAPI";
+import { checkAdminAuthStatusAPI } from "./APIServices/admin/adminAuthAPI";
+import { useQuery } from "@tanstack/react-query";
+import { isAuthenticated } from "./redux/slices/authSlices";
+import { adminAuthStatus } from "./redux/slices/adminAuthSlice";
+import { useEffect } from "react";
+import AuthRoute from "./components/AuthRoute/AuthRoute";
+import AccountSummaryDashboard from "./components/User/AccountSummary";
+import AddCategory from "./components/Category/AddCategory";
+import Pricing from "./components/Plans/Pricing";
+import PlanManagement from "./components/Plans/PlanManagement";
+import CheckoutForm from "./components/Plans/CheckoutForm";
+import PaymentSuccess from "./components/Plans/PaymentSuccess";
+import PayingFreePlan from "./components/Plans/PayingFreePlan";
+import PostLimitReached from "./components/Plans/PostLimitReached";
+import RequestResetPassword from "./components/User/RequestResetPassword";
+import ResetPassword from "./components/User/ResetPassword";
+import Rankings from "./components/User/CreatorsRanking";
+import Notifications from "./components/Notification/Notifications";
+import MyFollowing from "./components/User/MyFollowing";
+import MyFollowers from "./components/User/MyFollowers";
+import DashboardPosts from "./components/User/DashboardPosts";
+import DashboardDrafts from "./components/User/DashboardDrafts";
+import DashboardScheduled from "./components/User/DashboardScheduled";
+import Settings from "./components/User/SettingsPage";
+import AddEmailComponent from "./components/User/UpdateEmail";
+import UploadProfilePic from "./components/User/UploadProfilePic";
+import GlobalLayout from "./components/User/GlobalLayout";
+import PostsList from "./components/Posts/PostsList";
+import PostDetails from "./components/Posts/PostDetails";
+import Login from "./components/User/Login";
+import Register from "./components/User/Register";
+import Profile from "./components/User/Profile";
+import { DarkModeProvider } from "./components/Navbar/DarkModeContext";
+import TrendingPosts from "./components/Posts/TrendingPosts";
+import SavedPosts from "./components/Posts/SavedPosts";
+import UserProfile from "./components/User/UserProfile";
+import UserFollowers from "./components/User/UserFollowers";
+import UserFollowing from "./components/User/UserFollowing";
+import SearchResults from "./components/Search/SearchResults";
+import Analytics from "./components/Analytics/Analytics";
+import ContentCalendar from "./components/Calendar/ContentCalendar";
+import AdvancedAnalytics from "./components/Analytics/AdvancedAnalytics";
+
+import AdminAuthLogin from "./components/Admin/AdminAuthLogin";
+import AdminAuthRegister from "./components/Admin/AdminAuthRegister";
+import AdminGlobalLayout from "./components/Admin/AdminGlobalLayout";
+import AdminAuthRoute from "./components/Admin/AdminAuthRoute";
+import AdminMainDashboard from "./components/Admin/AdminMainDashboard";
+import AdminAnalytics from "./components/Admin/AdminAnalytics";
+
+import UserManagement from "./components/Admin/UserManagement";
+import PostManagement from "./components/Admin/PostManagement";
+import CommentManagement from "./components/Admin/CommentManagement";
+import CategoryManagement from "./components/Admin/CategoryManagement";
+import NotificationManagement from "./components/Admin/NotificationManagement";
+import SystemSettings from "./components/Admin/SystemSettings";
+import AdminProfile from "./components/Admin/AdminProfile";
+// Dark
+
+function App() {
+  const { data: userData, isLoading: authLoading } = useQuery({
+    queryKey: ["user-auth"],
+    queryFn: checkAuthStatusAPI,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: true, // Always check auth status
+    refetchOnMount: true, // Refetch on mount to ensure fresh data
+  });
+
+  const { data: adminData } = useQuery({
+    queryKey: ["admin-auth-status"],
+    queryFn: checkAdminAuthStatusAPI,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    cacheTime: 15 * 60 * 1000, // 15 minutes
+    enabled: false, // Don't auto-fetch, let AdminAuthRoute handle it
+  });
+
+  const dispatch = useDispatch();
+  
+  useEffect(() => {
+    if (userData) {
+      dispatch(isAuthenticated(userData));
+    }
+  }, [userData, dispatch]);
+
+  useEffect(() => {
+    if (adminData && adminData.success && adminData.admin) {
+      // Only set admin auth status if we have valid admin data
+      dispatch(adminAuthStatus(adminData.admin));
+    } else if (adminData && !adminData.success) {
+      // Clear admin auth status if the API returns failure
+      dispatch(adminAuthStatus(null));
+    }
+  }, [adminData, dispatch]);
+
+    const { userAuth } = useSelector((state) => state.auth);
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <DarkModeProvider>
+      <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+        <BrowserRouter>
+          <Routes>
+          {/* Public routes without GlobalLayout */}
+          <Route element={<GlobalLayout userAuth={userAuth}><Login /></GlobalLayout>} path="/login" />
+        <Route element={<GlobalLayout userAuth={userAuth}><Register /></GlobalLayout>} path="/register" />
+        <Route element={<GlobalLayout userAuth={userAuth}><Pricing /></GlobalLayout>} path="/pricing" />
+        <Route element={<GlobalLayout userAuth={userAuth}><PlanManagement /></GlobalLayout>} path="/plan-management" />
+        <Route path="/user/:userId" element={<GlobalLayout userAuth={userAuth}><UserProfile /></GlobalLayout>} />
+        <Route path="/user/:userId/followers" element={<GlobalLayout userAuth={userAuth}><UserFollowers /></GlobalLayout>} />
+        <Route path="/user/:userId/following" element={<GlobalLayout userAuth={userAuth}><UserFollowing /></GlobalLayout>} />
+        <Route element={<GlobalLayout userAuth={userAuth}><RequestResetPassword /></GlobalLayout>} path="/forgot-password" />
+        <Route element={<GlobalLayout userAuth={userAuth}><ResetPassword /></GlobalLayout>} path="/reset-password" />
+        
+        {/* Admin Routes - Redirect old admin route to new admin auth */}
+        <Route path="/admin" element={<Navigate to="/admin/auth/login" replace />} />
+        
+        {/* New Separate Admin Routes */}
+        <Route path="/admin/auth/login" element={<AdminAuthLogin />} />
+        <Route path="/admin/auth/register" element={<AdminAuthRegister />} />
+        <Route path="/admin/dashboard" element={
+          <AdminAuthRoute>
+            <AdminGlobalLayout>
+              <AdminMainDashboard />
+            </AdminGlobalLayout>
+          </AdminAuthRoute>
+        } />
+        <Route path="/admin/users" element={
+          <AdminAuthRoute>
+            <AdminGlobalLayout>
+              <UserManagement />
+            </AdminGlobalLayout>
+          </AdminAuthRoute>
+        } />
+        <Route path="/admin/posts" element={
+          <AdminAuthRoute>
+            <AdminGlobalLayout>
+              <PostManagement />
+            </AdminGlobalLayout>
+          </AdminAuthRoute>
+        } />
+        <Route path="/admin/comments" element={
+          <AdminAuthRoute>
+            <AdminGlobalLayout>
+              <CommentManagement />
+            </AdminGlobalLayout>
+          </AdminAuthRoute>
+        } />
+      
+        <Route path="/admin/categories" element={
+          <AdminAuthRoute>
+            <AdminGlobalLayout>
+              <CategoryManagement />
+            </AdminGlobalLayout>
+          </AdminAuthRoute>
+        } />
+        <Route path="/admin/plans" element={
+          <AdminAuthRoute>
+            <AdminGlobalLayout>
+              <PlanManagement />
+            </AdminGlobalLayout>
+          </AdminAuthRoute>
+        } />
+        <Route path="/admin/notifications" element={
+          <AdminAuthRoute>
+            <AdminGlobalLayout>
+              <NotificationManagement />
+            </AdminGlobalLayout>
+          </AdminAuthRoute>
+        } />
+        <Route path="/admin/settings" element={
+          <AdminAuthRoute>
+            <AdminGlobalLayout>
+              <SystemSettings />
+            </AdminGlobalLayout>
+          </AdminAuthRoute>
+        } />
+        <Route path="/admin/analytics" element={
+          <AdminAuthRoute>
+            <AdminGlobalLayout>
+              <AdminAnalytics />
+            </AdminGlobalLayout>
+          </AdminAuthRoute>
+        } />
+        
+        {/* Admin Profile Route */}
+        <Route path="/admin/profile" element={
+          <AdminAuthRoute>
+            <AdminGlobalLayout>
+              <AdminProfile />
+            </AdminGlobalLayout>
+          </AdminAuthRoute>
+        } />
+        
+        {/* Redirect /checkout to /pricing if no planId */}
+        <Route path="/checkout" element={<Navigate to="/pricing" replace />} />
+        
+        {/* Checkout routes */}
+        <Route element={<GlobalLayout userAuth={userAuth}><CheckoutForm /></GlobalLayout>} path="/checkout/:planId" />
+        <Route element={<GlobalLayout userAuth={userAuth}><PostLimitReached /></GlobalLayout>} path="/post-limit-reached" />
+        
+        {/* Home page */}
+        <Route 
+          path="/" 
+          element={userAuth ? <Navigate to="/dashboard" /> : <GlobalLayout userAuth={userAuth}><PostsList /></GlobalLayout>} 
+        />
+        
+        {/* Routes with GlobalLayout wrapper - Main authenticated routes */}
+        <Route element={<GlobalLayout userAuth={userAuth} />}>
+          
+          {/* Authenticated routes */}
+          <Route
+            element={
+              <AuthRoute>
+                <Profile />
+              </AuthRoute>
+            }
+            path="/profile"
+          />
+          <Route
+            element={
+              <AuthRoute>
+                <PaymentSuccess />
+              </AuthRoute>
+            }
+            path="/success"
+          />
+          <Route
+            element={
+              <AuthRoute>
+                <PayingFreePlan />
+              </AuthRoute>
+            }
+            path="/free-subscription"
+          />
+          
+          {/* Dashboard routes */}
+          <Route path="/dashboard">
+            <Route
+              element={
+                <AuthRoute>
+                  <AccountSummaryDashboard />
+                </AuthRoute>
+              }
+              index
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <CreatePost />
+                </AuthRoute>
+              }
+              path="create-post"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <DashboardPosts />
+                </AuthRoute>
+              }
+              path="posts"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <DashboardDrafts />
+                </AuthRoute>
+              }
+              path="drafts"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <DashboardScheduled />
+                </AuthRoute>
+              }
+              path="scheduled"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <UploadProfilePic />
+                </AuthRoute>
+              }
+              path="upload-profile-photo"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <Settings />
+                </AuthRoute>
+              }
+              path="settings"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <AddEmailComponent />
+                </AuthRoute>
+              }
+              path="add-email"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <MyFollowing />
+                </AuthRoute>
+              }
+              path="my-followings"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <MyFollowers />
+                </AuthRoute>
+              }
+              path="my-followers"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <Notifications />
+                </AuthRoute>
+              }
+              path="notifications"
+            />
+
+            <Route
+              element={
+                <AuthRoute>
+                  <PlanManagement />
+                </AuthRoute>
+              }
+              path="plan-management"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <AddCategory />
+                </AuthRoute>
+              }
+              path="add-category"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <Analytics />
+                </AuthRoute>
+              }
+              path="analytics"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <ContentCalendar />
+                </AuthRoute>
+              }
+              path="content-calendar"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <SavedPosts />
+                </AuthRoute>
+              }
+              path="saved-posts"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <TrendingPosts />
+                </AuthRoute>
+              }
+              path="trending-posts"
+            />
+          </Route>
+
+          {/* Edit post route - moved to root level */}
+          <Route
+            element={
+              <AuthRoute>
+                <UpdatePost />
+              </AuthRoute>
+            }
+            path="/edit-post/:postId"
+          />
+          
+          {/* Additional routes that should use the sidebar */}
+          <Route
+            element={
+              <AuthRoute>
+                <PostsList />
+              </AuthRoute>
+            }
+            path="/posts"
+          />
+          <Route
+            element={
+              <AuthRoute>
+                <PostDetails />
+              </AuthRoute>
+            }
+            path="/posts/:postId"
+          />
+          <Route
+            element={
+              <AuthRoute>
+                <TrendingPosts />
+              </AuthRoute>
+            }
+            path="/trending"
+          />
+          <Route
+            element={
+              <AuthRoute>
+                <SavedPosts />
+              </AuthRoute>
+            }
+            path="/saved-posts"
+          />
+          <Route
+            element={
+              <AuthRoute>
+                <Rankings />
+              </AuthRoute>
+            }
+            path="/ranking"
+          />
+          <Route
+            element={
+              <AuthRoute>
+                <SearchResults />
+              </AuthRoute>
+            }
+            path="/search"
+          />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+    
+    </div>
+    </DarkModeProvider>
+  );
+}
+
+export default App;
