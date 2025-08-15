@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import { adminLoginSuccess, adminLoginFailure } from "../../redux/slices/adminAuthSlice";
 
 const AdminAuthLogin = () => {
+  console.log("🔐 AdminAuthLogin component rendered");
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const queryClient = useQueryClient();

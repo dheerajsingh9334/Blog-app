@@ -120,109 +120,109 @@ function App() {
       <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
         <BrowserRouter>
           <Routes>
+          {/* Admin Routes - MUST come first to avoid conflicts */}
+          <Route path="/admin" element={<Navigate to="/admin/auth/login" replace />} />
+          <Route path="/admin/auth/login" element={<AdminAuthLogin />} />
+          {/* Test route to debug admin routing */}
+          <Route path="/admin-test" element={<div>Admin Test Route Working!</div>} />
+          <Route path="/admin/auth/register" element={<AdminAuthRegister />} />
+          <Route path="/admin/dashboard" element={
+            <AdminAuthRoute>
+              <AdminGlobalLayout>
+                <AdminMainDashboard />
+              </AdminGlobalLayout>
+            </AdminAuthRoute>
+          } />
+          <Route path="/admin/users" element={
+            <AdminAuthRoute>
+              <AdminGlobalLayout>
+                <UserManagement />
+              </AdminGlobalLayout>
+            </AdminAuthRoute>
+          } />
+          <Route path="/admin/posts" element={
+            <AdminAuthRoute>
+              <AdminGlobalLayout>
+                <PostManagement />
+              </AdminGlobalLayout>
+            </AdminAuthRoute>
+          } />
+          <Route path="/admin/comments" element={
+            <AdminAuthRoute>
+              <AdminGlobalLayout>
+                <CommentManagement />
+              </AdminGlobalLayout>
+            </AdminAuthRoute>
+          } />
+        
+          <Route path="/admin/categories" element={
+            <AdminAuthRoute>
+              <AdminGlobalLayout>
+                <CategoryManagement />
+              </AdminGlobalLayout>
+            </AdminAuthRoute>
+          } />
+          <Route path="/admin/plans" element={
+            <AdminAuthRoute>
+              <AdminGlobalLayout>
+                <PlanManagement />
+              </AdminGlobalLayout>
+            </AdminAuthRoute>
+          } />
+          <Route path="/admin/notifications" element={
+            <AdminAuthRoute>
+              <AdminGlobalLayout>
+                <NotificationManagement />
+              </AdminGlobalLayout>
+            </AdminAuthRoute>
+          } />
+          <Route path="/admin/settings" element={
+            <AdminAuthRoute>
+              <AdminGlobalLayout>
+                <SystemSettings />
+              </AdminGlobalLayout>
+            </AdminAuthRoute>
+          } />
+          <Route path="/admin/analytics" element={
+            <AdminAuthRoute>
+              <AdminGlobalLayout>
+                <AdminAnalytics />
+              </AdminGlobalLayout>
+            </AdminAuthRoute>
+          } />
+          
+          {/* Admin Profile Route */}
+          <Route path="/admin/profile" element={
+            <AdminAuthRoute>
+              <AdminGlobalLayout>
+                <AdminProfile />
+              </AdminGlobalLayout>
+            </AdminAuthRoute>
+          } />
+          
           {/* Public routes without GlobalLayout */}
           <Route element={<GlobalLayout userAuth={userAuth}><Login /></GlobalLayout>} path="/login" />
-        <Route element={<GlobalLayout userAuth={userAuth}><Register /></GlobalLayout>} path="/register" />
-        <Route element={<GlobalLayout userAuth={userAuth}><Pricing /></GlobalLayout>} path="/pricing" />
-        <Route element={<GlobalLayout userAuth={userAuth}><PlanManagement /></GlobalLayout>} path="/plan-management" />
-        <Route path="/user/:userId" element={<GlobalLayout userAuth={userAuth}><UserProfile /></GlobalLayout>} />
-        <Route path="/user/:userId/followers" element={<GlobalLayout userAuth={userAuth}><UserFollowers /></GlobalLayout>} />
-        <Route path="/user/:userId/following" element={<GlobalLayout userAuth={userAuth}><UserFollowing /></GlobalLayout>} />
-        <Route element={<GlobalLayout userAuth={userAuth}><RequestResetPassword /></GlobalLayout>} path="/forgot-password" />
-        <Route element={<GlobalLayout userAuth={userAuth}><ResetPassword /></GlobalLayout>} path="/reset-password" />
-        
-        {/* Admin Routes - Redirect old admin route to new admin auth */}
-        <Route path="/admin" element={<Navigate to="/admin/auth/login" replace />} />
-        
-        {/* New Separate Admin Routes */}
-        <Route path="/admin/auth/login" element={<AdminAuthLogin />} />
-        <Route path="/admin/auth/register" element={<AdminAuthRegister />} />
-        <Route path="/admin/dashboard" element={
-          <AdminAuthRoute>
-            <AdminGlobalLayout>
-              <AdminMainDashboard />
-            </AdminGlobalLayout>
-          </AdminAuthRoute>
-        } />
-        <Route path="/admin/users" element={
-          <AdminAuthRoute>
-            <AdminGlobalLayout>
-              <UserManagement />
-            </AdminGlobalLayout>
-          </AdminAuthRoute>
-        } />
-        <Route path="/admin/posts" element={
-          <AdminAuthRoute>
-            <AdminGlobalLayout>
-              <PostManagement />
-            </AdminGlobalLayout>
-          </AdminAuthRoute>
-        } />
-        <Route path="/admin/comments" element={
-          <AdminAuthRoute>
-            <AdminGlobalLayout>
-              <CommentManagement />
-            </AdminGlobalLayout>
-          </AdminAuthRoute>
-        } />
-      
-        <Route path="/admin/categories" element={
-          <AdminAuthRoute>
-            <AdminGlobalLayout>
-              <CategoryManagement />
-            </AdminGlobalLayout>
-          </AdminAuthRoute>
-        } />
-        <Route path="/admin/plans" element={
-          <AdminAuthRoute>
-            <AdminGlobalLayout>
-              <PlanManagement />
-            </AdminGlobalLayout>
-          </AdminAuthRoute>
-        } />
-        <Route path="/admin/notifications" element={
-          <AdminAuthRoute>
-            <AdminGlobalLayout>
-              <NotificationManagement />
-            </AdminGlobalLayout>
-          </AdminAuthRoute>
-        } />
-        <Route path="/admin/settings" element={
-          <AdminAuthRoute>
-            <AdminGlobalLayout>
-              <SystemSettings />
-            </AdminGlobalLayout>
-          </AdminAuthRoute>
-        } />
-        <Route path="/admin/analytics" element={
-          <AdminAuthRoute>
-            <AdminGlobalLayout>
-              <AdminAnalytics />
-            </AdminGlobalLayout>
-          </AdminAuthRoute>
-        } />
-        
-        {/* Admin Profile Route */}
-        <Route path="/admin/profile" element={
-          <AdminAuthRoute>
-            <AdminGlobalLayout>
-              <AdminProfile />
-            </AdminGlobalLayout>
-          </AdminAuthRoute>
-        } />
-        
-        {/* Redirect /checkout to /pricing if no planId */}
-        <Route path="/checkout" element={<Navigate to="/pricing" replace />} />
-        
-        {/* Checkout routes */}
-        <Route element={<GlobalLayout userAuth={userAuth}><CheckoutForm /></GlobalLayout>} path="/checkout/:planId" />
-        <Route element={<GlobalLayout userAuth={userAuth}><PostLimitReached /></GlobalLayout>} path="/post-limit-reached" />
-        
-        {/* Home page */}
-        <Route 
-          path="/" 
-          element={userAuth ? <Navigate to="/dashboard" /> : <GlobalLayout userAuth={userAuth}><PostsList /></GlobalLayout>} 
-        />
+          <Route element={<GlobalLayout userAuth={userAuth}><Register /></GlobalLayout>} path="/register" />
+          <Route element={<GlobalLayout userAuth={userAuth}><Pricing /></GlobalLayout>} path="/pricing" />
+          <Route element={<GlobalLayout userAuth={userAuth}><PlanManagement /></GlobalLayout>} path="/plan-management" />
+          <Route path="/user/:userId" element={<GlobalLayout userAuth={userAuth}><UserProfile /></GlobalLayout>} />
+          <Route path="/user/:userId/followers" element={<GlobalLayout userAuth={userAuth}><UserFollowers /></GlobalLayout>} />
+          <Route path="/user/:userId/following" element={<GlobalLayout userAuth={userAuth}><UserFollowing /></GlobalLayout>} />
+          <Route element={<GlobalLayout userAuth={userAuth}><RequestResetPassword /></GlobalLayout>} path="/forgot-password" />
+          <Route element={<GlobalLayout userAuth={userAuth}><ResetPassword /></GlobalLayout>} path="/reset-password" />
+          
+          {/* Redirect /checkout to /pricing if no planId */}
+          <Route path="/checkout" element={<Navigate to="/pricing" replace />} />
+          
+          {/* Checkout routes */}
+          <Route element={<GlobalLayout userAuth={userAuth}><CheckoutForm /></GlobalLayout>} path="/checkout/:planId" />
+          <Route element={<GlobalLayout userAuth={userAuth}><PostLimitReached /></GlobalLayout>} path="/post-limit-reached" />
+          
+          {/* Home page */}
+          <Route 
+            path="/" 
+            element={userAuth ? <Navigate to="/dashboard" /> : <GlobalLayout userAuth={userAuth}><PostsList /></GlobalLayout>} 
+          />
         
         {/* Routes with GlobalLayout wrapper - Main authenticated routes */}
         <Route element={<GlobalLayout userAuth={userAuth} />}>
@@ -454,6 +454,9 @@ function App() {
             path="/search"
           />
         </Route>
+        
+        {/* Catch-all route for unmatched paths */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
     

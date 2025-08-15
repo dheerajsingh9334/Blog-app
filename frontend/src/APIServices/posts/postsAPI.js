@@ -15,7 +15,7 @@ export const createPostAPI = async (data) => {
 export const getAllPostsAPI = async (params = {}) => {
   const response = await axios.get(`${BASE_URL}`, {
     params,
-    withCredentials: true,
+    withCredentials: false,
   });
   return response.data;
 };
@@ -26,7 +26,7 @@ export const fetchAllPosts = getAllPostsAPI;
 //!Get post by id api
 export const getPostByIdAPI = async (postId) => {
   const response = await axios.get(`${BASE_URL}/${postId}`, {
-    withCredentials: true,
+    withCredentials: false,
   });
   return response.data;
 };
@@ -69,7 +69,7 @@ export const dislikePostAPI = async (postId) => {
 //!Get trending posts api
 export const getTrendingPostsAPI = async () => {
   const response = await axios.get(`${BASE_URL}/trending`, {
-    withCredentials: true,
+    withCredentials: false,
   });
   return response.data;
 };
@@ -92,7 +92,7 @@ export const fetchPostsByFollowing = getPostsByFollowingAPI;
 export const getPopularTagsAPI = async (limit = 20) => {
   const response = await axios.get(`${BASE_URL}/popular-tags`, {
     params: { limit },
-    withCredentials: true,
+    withCredentials: false,
   });
   return response.data;
 };
@@ -101,7 +101,7 @@ export const getPopularTagsAPI = async (limit = 20) => {
 export const searchPostsByTagsAPI = async (tags, page = 1, limit = 20) => {
   const response = await axios.get(`${BASE_URL}/search-by-tags`, {
     params: { tags, page, limit },
-    withCredentials: true,
+    withCredentials: false,
   });
   return response.data;
 };
@@ -156,7 +156,7 @@ export const publishScheduledPostsAPI = async () => {
 export const searchAllAPI = async (params = {}) => {
   const response = await axios.get(`${BASE_URL}/search`, {
     params,
-    withCredentials: true,
+    withCredentials: false,
   });
   return response.data;
 };

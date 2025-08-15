@@ -129,15 +129,33 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json()); //Pass json data
 // trust proxy for correct secure cookies on Render
 app.set('trust proxy', 1);
-// corse middleware
+// cors middleware with dynamic origin allow-list
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL,
+  process.env.ADMIN_FRONTEND_URL,
+  ...(process.env.ADDITIONAL_CORS_ORIGINS ? process.env.ADDITIONAL_CORS_ORIGINS.split(',') : [])
+].filter(Boolean);
+
 const corsOptions = {
-  origin: [
-    "http://localhost:5173",
-    process.env.FRONTEND_URL || "https://blog-app-gamma-sage.vercel.app"
-  ],
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    }
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      /\.vercel\.app$/.test(origin) ||
+      /localhost:\d+$/.test(origin);
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS not allowed for origin: ${origin}`));
+    }
+  },
   credentials: true,
 };
 app.use(corse(corsOptions));
+app.options('*', corse(corsOptions));
 // Passport middleware
 app.use(passport.initialize());
 app.use(cookieParser()); //automattically parses the cookie
