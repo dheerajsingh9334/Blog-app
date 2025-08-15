@@ -8,7 +8,6 @@ import {
 import { 
   CogIcon,
   ShieldCheckIcon,
-  GlobeAltIcon,
   CurrencyDollarIcon,
   BellIcon,
   DocumentTextIcon,
@@ -146,45 +145,45 @@ const SystemSettings = () => {
   const renderGeneralSettings = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Site Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Site Information</h3>
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Site Name
             </label>
             <input
               type="text"
               value={formData.siteName}
               onChange={(e) => handleSettingChange('siteName', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Site Description
             </label>
-            <input
-              type="text"
+            <textarea
               value={formData.siteDescription}
               onChange={(e) => handleSettingChange('siteDescription', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows="3"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
         </div>
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Platform Status</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Status</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Maintenance Mode</label>
-              <p className="text-sm text-gray-500">Temporarily disable the platform for maintenance</p>
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">Maintenance Mode</h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Temporarily disable the platform</p>
             </div>
             <button
-              onClick={handleToggleMaintenance}
+              onClick={() => handleToggleMaintenance()}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                formData.maintenanceMode ? 'bg-red-600' : 'bg-gray-200'
+                formData.maintenanceMode ? 'bg-red-600' : 'bg-gray-200 dark:bg-gray-600'
               }`}
             >
               <span
@@ -194,16 +193,15 @@ const SystemSettings = () => {
               />
             </button>
           </div>
-
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">User Registration</label>
-              <p className="text-sm text-gray-500">Allow new users to register</p>
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">User Registration</h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Allow new users to register</p>
             </div>
             <button
               onClick={() => handleSettingChange('registrationEnabled', !formData.registrationEnabled)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                formData.registrationEnabled ? 'bg-green-600' : 'bg-gray-200'
+                formData.registrationEnabled ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-600'
               }`}
             >
               <span
@@ -221,16 +219,16 @@ const SystemSettings = () => {
   const renderSecuritySettings = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Access Control</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Access Control</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Default User Role
             </label>
             <select
               value={formData.defaultUserRole}
               onChange={(e) => handleSettingChange('defaultUserRole', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="user">User</option>
               <option value="moderator">Moderator</option>
@@ -241,28 +239,28 @@ const SystemSettings = () => {
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">File Upload Settings</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">File Upload Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Max File Size (MB)
             </label>
             <input
               type="number"
               value={formData.maxFileSize}
               onChange={(e) => handleSettingChange('maxFileSize', parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Allowed File Types
             </label>
             <input
               type="text"
               value={formData.allowedFileTypes.join(', ')}
               onChange={(e) => handleSettingChange('allowedFileTypes', e.target.value.split(',').map(t => t.trim()))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               placeholder="jpg, jpeg, png, gif"
             />
           </div>
@@ -274,45 +272,45 @@ const SystemSettings = () => {
   const renderContentSettings = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Content Limits</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Content Limits</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Max Posts Per User
             </label>
             <input
               type="number"
               value={formData.maxPostsPerUser}
               onChange={(e) => handleSettingChange('maxPostsPerUser', parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Max Comments Per Post
             </label>
             <input
               type="number"
               value={formData.maxCommentsPerPost}
               onChange={(e) => handleSettingChange('maxCommentsPerPost', parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
         </div>
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Moderation</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Content Moderation</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Auto Moderation</label>
-              <p className="text-sm text-gray-500">Enable automatic content filtering</p>
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">Auto Moderation</h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Automatically moderate content</p>
             </div>
             <button
               onClick={() => handleSettingChange('autoModerationEnabled', !formData.autoModerationEnabled)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                formData.autoModerationEnabled ? 'bg-green-600' : 'bg-gray-200'
+                formData.autoModerationEnabled ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-600'
               }`}
             >
               <span
@@ -330,17 +328,17 @@ const SystemSettings = () => {
   const renderNotificationSettings = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification Preferences</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Notification Preferences</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Email Notifications</label>
-              <p className="text-sm text-gray-500">Send notifications via email</p>
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">Email Notifications</h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Send notifications via email</p>
             </div>
             <button
               onClick={() => handleNestedSettingChange('notificationSettings', 'emailNotifications', !formData.notificationSettings.emailNotifications)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                formData.notificationSettings.emailNotifications ? 'bg-green-600' : 'bg-gray-200'
+                formData.notificationSettings.emailNotifications ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-600'
               }`}
             >
               <span
@@ -350,16 +348,15 @@ const SystemSettings = () => {
               />
             </button>
           </div>
-
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Push Notifications</label>
-              <p className="text-sm text-gray-500">Send browser push notifications</p>
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">Push Notifications</h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Send browser push notifications</p>
             </div>
             <button
               onClick={() => handleNestedSettingChange('notificationSettings', 'pushNotifications', !formData.notificationSettings.pushNotifications)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                formData.notificationSettings.pushNotifications ? 'bg-green-600' : 'bg-gray-200'
+                formData.notificationSettings.pushNotifications ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-600'
               }`}
             >
               <span
@@ -369,16 +366,15 @@ const SystemSettings = () => {
               />
             </button>
           </div>
-
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Admin Notifications</label>
-              <p className="text-sm text-gray-500">Send notifications to administrators</p>
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">Admin Notifications</h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Send notifications to administrators</p>
             </div>
             <button
               onClick={() => handleNestedSettingChange('notificationSettings', 'adminNotifications', !formData.notificationSettings.adminNotifications)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                formData.notificationSettings.adminNotifications ? 'bg-green-600' : 'bg-gray-200'
+                formData.notificationSettings.adminNotifications ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-600'
               }`}
             >
               <span
@@ -396,7 +392,7 @@ const SystemSettings = () => {
   const renderMonetizationSettings = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Settings</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Revenue Settings</h3>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex">
             <div className="flex-shrink-0">
@@ -461,66 +457,48 @@ const SystemSettings = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">System Settings</h2>
-        <p className="text-gray-600">Configure platform settings and preferences</p>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">System Settings</h1>
+        <p className="text-gray-600 dark:text-gray-400">Manage platform configuration and preferences</p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar */}
-        <div className="lg:w-64">
-          <nav className="space-y-2">
-            {sections.map((section) => {
-              const Icon = section.icon;
-              const isActive = activeSection === section.id;
-              
-              return (
+        <div className="lg:col-span-1">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Settings</h2>
+            <nav className="space-y-2">
+              {sections.map((section) => (
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors duration-200 ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    activeSection === section.id
+                      ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <Icon className={`h-5 w-5 mr-3 ${
-                    isActive ? 'text-blue-700' : 'text-gray-500'
-                  }`} />
-                  <div>
-                    <div className={`font-medium ${
-                      isActive ? 'text-blue-700' : 'text-gray-900'
-                    }`}>
-                      {section.name}
-                    </div>
-                    <div className={`text-sm ${
-                      isActive ? 'text-blue-600' : 'text-gray-500'
-                    }`}>
-                      {section.description}
-                    </div>
-                  </div>
+                  <section.icon className="h-5 w-5 mr-3" />
+                  {section.name}
                 </button>
-              );
-            })}
-          </nav>
+              ))}
+            </nav>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+        {/* Main content */}
+        <div className="lg:col-span-3">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             {renderActiveSection()}
             
-            {/* Save Button */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <div className="flex justify-end">
-                <button
-                  onClick={handleSaveSettings}
-                  disabled={updateSettingsMutation.isPending}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                >
-                  {updateSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
-                </button>
-              </div>
+            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={handleSaveSettings}
+                disabled={updateSettingsMutation.isPending}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              >
+                {updateSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
+              </button>
             </div>
           </div>
         </div>
@@ -528,31 +506,28 @@ const SystemSettings = () => {
 
       {/* Maintenance Mode Warning Modal */}
       {showMaintenanceWarning && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex items-center mb-4">
-                <ExclamationTriangleIcon className="h-6 w-6 text-red-600 mr-3" />
-                <h3 className="text-lg font-medium text-gray-900">Enable Maintenance Mode?</h3>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">
-                Enabling maintenance mode will temporarily disable the platform for all users. 
-                This should only be used during system updates or maintenance.
-              </p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setShowMaintenanceWarning(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmMaintenanceMode}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                >
-                  Enable Maintenance Mode
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4">
+            <div className="flex items-center mb-4">
+              <ExclamationTriangleIcon className="h-6 w-6 text-red-500 mr-2" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Enable Maintenance Mode?</h3>
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              This will temporarily disable the platform for all users. Only administrators will be able to access the system.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={confirmMaintenanceMode}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Enable Maintenance Mode
+              </button>
+              <button
+                onClick={() => setShowMaintenanceWarning(false)}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>

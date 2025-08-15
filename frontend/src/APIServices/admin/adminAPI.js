@@ -234,6 +234,61 @@ export const deleteCategoryAPI = async (categoryId) => {
 };
 
 // ===== NOTIFICATION MANAGEMENT =====
+
+// Fetch admin notifications (admin inbox)
+export const fetchAdminNotificationsAPI = async () => {
+  const response = await fetch(`${BASE_URL}/admin/notifications`, {
+    method: "GET",
+    credentials: "include",
+  });
+  return response.json();
+};
+
+// Get admin unread notification count
+export const getAdminUnreadCountAPI = async () => {
+  const response = await fetch(`${BASE_URL}/admin/notifications/unread-count`, {
+    method: "GET",
+    credentials: "include",
+  });
+  return response.json();
+};
+
+// Mark admin notification as read
+export const readAdminNotificationAPI = async (notificationId) => {
+  const response = await fetch(`${BASE_URL}/admin/notifications/${notificationId}/read`, {
+    method: "PUT",
+    credentials: "include",
+  });
+  return response.json();
+};
+
+// Mark all admin notifications as read
+export const markAllAdminNotificationsReadAPI = async () => {
+  const response = await fetch(`${BASE_URL}/admin/notifications/mark-all-read`, {
+    method: "PUT",
+    credentials: "include",
+  });
+  return response.json();
+};
+
+// Delete admin notification
+export const deleteAdminNotificationAPI = async (notificationId) => {
+  const response = await fetch(`${BASE_URL}/admin/notifications/${notificationId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  return response.json();
+};
+
+// Delete all admin notifications
+export const deleteAllAdminNotificationsAPI = async () => {
+  const response = await fetch(`${BASE_URL}/admin/notifications`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  return response.json();
+};
+
 export const sendNotificationAPI = async (userId, notificationData) => {
   const response = await fetch(`${BASE_URL}/admin/notifications/user/${userId}`, {
     method: "POST",

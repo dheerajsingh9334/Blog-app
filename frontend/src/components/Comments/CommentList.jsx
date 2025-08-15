@@ -6,6 +6,7 @@ import CommentItem from "./CommentItem";
 import Avatar from "../User/Avatar";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { Link } from "react-router-dom";
 
 const CommentList = ({ comments = [], currentUserId, postId, onCommentUpdate }) => {
   const [isAddingComment, setIsAddingComment] = useState(false);
@@ -45,17 +46,19 @@ const CommentList = ({ comments = [], currentUserId, postId, onCommentUpdate }) 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Comment Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Comments ({comments.length})
         </h3>
 
         {currentUserId ? (
           <form onSubmit={formik.handleSubmit} className="space-y-4">
-            <div className="flex gap-3">
-              <Avatar user={{ _id: currentUserId }} size="md" />
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-shrink-0">
+                <Avatar user={{ _id: currentUserId }} size="md" />
+              </div>
               <div className="flex-1">
                 <textarea
                   {...formik.getFieldProps("content")}
@@ -69,46 +72,54 @@ const CommentList = ({ comments = [], currentUserId, postId, onCommentUpdate }) 
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Commenting as {currentUserId ? "you" : "Anonymous"}
-              </span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAddingComment(false);
-                    formik.resetForm();
-                  }}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <FaComment className="h-4 w-4" />
+                <span>Share your thoughts with the community</span>
+              </div>
+              
+              <div className="flex gap-2 w-full sm:w-auto">
                 <button
                   type="submit"
                   disabled={createCommentMutation.isPending}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
-                  <FaComment className="h-4 w-4" />
                   {createCommentMutation.isPending ? "Posting..." : "Post Comment"}
                 </button>
+                {isAddingComment && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingComment(false);
+                      formik.resetForm();
+                    }}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    <FaTimes className="h-3 w-3" />
+                    Cancel
+                  </button>
+                )}
               </div>
             </div>
           </form>
         ) : (
-          <div className="text-center py-4">
-            <p className="text-gray-600 dark:text-gray-400 mb-3">
+          <div className="text-center py-6">
+            <div className="text-gray-400 text-4xl mb-2">💬</div>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
               Please log in to leave a comment
             </p>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              Login to Comment
-            </button>
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Log In
+            </Link>
           </div>
         )}
       </div>
 
       {/* Comments List */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {comments.length > 0 ? (
           comments.map((comment) => (
             <CommentItem

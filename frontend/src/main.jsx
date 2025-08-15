@@ -13,8 +13,8 @@ import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import { STRIPE_PUBLISHABLE_KEY } from "./config/stripe.js";
 
 // Debug import
-console.log("📁 Stripe config imported successfully");
-console.log("🔑 Stripe key value:", STRIPE_PUBLISHABLE_KEY);
+// console.log("📁 Stripe config imported successfully");
+// console.log("🔑 Stripe key value:", STRIPE_PUBLISHABLE_KEY);
 
 //!Create instance of client
 const queryClient = new QueryClient({
@@ -27,7 +27,7 @@ const queryClient = new QueryClient({
 });
 
 //configure stripe
-console.log("🔑 Loading Stripe with key:", STRIPE_PUBLISHABLE_KEY);
+// console.log("🔑 Loading Stripe with key:", STRIPE_PUBLISHABLE_KEY);
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY).catch(error => {
   console.error("❌ Stripe loading error:", error);
   // In development, this warning is expected when using HTTP

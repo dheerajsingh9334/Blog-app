@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { getDashboardStatsAPI, getActivityFeedAPI, getAllUsersAPI } from '../../APIServices/admin/adminAPI';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getDashboardStatsAPI, getActivityFeedAPI, getAllUsersAPI, sendNotificationToAllAPI } from '../../APIServices/admin/adminAPI';
 import AdminStats from './AdminStats';
 import AdminDebug from './AdminDebug';
 import { 
@@ -61,6 +61,24 @@ const AdminMainDashboard = () => {
     refetchInterval: 60000, // Refetch every minute
   });
 
+  // Test notification mutation
+  const queryClient = useQueryClient();
+  const testNotificationMutation = useMutation({
+    mutationFn: () => sendNotificationToAllAPI({
+      title: "Test Admin Notification",
+      message: "This is a test notification from the admin panel to verify the notification system is working properly.",
+      type: "admin"
+    }),
+    onSuccess: () => {
+      alert("Test notification sent successfully! Check the bell icon in the navbar.");
+      queryClient.invalidateQueries(['admin-notifications']);
+      queryClient.invalidateQueries(['admin-notification-count']);
+    },
+    onError: (error) => {
+      alert("Failed to send test notification: " + (error.message || "Unknown error"));
+    }
+  });
+  
   // Generate daily trend data from dashboard stats (last 7 days)
   const generateDailyTrendData = () => {
     const today = new Date();

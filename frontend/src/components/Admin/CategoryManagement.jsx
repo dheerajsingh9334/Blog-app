@@ -100,12 +100,12 @@ const CategoryManagement = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
           <div className="space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-200 rounded"></div>
+              <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
             ))}
           </div>
         </div>
@@ -115,8 +115,8 @@ const CategoryManagement = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="text-center text-red-600">
+      <div className="p-4 sm:p-6">
+        <div className="text-center text-red-600 dark:text-red-400">
           <p>Error loading categories: {error.message}</p>
         </div>
       </div>
@@ -124,14 +124,14 @@ const CategoryManagement = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Category Management</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">Category Management</h2>
         <p className="text-gray-600 dark:text-gray-300">Create, edit, and manage post categories</p>
-        <div className="mt-2 flex space-x-2">
-          <a href="/categories" target="_blank" className="text-blue-600 hover:text-blue-800 text-sm">View Public Categories</a>
-          <span className="text-gray-400">•</span>
-          <a href="/posts" target="_blank" className="text-blue-600 hover:text-blue-800 text-sm">Browse Posts</a>
+        <div className="mt-2 flex flex-wrap gap-2 text-sm">
+          <a href="/categories" target="_blank" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View Public Categories</a>
+          <span className="text-gray-400 dark:text-gray-500">•</span>
+          <a href="/posts" target="_blank" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">Browse Posts</a>
         </div>
       </div>
 
@@ -147,30 +147,30 @@ const CategoryManagement = () => {
       </div>
 
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {Array.isArray(categoriesData?.categories) ? categoriesData.categories.filter(category => category && typeof category === 'object').map((category) => {
           try {
             return (
-              <div key={category?._id || Math.random()} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+              <div key={category?._id || Math.random()} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-md transition-shadow">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
                       {category.categoryName || 'Unnamed Category'}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {Array.isArray(category.posts) ? category.posts.length : 0} posts
                     </p>
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 self-end">
                     <button
                       onClick={() => openEditModal(category)}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                      className="p-2 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteCategory(category?._id)}
-                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
+                      className="p-2 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>

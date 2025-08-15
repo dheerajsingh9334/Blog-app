@@ -103,17 +103,17 @@ const CommentItem = ({
   });
 
   return (
-    <div className={`${level > 0 ? 'ml-8 border-l-2 border-gray-200 dark:border-gray-700 pl-4' : ''}`}>
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4 shadow-sm border border-gray-100 dark:border-gray-700">
+    <div className={`${level > 0 ? 'ml-4 sm:ml-8 border-l-2 border-gray-200 dark:border-gray-700 pl-2 sm:pl-4' : ''}`}>
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 mb-4 shadow-sm border border-gray-100 dark:border-gray-700">
         {/* Comment Header */}
-        <div className="flex items-start gap-3 mb-3">
+        <div className="flex items-start gap-2 sm:gap-3 mb-3">
           <Avatar user={comment.author} size="md" />
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold text-gray-900 dark:text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+              <span className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                 {comment.author?.username || "Anonymous"}
               </span>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 {new Date(comment.createdAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'short',
@@ -132,7 +132,7 @@ const CommentItem = ({
         </div>
 
         {/* Comment Content */}
-        <div className="ml-12">
+        <div className="ml-0 sm:ml-12">
           {isEditing ? (
             <form onSubmit={editFormik.handleSubmit} className="space-y-3">
               <textarea
@@ -144,11 +144,11 @@ const CommentItem = ({
               {editFormik.touched.content && editFormik.errors.content && (
                 <div className="text-red-500 text-sm">{editFormik.errors.content}</div>
               )}
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   type="submit"
                   disabled={updateMutation.isPending}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
                   <FaCheck className="h-3 w-3" />
                   {updateMutation.isPending ? "Saving..." : "Save"}
@@ -156,7 +156,7 @@ const CommentItem = ({
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600"
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600"
                 >
                   <FaTimes className="h-3 w-3" />
                   Cancel
@@ -164,17 +164,17 @@ const CommentItem = ({
               </div>
             </form>
           ) : (
-            <p className="text-gray-800 dark:text-gray-200 mb-3">
+            <p className="text-gray-800 dark:text-gray-200 mb-3 text-sm sm:text-base leading-relaxed">
               {comment.content}
             </p>
           )}
 
           {/* Comment Actions */}
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
             <button
               onClick={handleLike}
               disabled={likeMutation.isPending || !currentUserId}
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors ${
+              className={`flex items-center gap-1 px-2 py-1.5 rounded-lg transition-colors ${
                 isLiked
                   ? "text-red-600 bg-red-50 dark:bg-red-900/20"
                   : "text-gray-600 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
@@ -187,30 +187,30 @@ const CommentItem = ({
             <button
               onClick={handleReply}
               disabled={!currentUserId}
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors ${
+              className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors ${
                 !currentUserId ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
               }`}
             >
               <FaReply className="h-3 w-3" />
-              Reply
+              <span className="hidden sm:inline">Reply</span>
             </button>
 
             {isAuthor && (
               <>
                 <button
                   onClick={handleEdit}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                  className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                 >
                   <FaEdit className="h-3 w-3" />
-                  Edit
+                  <span className="hidden sm:inline">Edit</span>
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={deleteMutation.isPending}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-gray-600 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
                   <FaTrash className="h-3 w-3" />
-                  {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                  <span className="hidden sm:inline">{deleteMutation.isPending ? "Deleting..." : "Delete"}</span>
                 </button>
               </>
             )}
@@ -313,18 +313,18 @@ const CommentReplyForm = ({ postId, parentCommentId, onCancel, onSuccess }) => {
       {formik.touched.content && formik.errors.content && (
         <div className="text-red-500 text-sm">{formik.errors.content}</div>
       )}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          className="flex-1 sm:flex-none flex items-center justify-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
           {isSubmitting ? "Posting..." : "Post Reply"}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-3 py-1.5 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600"
+          className="flex-1 sm:flex-none flex items-center justify-center px-3 py-2 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600"
         >
           Cancel
         </button>

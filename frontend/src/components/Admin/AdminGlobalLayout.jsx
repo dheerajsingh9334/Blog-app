@@ -5,13 +5,13 @@ import { adminLogout } from "../../redux/slices/adminAuthSlice";
 import { adminLogoutAPI } from "../../APIServices/admin/adminAuthAPI";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { 
-  fetchNotificationsAPI,
-  getUnreadNotificationCountAPI,
-  markAllNotificationsReadAPI,
-  deleteAllNotificationsAPI,
-  deleteNotificationAPI,
-  readNotificationAPI
-} from "../../APIServices/notifications/nofitificationsAPI";
+  fetchAdminNotificationsAPI,
+  getAdminUnreadCountAPI,
+  markAllAdminNotificationsReadAPI,
+  deleteAllAdminNotificationsAPI,
+  deleteAdminNotificationAPI,
+  readAdminNotificationAPI
+} from "../../APIServices/admin/adminAPI";
 import PropTypes from "prop-types";
 import { 
   FaShieldAlt, 
@@ -74,57 +74,57 @@ const AdminGlobalLayout = ({ children }) => {
 
   // Real notifications
   const { refetch: refetchNotifications } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: fetchNotificationsAPI,
+    queryKey: ['admin-notifications'],
+    queryFn: fetchAdminNotificationsAPI,
     refetchInterval: 30000,
     enabled: !!adminAuth,
     onSuccess: (data) => {
-      console.log('Notifications data received:', data);
-      console.log('Notifications array length:', Array.isArray(data) ? data.length : 'Not an array');
-      console.log('Notifications type:', typeof data);
+      console.log('Admin notifications data received:', data);
+      console.log('Admin notifications array length:', Array.isArray(data) ? data.length : 'Not an array');
+      console.log('Admin notifications type:', typeof data);
       setNotifications(data || []);
     },
     onError: (error) => {
-      console.error('Error fetching notifications:', error);
+      console.error('Error fetching admin notifications:', error);
     }
   });
 
   const { data: unreadData } = useQuery({
-    queryKey: ['notification-count'],
-    queryFn: getUnreadNotificationCountAPI,
+    queryKey: ['admin-notification-count'],
+    queryFn: getAdminUnreadCountAPI,
     refetchInterval: 30000,
     enabled: !!adminAuth
   });
 
   const markAllMutation = useMutation({
-    mutationFn: markAllNotificationsReadAPI,
+    mutationFn: markAllAdminNotificationsReadAPI,
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
-      queryClient.invalidateQueries(['notification-count']);
+      queryClient.invalidateQueries(['admin-notifications']);
+      queryClient.invalidateQueries(['admin-notification-count']);
     }
   });
 
   const deleteAllMutation = useMutation({
-    mutationFn: deleteAllNotificationsAPI,
+    mutationFn: deleteAllAdminNotificationsAPI,
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
-      queryClient.invalidateQueries(['notification-count']);
+      queryClient.invalidateQueries(['admin-notifications']);
+      queryClient.invalidateQueries(['admin-notification-count']);
     }
   });
 
   const deleteOneMutation = useMutation({
-    mutationFn: deleteNotificationAPI,
+    mutationFn: deleteAdminNotificationAPI,
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
-      queryClient.invalidateQueries(['notification-count']);
+      queryClient.invalidateQueries(['admin-notifications']);
+      queryClient.invalidateQueries(['admin-notification-count']);
     }
   });
 
   const readOneMutation = useMutation({
-    mutationFn: readNotificationAPI,
+    mutationFn: readAdminNotificationAPI,
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
-      queryClient.invalidateQueries(['notification-count']);
+      queryClient.invalidateQueries(['admin-notifications']);
+      queryClient.invalidateQueries(['admin-notification-count']);
     }
   });
 
@@ -148,12 +148,12 @@ const AdminGlobalLayout = ({ children }) => {
     try {
       await adminLogoutAPI();
       dispatch(adminLogout());
-      navigate("/admin/login");
+      navigate("/admin/auth/login");
     } catch (error) {
       console.error("Logout error:", error);
       // Force logout even if API fails
       dispatch(adminLogout());
-      navigate("/admin/login");
+      navigate("/admin/auth/login");
     }
   };
 
@@ -379,7 +379,7 @@ const AdminGlobalLayout = ({ children }) => {
       {/* Main content */}
       <div className="ml-0 lg:ml-72 flex-1 min-h-screen">
         {/* Top navbar */}
-        <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30 min-h-[64px]">
+        <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 min-h-[64px]">
           <div className="flex items-center justify-between px-4 py-4 h-16">
             {/* Left side */}
             <div className="flex items-center">
@@ -658,7 +658,7 @@ const AdminGlobalLayout = ({ children }) => {
         </div>
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="p-4 sm:p-6">
           {children}
         </main>
       </div>
