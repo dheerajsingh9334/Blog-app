@@ -21,7 +21,7 @@ const sendAccVerificationEmail = async (to, token) => {
       html: `
         <p>You are receiving this email because you (or someone else) have requested to verify your account.</p>
         <p>Please click the link below or paste it in your browser to complete the process:</p>
-        <p><a href="http://localhost:5173/dashboard/account-verification/${token}">Verify Account</a></p>
+        <p><a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard/account-verification/${token}">Verify Account</a></p>
         <p>If you did not request this, please ignore this email.</p>
       `,
     };

@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { registerAPI } from "../../APIServices/users/usersAPI";
 import AlertMessage from "../Alert/AlertMessage";
 import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
+import { BASE_URL } from "../../utils/baseEndpoint";
 import { useDispatch } from "react-redux";
 import { isAuthenticated } from "../../redux/slices/authSlices";
 
@@ -126,7 +127,7 @@ const Register = () => {
           </button>
 
           <a
-            href="http://localhost:5000/api/v1/users/auth/google"
+            href={`${BASE_URL}/users/auth/google`}
             className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <FaGoogle /> Sign up with Google

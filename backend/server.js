@@ -123,13 +123,18 @@ cron.schedule(
 
 const app = express();
 //! PORT
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 //Middlewares
 app.use(express.json()); //Pass json data
+// trust proxy for correct secure cookies on Render
+app.set('trust proxy', 1);
 // corse middleware
 const corsOptions = {
-  origin: ["http://localhost:5173"],
+  origin: [
+    "http://localhost:5173",
+    process.env.FRONTEND_URL || "https://blog-app-gamma-sage.vercel.app"
+  ],
   credentials: true,
 };
 app.use(corse(corsOptions));

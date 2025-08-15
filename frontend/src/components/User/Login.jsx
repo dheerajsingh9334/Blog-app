@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { loginAPI } from "../../APIServices/users/usersAPI";
 import AlertMessage from "../Alert/AlertMessage";
+import { BASE_URL } from "../../utils/baseEndpoint";
 import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { isAuthenticated } from "../../redux/slices/authSlices";
@@ -104,7 +105,7 @@ const Login = () => {
           </button>
 
           <a
-            href="http://localhost:5000/api/v1/users/auth/google"
+            href={`${BASE_URL}/users/auth/google`}
             className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <FaGoogle /> Sign in with Google

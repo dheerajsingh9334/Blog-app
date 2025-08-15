@@ -1,6 +1,6 @@
-// Base API endpoint - can be configured for different environments
-export const BASE_URL = process.env.NODE_ENV === 'production' 
-  ? process.env.REACT_APP_API_URL || "https://your-production-domain.com/api/v1"
+// Base API endpoint - configured for Vite environments
+export const BASE_URL = import.meta.env.PROD
+  ? (import.meta.env.VITE_API_URL || "https://blog-app-0iek.onrender.com/api/v1")
   : "http://localhost:5000/api/v1";
 
 // Fallback URL for development

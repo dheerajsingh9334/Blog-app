@@ -1,6 +1,7 @@
 import axios from "axios";
+import { BASE_URL as ROOT_BASE } from "../../utils/baseEndpoint";
 //create that must return a promise
-const BASE_URL = "http://localhost:5000/api/v1/categories";
+const BASE_URL = `${ROOT_BASE}/categories`;
 
 //!Create post api
 export const addCategoryAPI = async (postData) => {

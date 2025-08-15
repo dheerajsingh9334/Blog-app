@@ -1,6 +1,7 @@
 import axios from "axios";
+import { BASE_URL as ROOT_BASE } from "../../utils/baseEndpoint";
 //create that must return a promise
-const BASE_URL = "http://localhost:5000/api/v1/comments";
+const BASE_URL = `${ROOT_BASE}/comments`;
 
 //!Create comment api
 export const createCommentAPI = async (data) => {

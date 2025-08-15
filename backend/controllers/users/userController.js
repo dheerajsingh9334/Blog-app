@@ -146,8 +146,8 @@ const userController = {
       //set the token into cookie
       res.cookie("token", token, {
         httpOnly: true,
-        secure: false,
-        sameSite: "strict",
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 24 * 60 * 60 * 1000, //1 day
       });
 
@@ -176,7 +176,7 @@ const userController = {
       (err, user, info) => {
         if (err) return next(err);
         if (!user) {
-          return res.redirect("http://localhost:5173/google-login-error");
+          return res.redirect((process.env.FRONTEND_URL || 'http://localhost:5173') + "/google-login-error");
         }
         //generate the token
 
@@ -186,12 +186,12 @@ const userController = {
         //set the token into the cooke
         res.cookie("token", token, {
           httpOnly: true,
-          secure: false,
-          sameSite: "strict",
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
           maxAge: 24 * 60 * 60 * 1000, //1 day:
         });
         //redirect the user dashboard
-        res.redirect("http://localhost:5173/dashboard");
+        res.redirect((process.env.FRONTEND_URL || 'http://localhost:5173') + "/dashboard");
       }
     )(req, res, next);
   }),
@@ -224,8 +224,11 @@ const userController = {
   }),
   // ! Logout
   logout: asyncHandler(async (req, res) => {
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    });
     res.status(200).json({
       success: true,
       message: "Logged out successfully",
