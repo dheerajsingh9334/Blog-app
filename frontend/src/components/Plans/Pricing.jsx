@@ -94,35 +94,35 @@ const Pricing = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto">
           {/* Free Plan */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 relative">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8 relative">
             <div className="text-center">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {freePlan?.planName || "Free"}
               </h3>
               {freePlan?.description && (
-                <p className="text-gray-600 dark:text-gray-400 mb-6">{freePlan.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base">{freePlan.description}</p>
               )}
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900 dark:text-white">$0</span>
-                <span className="text-gray-600 dark:text-gray-400">/month</span>
+              <div className="mb-4 sm:mb-6">
+                <span className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">$0</span>
+                <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">/month</span>
               </div>
-              <div className="mb-6">
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-300">
+              <div className="mb-4 sm:mb-6">
+                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                   {freePlan?.postLimit ? `Limit: ${freePlan.postLimit} posts` : "Limited posts"}
                 </span>
               </div>
               <button
                 onClick={() => handlePlanSelection(freePlan)}
-                className="w-full inline-flex items-center justify-center px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200"
+                className="w-full inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200"
               >
                 Get Started Free
               </button>
             </div>
-            <div className="mt-8">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-4">What's included:</h4>
-              <ul className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="mt-6 sm:mt-8">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 text-sm sm:text-base">What's included:</h4>
+              <ul className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
                 {(freePlan?.features || [
                   "Up to 10 posts",
                   "Basic analytics",
@@ -170,10 +170,10 @@ const Pricing = () => {
                   "Basic multi-site management"
                 ]).map((feature, index) => (
                   <li key={index} className="flex items-center">
-                    <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-gray-600 dark:text-gray-400 text-sm">{feature}</span>
+                    <span className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -181,9 +181,9 @@ const Pricing = () => {
           </div>
 
           {/* Premium Plan */}
-          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-xl p-8 relative transform scale-105">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-              <span className="bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-semibold">
+          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 relative transform scale-105">
+            <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2">
+              <span className="bg-yellow-400 text-yellow-900 px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold">
                 MOST POPULAR
               </span>
             </div>

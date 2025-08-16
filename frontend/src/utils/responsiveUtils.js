@@ -163,6 +163,43 @@ export const responsiveModal = {
   full: 'max-w-full sm:max-w-2xl lg:max-w-4xl'
 };
 
+// Responsive card utilities
+export const responsiveCard = {
+  // Card padding
+  padding: {
+    xs: 'p-2 sm:p-3 md:p-4 lg:p-6',
+    sm: 'p-3 sm:p-4 md:p-5 lg:p-6',
+    md: 'p-4 sm:p-6 md:p-8 lg:p-10',
+    lg: 'p-6 sm:p-8 md:p-10 lg:p-12',
+    xl: 'p-8 sm:p-10 md:p-12 lg:p-16'
+  },
+  
+  // Card spacing
+  spacing: {
+    xs: 'space-y-2 sm:space-y-3',
+    sm: 'space-y-3 sm:space-y-4',
+    md: 'space-y-4 sm:space-y-6',
+    lg: 'space-y-6 sm:space-y-8'
+  },
+  
+  // Card margins
+  margin: {
+    xs: 'mb-2 sm:mb-3 md:mb-4',
+    sm: 'mb-3 sm:mb-4 md:mb-6',
+    md: 'mb-4 sm:mb-6 md:mb-8',
+    lg: 'mb-6 sm:mb-8 md:mb-10'
+  },
+  
+  // Card sizes
+  size: {
+    sm: 'max-w-xs sm:max-w-sm',
+    md: 'max-w-sm sm:max-w-md lg:max-w-lg',
+    lg: 'max-w-md sm:max-w-lg lg:max-w-xl',
+    xl: 'max-w-lg sm:max-w-xl lg:max-w-2xl',
+    full: 'max-w-full sm:max-w-2xl lg:max-w-4xl'
+  }
+};
+
 // Utility function to combine responsive classes
 export const r = {
   // Responsive spacing
@@ -190,6 +227,14 @@ export const r = {
   
   // Responsive modal
   modal: (size) => responsiveModal[size] || '',
+  
+  // Responsive card
+  card: {
+    padding: (size) => responsiveCard.padding[size] || '',
+    spacing: (size) => responsiveCard.spacing[size] || '',
+    margin: (size) => responsiveCard.margin[size] || '',
+    size: (size) => responsiveCard.size[size] || ''
+  },
   
   // Pre-built responsive combinations
   button: {

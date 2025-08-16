@@ -141,12 +141,12 @@ export default function GlobalLayout({ userAuth, children }) {
       {/* Left Sidebar */}
       <div 
         data-sidebar
-        className={`fixed inset-y-0 left-0 z-40 w-80 bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-40 w-48 sm:w-56 lg:w-64 bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out ${
           navbarSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:-translate-x-full'
         }`}
       >
         {/* Sidebar Header */}
-        <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex h-16 items-center justify-between px-3 sm:px-4 lg:px-6 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Navigation</h3>
           <button
             onClick={() => setNavbarSidebarOpen(false)}
@@ -159,7 +159,7 @@ export default function GlobalLayout({ userAuth, children }) {
         
         {/* Sidebar Content */}
         <div className="flex-1 overflow-y-auto h-full" style={{ scrollbarWidth: 'thin', scrollbarColor: '#10b981 #374151' }}>
-          <div className="px-6 py-4">
+          <div className="px-3 sm:px-4 lg:px-6 py-4">
             {/* Main Navigation */}
             <div className="mb-6">
               <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
@@ -174,13 +174,13 @@ export default function GlobalLayout({ userAuth, children }) {
                       item.current
                         ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
                         : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600",
-                      "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200"
+                      "group flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-all duration-200"
                     )}
                   >
                     <item.icon
                       className={classNames(
                         item.current ? "text-green-600" : "text-gray-400 group-hover:text-green-600",
-                        "h-5 w-5 mr-3"
+                        "h-5 w-5 mr-2 sm:mr-3"
                       )}
                       aria-hidden="true"
                     />
@@ -201,24 +201,24 @@ export default function GlobalLayout({ userAuth, children }) {
               <div className="space-y-1">
                 <Link
                   to="/plan-management"
-                  className="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                  className="group flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
                 >
-                  <CreditCardIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
+                  <CreditCardIcon className="mr-2 sm:mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
                   Manage Plans
                 </Link>
                 <Link
                   to="/pricing"
-                  className="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                  className="group flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
                 >
-                  <CurrencyDollarIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
+                  <CurrencyDollarIcon className="mr-2 sm:mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
                   View Pricing
                 </Link>
                 {hasFreePlan && (
                   <Link
                     to="/upgrade"
-                    className="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                    className="group flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
                   >
-                    <SparklesIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
+                    <SparklesIcon className="mr-2 sm:mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
                     Upgrade to Pro
                   </Link>
                 )}
@@ -233,10 +233,10 @@ export default function GlobalLayout({ userAuth, children }) {
               <div className="space-y-1">
                 <Link
                   to="/dashboard/notifications"
-                  className="group flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                  className="group flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
                 >
                   <span className="flex items-center">
-                    <BellIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
+                    <BellIcon className="mr-2 sm:mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
                     Notifications
                   </span>
                   {unreadCount > 0 && (
@@ -247,9 +247,9 @@ export default function GlobalLayout({ userAuth, children }) {
                 </Link>
                 <Link
                   to="/dashboard/settings"
-                  className="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                  className="group flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
                 >
-                  <Cog6ToothIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
+                  <Cog6ToothIcon className="mr-2 sm:mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
                   Settings
                 </Link>
               </div>
@@ -276,7 +276,11 @@ export default function GlobalLayout({ userAuth, children }) {
       </div>
 
       {/* Main Content Area */}
-      <div className={`transition-all duration-300 ease-in-out ${navbarSidebarOpen ? 'lg:ml-80' : 'lg:ml-0'} flex-1 min-h-screen`}>
+      <div className={`transition-all duration-300 ease-in-out flex-1 min-h-screen pt-16 ${
+        navbarSidebarOpen 
+          ? 'ml-48 sm:ml-56 lg:ml-64' 
+          : 'ml-0'
+      }`}>
         {/* Navbar - Fixed Header */}
         <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-800">
           <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -454,21 +458,21 @@ export default function GlobalLayout({ userAuth, children }) {
         </nav>
 
         {/* Page Content */}
-        <div style={{ marginTop: '64px' }}>
+        <div className="pt-16">
           <main className="min-h-screen">
             {/* Upgrade Plan Banner - Show for free plan users */}
             {userAuth && hasFreePlan && (
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-b border-green-200 dark:border-green-700 p-4">
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-b border-green-200 dark:border-green-700 p-3 sm:p-4">
                 <div className="max-w-7xl mx-auto">
                   <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
-                    <div className="flex-1 mb-4 lg:mb-0">
-                      <h2 className="text-xl font-bold text-green-800 dark:text-green-200 mb-2">
+                    <div className="flex-1 mb-3 lg:mb-0">
+                      <h2 className="text-lg sm:text-xl font-bold text-green-800 dark:text-green-200 mb-2">
                         🚀 Upgrade Your Plan
                       </h2>
-                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                      <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">
                         Unlock unlimited posts, advanced analytics, and premium features.
                       </p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1 sm:gap-2">
                         <span className="bg-green-100 dark:bg-green-800/30 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs">
                           ✨ Unlimited Posts
                         </span>
@@ -483,13 +487,13 @@ export default function GlobalLayout({ userAuth, children }) {
                     <div className="flex gap-2">
                       <Link
                         to="/plan-management"
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                       >
                         View Plans
                       </Link>
                       <Link
                         to="/pricing"
-                        className="border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        className="border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                       >
                         Compare
                       </Link>
@@ -500,7 +504,7 @@ export default function GlobalLayout({ userAuth, children }) {
             )}
 
             {/* Page Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
               {children || <Outlet />}
             </div>
           </main>
@@ -509,10 +513,10 @@ export default function GlobalLayout({ userAuth, children }) {
 
       {/* Mobile Navbar - Only visible on small devices */}
       <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg">
-        <div className="px-4 py-3">
+        <div className="px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Left: Sidebar Toggle and Logo */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               {/* Navbar Sidebar Toggle Button for Mobile */}
               {userAuth && (
                 <button
@@ -520,25 +524,25 @@ export default function GlobalLayout({ userAuth, children }) {
                   className="navbar-sidebar p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   title="Open Navigation Menu"
                 >
-                  <FaBars className="h-5 w-5" />
+                  <FaBars className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               )}
               
               <Link
                 to="/posts"
-                className="text-lg font-serif font-bold text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                className="text-base sm:text-lg font-serif font-bold text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors"
               >
                 WisdomShare
               </Link>
             </div>
 
             {/* Center: Search Bar - Always visible */}
-            <div className="flex-1 max-w-xs mx-4">
+            <div className="flex-1 max-w-xs mx-2 sm:mx-4">
               <SearchBar placeholder="Search posts, users..." />
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               {userAuth ? (
                 <>
                   {/* User Plan Status - Compact for mobile */}
@@ -552,7 +556,7 @@ export default function GlobalLayout({ userAuth, children }) {
                     className="p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     title="Write Post"
                   >
-                    <FaPen className="w-4 h-4" />
+                    <FaPen className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Link>
 
                   {/* Notifications */}
@@ -561,9 +565,9 @@ export default function GlobalLayout({ userAuth, children }) {
                     className="relative p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     title="Notifications"
                   >
-                    <FaBell className="w-4 h-4" />
+                    <FaBell className="w-3 h-3 sm:w-4 sm:h-4" />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 h-4 w-4 min-w-4 px-1 bg-red-600 text-white text-xs rounded-full flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 h-3 w-3 sm:h-4 sm:w-4 min-w-3 sm:min-w-4 px-1 bg-red-600 text-white text-xs rounded-full flex items-center justify-center">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
                     )}
@@ -575,7 +579,7 @@ export default function GlobalLayout({ userAuth, children }) {
                     className="p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     title={darkMode ? "Light Mode" : "Dark Mode"}
                   >
-                    {darkMode ? <FaSun className="w-4 h-4" /> : <FaMoon className="w-4 h-4" />}
+                    {darkMode ? <FaSun className="w-3 h-3 sm:w-4 sm:h-4" /> : <FaMoon className="w-3 h-3 sm:w-4 sm:h-4" />}
                   </button>
 
                   {/* User Profile - Compact */}
@@ -587,12 +591,12 @@ export default function GlobalLayout({ userAuth, children }) {
                     >
                       {authUser?.profilePicture ? (
                         <img
-                          className="h-7 w-7 rounded-full object-cover border-2 border-white dark:border-gray-700"
+                          className="h-6 w-6 sm:h-7 sm:w-7 rounded-full object-cover border-2 border-white dark:border-gray-700"
                           src={authUser?.profilePicture?.url || authUser?.profilePicture?.path || authUser?.profilePicture || "https://via.placeholder.com/32"}
                           alt="User profile"
                         />
                       ) : (
-                        <div className="h-7 w-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center border-2 border-white dark:border-gray-700">
+                        <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center border-2 border-white dark:border-gray-700">
                           <span className="text-xs text-white font-medium">
                             {getUserInitials(authUser)}
                           </span>
@@ -601,9 +605,9 @@ export default function GlobalLayout({ userAuth, children }) {
                     </button>
 
                     {dropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
-                        <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                        <div className="px-3 sm:px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                          <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">
                             {authUser?.name || authUser?.username}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -612,21 +616,21 @@ export default function GlobalLayout({ userAuth, children }) {
                         </div>
                         <Link
                           to="/dashboard/profile"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => setDropdownOpen(false)}
                         >
                           Profile
                         </Link>
                         <Link
                           to="/dashboard/settings"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => setDropdownOpen(false)}
                         >
                           Settings
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          className="block w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           Logout
                         </button>
@@ -635,16 +639,16 @@ export default function GlobalLayout({ userAuth, children }) {
                   </div>
                 </>
               ) : (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 sm:space-x-2">
                   <Link
                     to="/login"
-                    className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 text-sm px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 text-xs sm:text-sm px-2 sm:px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   >
                     Login
                   </Link>
                   <Link
                     to="/register"
-                    className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors"
+                    className="bg-green-600 text-white px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-green-700 transition-colors"
                   >
                     Sign Up
                   </Link>

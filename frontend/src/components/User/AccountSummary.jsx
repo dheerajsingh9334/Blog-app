@@ -206,8 +206,8 @@ const AccountSummaryDashboard = () => {
 
       {/* Plan Usage Section */}
       {userPlan && postLimit && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-2">
             <h3 className={`${r.text.h4} font-semibold text-gray-900 dark:text-white`}>
               Plan Usage
             </h3>
@@ -247,29 +247,29 @@ const AccountSummaryDashboard = () => {
       )}
 
       {/* Quick Actions Grid */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
-        <h3 className={`${r.text.h4} font-semibold text-gray-900 dark:text-white mb-4`}>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+        <h3 className={`${r.text.h4} font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4`}>
           Quick Actions
         </h3>
-        <div className={`${r.layout.grid3} gap-4`}>
+        <div className={`${r.layout.grid3} gap-3 sm:gap-4`}>
           {quickActions.map((action, index) => (
-            <div key={index} className={`p-4 rounded-lg border transition-all duration-200 ${
+            <div key={index} className={`p-3 sm:p-4 rounded-lg border transition-all duration-200 ${
               action.isLocked 
                 ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50' 
                 : 'border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 hover:shadow-md'
             }`}>
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-2xl">{action.icon}</span>
+              <div className="flex items-start justify-between mb-2 sm:mb-3">
+                <span className="text-xl sm:text-2xl">{action.icon}</span>
                 {action.isLocked ? (
-                  <FaLock className="text-gray-400 text-sm" />
+                  <FaLock className="text-gray-400 text-xs sm:text-sm" />
                 ) : (
-                  <FaUnlock className="text-green-500 text-sm" />
+                  <FaUnlock className="text-green-500 text-xs sm:text-sm" />
                 )}
               </div>
               <h4 className={`font-semibold text-gray-900 dark:text-white mb-1 ${r.text.bodySmall}`}>
                 {action.title}
               </h4>
-              <p className={`${r.text.bodySmall} text-gray-600 dark:text-gray-400 mb-3`}>
+              <p className={`${r.text.bodySmall} text-gray-600 dark:text-gray-400 mb-2 sm:mb-3`}>
                 {action.description}
               </p>
               {action.isLocked ? (
@@ -279,7 +279,7 @@ const AccountSummaryDashboard = () => {
                   </span>
                   <Link
                     to="/pricing"
-                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition duration-200 text-center"
+                    className="px-2 sm:px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition duration-200 text-center"
                   >
                     Upgrade
                   </Link>
@@ -287,7 +287,7 @@ const AccountSummaryDashboard = () => {
               ) : (
                 <Link
                   to={action.href}
-                  className="inline-block w-full text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition duration-200"
+                  className="inline-block w-full text-center px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm rounded-lg transition duration-200"
                 >
                   {action.action}
                 </Link>
