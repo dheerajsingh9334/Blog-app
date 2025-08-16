@@ -8,6 +8,7 @@ const Plan = require("../../models/Plan/Plan");
 const Category = require("../../models/Category/Category");
 const Notification = require("../../models/Notification/Notification");
 const sendAdminNotificationEmail = require("../../utils/sendAdminNotificationEmail");
+const AdminNotificationService = require("../../utils/adminNotificationService");
 
 const adminController = {
   // ===== DASHBOARD & ANALYTICS =====
@@ -167,16 +168,11 @@ const adminController = {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Send notification to all admin users (from Admin collection)
-      const adminUsers = await Admin.find({ isActive: true });
-      for (const admin of adminUsers) {
-        await Notification.create({
-          userId: admin._id,
-          title: "User Banned",
-          message: `User ${user.username} has been banned for: ${user.banReason}`,
-          type: "system",
-          priority: "high"
-        });
+      // Notify all admins about user ban
+      try {
+        await AdminNotificationService.notifyUserBanStatus(user, true, req.admin, user.banReason);
+      } catch (error) {
+        console.error('Error creating user ban notification:', error);
       }
       
       // Send notification to the banned user with admin contact info
@@ -264,20 +260,15 @@ const adminController = {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Send admin notifications for user unbanned
+    // Notify all admins about user unban
     try {
-      const adminUsers = await Admin.find({ isActive: true });
-      for (const admin of adminUsers) {
-        await Notification.create({
-          userId: admin._id,
-          title: "User Unbanned",
-          message: `User ${user.username} has been unbanned by ${req.admin.username}`,
-          type: "system",
-          priority: "medium"
-        });
-      }
+      await AdminNotificationService.notifyUserBanStatus(user, false, req.admin);
+    } catch (error) {
+      console.error('Error creating user unban notification:', error);
+    }
 
-      // Send notification to the unbanned user
+    // Send notification to the unbanned user
+    try {
       await Notification.create({
         userId: user._id,
         title: "Account Unbanned",
@@ -334,38 +325,11 @@ const adminController = {
     // Delete all comments by this user
     await Comment.deleteMany({ author: userId });
     
-    // Send admin notifications for user deletion
+    // Notify all admins about user deletion
     try {
-      const adminUsers = await Admin.find({ isActive: true });
-      for (const admin of adminUsers) {
-        if (admin._id.toString() !== req.admin.id.toString()) { // Don't notify the admin who deleted
-          await Notification.create({
-            userId: admin._id,
-            title: "User Deleted",
-            message: `User ${user.username} (${user.email}) has been deleted by ${req.admin.username}`,
-            type: "system",
-            priority: "high",
-            metadata: {
-              actorId: req.admin._id,
-              actorName: req.admin.username,
-              action: "deleted user",
-              targetType: "user",
-              additionalData: {
-                deletedUser: {
-                  username: user.username,
-                  email: user.email,
-                  role: user.role,
-                  deletedAt: new Date()
-                }
-              }
-            }
-          });
-        }
-      }
-      console.log(`✅ Admin notifications sent for deleted user ${user.username}`);
-    } catch (notificationError) {
-      console.error("❌ Failed to send delete notifications:", notificationError);
-      // Don't fail the delete operation if notifications fail
+      await AdminNotificationService.notifyUserDeletion(user, req.admin);
+    } catch (error) {
+      console.error('Error creating user deletion notification:', error);
     }
     
     res.json({ message: "User and all associated data deleted successfully" });
@@ -434,6 +398,9 @@ const adminController = {
       return res.status(404).json({ message: "Post not found" });
     }
     
+    // Get post author information for notification
+    const author = await User.findById(post.author);
+    
     // Delete all comments on this post
     await Comment.deleteMany({ post: postId });
     
@@ -441,6 +408,15 @@ const adminController = {
     await User.findByIdAndUpdate(post.author, {
       $pull: { posts: postId }
     });
+    
+    // Notify all admins about post deletion
+    if (author) {
+      try {
+        await AdminNotificationService.notifyPostDeletion(post, author, req.admin);
+      } catch (error) {
+        console.error('Error creating post deletion notification:', error);
+      }
+    }
     
     res.json({ message: "Post and all comments deleted successfully" });
   }),
@@ -496,6 +472,18 @@ const adminController = {
       return res.status(404).json({ message: "Comment not found" });
     }
     
+    // Get comment author information for notification
+    const author = await User.findById(comment.author);
+    
+    // Notify all admins about comment deletion
+    if (author) {
+      try {
+        await AdminNotificationService.notifyCommentDeletion(comment, author, req.admin);
+      } catch (error) {
+        console.error('Error creating comment deletion notification:', error);
+      }
+    }
+    
     res.json({ message: "Comment deleted successfully" });
   }),
 
@@ -528,6 +516,13 @@ const adminController = {
       isActive: isActive !== undefined ? isActive : true
     });
     
+    // Notify all admins about plan creation
+    try {
+      await AdminNotificationService.notifyPlanAction(plan, 'created', req.admin);
+    } catch (error) {
+      console.error('Error creating plan creation notification:', error);
+    }
+    
     res.status(201).json({
       message: "Plan created successfully",
       plan
@@ -547,6 +542,13 @@ const adminController = {
     
     if (!plan) {
       return res.status(404).json({ message: "Plan not found" });
+    }
+    
+    // Notify all admins about plan update
+    try {
+      await AdminNotificationService.notifyPlanAction(plan, 'updated', req.admin);
+    } catch (error) {
+      console.error('Error creating plan update notification:', error);
     }
     
     res.json({
@@ -573,6 +575,13 @@ const adminController = {
       return res.status(404).json({ message: "Plan not found" });
     }
     
+    // Notify all admins about plan deletion
+    try {
+      await AdminNotificationService.notifyPlanAction(plan, 'deleted', req.admin);
+    } catch (error) {
+      console.error('Error creating plan deletion notification:', error);
+    }
+    
     res.json({ message: "Plan deleted successfully" });
   }),
 
@@ -580,6 +589,10 @@ const adminController = {
   assignPlanToUser: asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const { planId } = req.body;
+    
+    // Get old plan for comparison
+    const oldUser = await User.findById(userId).populate("plan");
+    const oldPlan = oldUser?.plan;
     
     const user = await User.findByIdAndUpdate(
       userId,
@@ -592,6 +605,14 @@ const adminController = {
     
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Notify all admins about plan change
+    try {
+      const newPlan = await Plan.findById(planId);
+      await AdminNotificationService.notifyUserPlanChange(user, oldPlan, newPlan, req.admin);
+    } catch (error) {
+      console.error('Error creating plan change notification:', error);
     }
     
     res.json({
@@ -673,6 +694,13 @@ const adminController = {
       description
     });
     
+    // Notify all admins about category creation
+    try {
+      await AdminNotificationService.notifyCategoryAction(category, 'created', req.admin);
+    } catch (error) {
+      console.error('Error creating category creation notification:', error);
+    }
+    
     res.status(201).json({
       message: "Category created successfully",
       category
@@ -692,6 +720,13 @@ const adminController = {
     
     if (!category) {
       return res.status(404).json({ message: "Category not found" });
+    }
+    
+    // Notify all admins about category update
+    try {
+      await AdminNotificationService.notifyCategoryAction(category, 'updated', req.admin);
+    } catch (error) {
+      console.error('Error creating category update notification:', error);
     }
     
     res.json({
@@ -718,78 +753,267 @@ const adminController = {
       return res.status(404).json({ message: "Category not found" });
     }
     
+    // Notify all admins about category deletion
+    try {
+      await AdminNotificationService.notifyCategoryAction(category, 'deleted', req.admin);
+    } catch (error) {
+      console.error('Error creating category deletion notification:', error);
+    }
+    
     res.json({ message: "Category deleted successfully" });
   }),
 
   // ===== NOTIFICATION MANAGEMENT =====
-  // Admin inbox: fetch notifications for current admin (stored in Notification with userId = admin._id)
+  // Admin inbox: fetch notifications for current admin (stored in Notification with special admin identifier)
   fetchAdminNotifications: asyncHandler(async (req, res) => {
-    const notifications = await Notification.find({ userId: req.admin._id })
+    try {
+      // Find notifications where userId is the admin's ID and type indicates it's an admin notification
+      // OR find notifications with a special admin identifier
+      const notifications = await Notification.find({
+        $or: [
+          { userId: req.admin._id, type: { $in: ['admin', 'system', 'announcement'] } },
+          { 'metadata.isAdminNotification': true, 'metadata.adminId': req.admin._id }
+        ]
+      })
       .sort({ createdAt: -1 })
       .limit(50);
-    res.json(notifications);
+      
+      console.log(`Found ${notifications.length} admin notifications for admin ${req.admin._id}`);
+      res.json(notifications);
+    } catch (error) {
+      console.error('Error fetching admin notifications:', error);
+      res.status(500).json({ message: 'Error fetching admin notifications', error: error.message });
+    }
   }),
 
   getAdminUnreadCount: asyncHandler(async (req, res) => {
-    const count = await Notification.countDocuments({ userId: req.admin._id, isRead: false });
-    res.json({ unreadCount: count });
+    try {
+      const count = await Notification.countDocuments({
+        $or: [
+          { userId: req.admin._id, isRead: false, type: { $in: ['admin', 'system', 'announcement'] } },
+          { 'metadata.isAdminNotification': true, 'metadata.adminId': req.admin._id, isRead: false }
+        ]
+      });
+      res.json({ unreadCount: count });
+    } catch (error) {
+      console.error('Error getting admin unread count:', error);
+      res.status(500).json({ message: 'Error getting unread count', error: error.message });
+    }
   }),
 
   markAllAdminNotificationsRead: asyncHandler(async (req, res) => {
-    await Notification.updateMany({ userId: req.admin._id, isRead: false }, { isRead: true });
-    res.json({ message: 'All notifications marked as read' });
+    try {
+      await Notification.updateMany({
+        $or: [
+          { userId: req.admin._id, isRead: false, type: { $in: ['admin', 'system', 'announcement'] } },
+          { 'metadata.isAdminNotification': true, 'metadata.adminId': req.admin._id, isRead: false }
+        ]
+      }, { isRead: true });
+      res.json({ message: 'All admin notifications marked as read' });
+    } catch (error) {
+      console.error('Error marking admin notifications as read:', error);
+      res.status(500).json({ message: 'Error marking notifications as read', error: error.message });
+    }
   }),
 
   readAdminNotification: asyncHandler(async (req, res) => {
-    const { notificationId } = req.params;
-    await Notification.findOneAndUpdate({ _id: notificationId, userId: req.admin._id }, { isRead: true });
-    res.json({ message: 'Notification marked as read' });
+    try {
+      const { notificationId } = req.params;
+      const result = await Notification.findOneAndUpdate({
+        _id: notificationId,
+        $or: [
+          { userId: req.admin._id, type: { $in: ['admin', 'system', 'announcement'] } },
+          { 'metadata.isAdminNotification': true, 'metadata.adminId': req.admin._id }
+        ]
+      }, { isRead: true });
+      
+      if (!result) {
+        return res.status(404).json({ message: 'Admin notification not found' });
+      }
+      
+      res.json({ message: 'Admin notification marked as read' });
+    } catch (error) {
+      console.error('Error reading admin notification:', error);
+      res.status(500).json({ message: 'Error reading notification', error: error.message });
+    }
   }),
 
   deleteAdminNotification: asyncHandler(async (req, res) => {
-    const { notificationId } = req.params;
-    await Notification.findOneAndDelete({ _id: notificationId, userId: req.admin._id });
-    res.json({ message: 'Notification deleted successfully' });
+    try {
+      const { notificationId } = req.params;
+      const result = await Notification.findOneAndDelete({
+        _id: notificationId,
+        $or: [
+          { userId: req.admin._id, type: { $in: ['admin', 'system', 'announcement'] } },
+          { 'metadata.isAdminNotification': true, 'metadata.adminId': req.admin._id }
+        ]
+      });
+      
+      if (!result) {
+        return res.status(404).json({ message: 'Admin notification not found' });
+      }
+      
+      res.json({ message: 'Admin notification deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting admin notification:', error);
+      res.status(500).json({ message: 'Error deleting notification', error: error.message });
+    }
   }),
 
   deleteAllAdminNotifications: asyncHandler(async (req, res) => {
-    await Notification.deleteMany({ userId: req.admin._id });
-    res.json({ message: 'All notifications deleted successfully' });
+    try {
+      const result = await Notification.deleteMany({
+        $or: [
+          { userId: req.admin._id, type: { $in: ['admin', 'system', 'announcement'] } },
+          { 'metadata.isAdminNotification': true, 'metadata.adminId': req.admin._id }
+        ]
+      });
+      res.json({ message: `All admin notifications deleted successfully. Deleted ${result.deletedCount} notifications.` });
+    } catch (error) {
+      console.error('Error deleting all admin notifications:', error);
+      res.status(500).json({ message: 'Error deleting notifications', error: error.message });
+    }
   }),
   
   // Send notification to user
   sendNotification: asyncHandler(async (req, res) => {
-    const { userId } = req.params;
-    const { title, message, type } = req.body;
-    
-    // Validate userId is a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({
-        message: "Invalid user ID format",
-        error: "userId must be a valid ObjectId"
+    try {
+      const { userId } = req.params;
+      const { title, message, type, priority, isDirectMessage } = req.body;
+      
+      // Validate userId is a valid ObjectId
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({
+          message: "Invalid user ID format",
+          error: "userId must be a valid ObjectId"
+        });
+      }
+      
+      // Check if user exists
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
+          error: "User with the provided ID does not exist"
+        });
+      }
+      
+      // Create user notification
+      const userNotification = await Notification.create({
+        userId: userId,
+        title: title || "Admin Notification",
+        message,
+        type: type || "admin",
+        priority: priority || "normal",
+        metadata: {
+          isAdminNotification: true,
+          adminId: req.admin._id,
+          adminUsername: req.admin.username,
+          adminRole: req.admin.role,
+          action: isDirectMessage ? 'direct_admin_message' : 'admin_notification',
+          targetType: 'user',
+          targetId: userId,
+          targetUsername: user.username,
+          additionalData: {
+            isDirectMessage: Boolean(isDirectMessage),
+            messagePriority: priority || "normal",
+            messageDate: new Date()
+          }
+        }
+      });
+      
+      // Create admin notification to track the sent message
+      const adminNotification = await Notification.create({
+        userId: req.admin._id,
+        title: `Message Sent to ${user.username}`,
+        message: `You sent a message to user ${user.username}: "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"`,
+        type: 'admin_message_sent',
+        priority: priority || "normal",
+        metadata: {
+          isAdminNotification: true,
+          adminId: req.admin._id,
+          action: 'admin_message_sent',
+          targetType: 'user',
+          targetId: userId,
+          targetUsername: user.username,
+          actorId: req.admin._id,
+          actorName: req.admin.username,
+          additionalData: {
+            originalMessage: message,
+            originalTitle: title,
+            messageType: type || "admin",
+            messagePriority: priority || "normal",
+            messageDate: new Date(),
+            recipientUsername: user.username,
+            recipientEmail: user.email
+          }
+        }
+      });
+      
+      console.log(`✅ Admin ${req.admin.username} sent message to user ${user.username}`);
+      console.log(`✅ Created user notification: ${userNotification._id}`);
+      console.log(`✅ Created admin tracking notification: ${adminNotification._id}`);
+      
+      res.status(201).json({
+        message: "Notification sent successfully",
+        notification: userNotification,
+        adminTracking: adminNotification,
+        recipient: {
+          username: user.username,
+          email: user.email,
+          userId: user._id
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error sending notification:', error);
+      res.status(500).json({ 
+        message: 'Error sending notification', 
+        error: error.message 
       });
     }
-    
-    // Check if user exists
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-        error: "User with the provided ID does not exist"
+  }),
+
+  // Create a system notification for admins
+  createAdminSystemNotification: asyncHandler(async (req, res) => {
+    try {
+      const { title, message, type = 'system', priority = 'medium' } = req.body;
+      
+      if (!title || !message) {
+        return res.status(400).json({
+          message: "Missing required fields",
+          error: "Title and message are required"
+        });
+      }
+      
+      // Create notification for all admins
+      const admins = await Admin.find({ isActive: true });
+      const notifications = [];
+      
+      for (const admin of admins) {
+        const notification = await Notification.create({
+          userId: admin._id, // Use admin's ID as userId
+          title,
+          message,
+          type,
+          priority,
+          metadata: {
+            isAdminNotification: true,
+            adminId: admin._id,
+            action: 'system_notification',
+            targetType: 'admin'
+          }
+        });
+        notifications.push(notification);
+      }
+      
+      res.status(201).json({
+        message: `System notification sent to ${notifications.length} admins`,
+        notifications
       });
+    } catch (error) {
+      console.error('Error creating admin system notification:', error);
+      res.status(500).json({ message: 'Error creating system notification', error: error.message });
     }
-    
-    const notification = await Notification.create({
-      userId: userId,
-      title: title || "Admin Notification",
-      message,
-      type: type || "admin"
-    });
-    
-    res.status(201).json({
-      message: "Notification sent successfully",
-      notification
-    });
   }),
 
   // Send notification to all users
@@ -887,6 +1111,39 @@ const adminController = {
             totalProcessed: users.length
           }
         });
+      }
+      
+      // Create admin tracking notification for broadcast
+      try {
+        const adminTrackingNotification = await Notification.create({
+          userId: req.admin._id,
+          title: `Broadcast Sent to ${successCount} Users`,
+          message: `You sent a broadcast notification to ${successCount} users: "${title}" - "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"`,
+          type: 'admin_broadcast_sent',
+          priority: "high",
+          metadata: {
+            isAdminNotification: true,
+            adminId: req.admin._id,
+            action: 'admin_broadcast_sent',
+            targetType: 'system',
+            actorId: req.admin._id,
+            actorName: req.admin.username,
+            additionalData: {
+              broadcastTitle: title,
+              broadcastMessage: message,
+              broadcastType: type || "admin",
+              recipientCount: successCount,
+              totalUsers: users.length,
+              failedCount: errorCount,
+              broadcastDate: new Date()
+            }
+          }
+        });
+        
+        console.log(`✅ Created admin tracking notification for broadcast: ${adminTrackingNotification._id}`);
+      } catch (trackingError) {
+        console.error('❌ Failed to create admin tracking notification:', trackingError);
+        // Don't fail the whole request if tracking fails
       }
       
       res.status(201).json({
@@ -1307,6 +1564,154 @@ const adminController = {
         hasPrev: false
       }
     });
+  }),
+
+  // Custom admin notification
+  notifyCustomAdminMessage: asyncHandler(async (req, res) => {
+    try {
+      const { title, message, type, priority } = req.body;
+      
+      if (!title || !message) {
+        return res.status(400).json({
+          message: "Missing required fields",
+          error: "Title and message are required"
+        });
+      }
+      
+      // Use the notification service
+      await AdminNotificationService.notifyCustomAdminMessage(req.admin, {
+        title,
+        message,
+        type,
+        priority
+      });
+      
+      res.status(201).json({
+        message: "Custom admin notification sent successfully"
+      });
+    } catch (error) {
+      console.error('Error creating custom admin notification:', error);
+      res.status(500).json({ message: 'Error creating custom notification', error: error.message });
+    }
+  }),
+
+  // Send direct message from admin to user with enhanced tracking
+  sendDirectMessage: asyncHandler(async (req, res) => {
+    try {
+      const { userId, message, priority, messageType } = req.body;
+      
+      if (!userId || !message) {
+        return res.status(400).json({
+          message: "Missing required fields",
+          error: "User ID and message are required"
+        });
+      }
+      
+      // Validate userId is a valid ObjectId
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({
+          message: "Invalid user ID format",
+          error: "userId must be a valid ObjectId"
+        });
+      }
+      
+      // Check if user exists
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
+          error: "User with the provided ID does not exist"
+        });
+      }
+      
+      // Create user notification (the actual message)
+      const userNotification = await Notification.create({
+        userId: userId,
+        title: `Message from Admin ${req.admin.username}`,
+        message,
+        type: 'admin_direct_message',
+        priority: priority || "normal",
+        metadata: {
+          isAdminNotification: true,
+          adminId: req.admin._id,
+          adminUsername: req.admin.username,
+          adminRole: req.admin.role,
+          adminEmail: req.admin.email,
+          action: 'direct_admin_message',
+          targetType: 'user',
+          targetId: userId,
+          targetUsername: user.username,
+          targetEmail: user.email,
+          additionalData: {
+            messageType: messageType || 'personal',
+            messagePriority: priority || "normal",
+            messageDate: new Date(),
+            isDirectMessage: true,
+            adminContact: {
+              username: req.admin.username,
+              email: req.admin.email,
+              role: req.admin.role
+            }
+          }
+        }
+      });
+      
+      // Create admin tracking notification
+      const adminTrackingNotification = await Notification.create({
+        userId: req.admin._id,
+        title: `Direct Message Sent to ${user.username}`,
+        message: `You sent a direct message to ${user.username}: "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"`,
+        type: 'admin_direct_message_sent',
+        priority: priority || "normal",
+        metadata: {
+          isAdminNotification: true,
+          adminId: req.admin._id,
+          action: 'admin_direct_message_sent',
+          targetType: 'user',
+          targetId: userId,
+          targetUsername: user.username,
+          targetEmail: user.email,
+          actorId: req.admin._id,
+          actorName: req.admin.username,
+          additionalData: {
+            originalMessage: message,
+            messageType: messageType || 'personal',
+            messagePriority: priority || "normal",
+            messageDate: new Date(),
+            recipientUsername: user.username,
+            recipientEmail: user.email,
+            messageLength: message.length
+          }
+        }
+      });
+      
+      console.log(`✅ Admin ${req.admin.username} sent direct message to user ${user.username}`);
+      console.log(`✅ Created user notification: ${userNotification._id}`);
+      console.log(`✅ Created admin tracking notification: ${adminTrackingNotification._id}`);
+      
+      res.status(201).json({
+        message: "Direct message sent successfully",
+        userNotification,
+        adminTracking: adminTrackingNotification,
+        recipient: {
+          username: user.username,
+          email: user.email,
+          userId: user._id
+        },
+        messageDetails: {
+          type: messageType || 'personal',
+          priority: priority || "normal",
+          length: message.length,
+          sentAt: new Date()
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error sending direct message:', error);
+      res.status(500).json({ 
+        message: 'Error sending direct message', 
+        error: error.message 
+      });
+    }
   })
 };
 

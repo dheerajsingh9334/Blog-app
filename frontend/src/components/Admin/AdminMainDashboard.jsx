@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getDashboardStatsAPI, getActivityFeedAPI, getAllUsersAPI, sendNotificationToAllAPI } from '../../APIServices/admin/adminAPI';
 import AdminStats from './AdminStats';
-import AdminDebug from './AdminDebug';
 import { 
   LineChart, 
   Line, 
@@ -672,8 +671,7 @@ const AdminMainDashboard = () => {
         </div>
       </div>
 
-      {/* Debug Component */}
-      <AdminDebug />
+
     </div>
   );
 };

@@ -108,6 +108,14 @@ createPost: asyncHandler(async (req, res) => {
           type: "system_announcement"
         });
 
+        // Send admin notification for new post
+        try {
+          const AdminNotificationService = require("../../utils/adminNotificationService");
+          await AdminNotificationService.notifyNewPost(postCreated, userFound);
+        } catch (adminNotificationError) {
+          console.error("Failed to send admin notification for new post:", adminNotificationError);
+        }
+
         // Send email notifications to followers (non-blocking)
         if (userFound.followers && userFound.followers.length > 0) {
           userFound.followers.forEach(async (followerId) => {

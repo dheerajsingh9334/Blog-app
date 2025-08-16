@@ -1,13 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  fetchNotificationsAPI, 
-  readNotificationAPI, 
-  markAllNotificationsReadAPI, 
-  getUnreadNotificationCountAPI,
-  deleteNotificationAPI,
-  deleteAllNotificationsAPI
-} from "../../APIServices/notifications/nofitificationsAPI";
+import React from "react";
 import { 
   FaBell, 
   FaUser, 
@@ -30,55 +21,30 @@ import {
   FaBlog
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useNotifications } from "../../contexts/NotificationContext";
 
 const Notifications = () => {
-  const [filter, setFilter] = useState('all');
-  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
-  const queryClient = useQueryClient();
 
-  const { data: notifications, isLoading, error } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: fetchNotificationsAPI,
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
-
-  const { data: unreadCount } = useQuery({
-    queryKey: ["notification-count"],
-    queryFn: getUnreadNotificationCountAPI,
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
-
-  const markAsReadMutation = useMutation({
-    mutationFn: readNotificationAPI,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"]);
-      queryClient.invalidateQueries(["notification-count"]);
-    },
-  });
-
-  const markAllAsReadMutation = useMutation({
-    mutationFn: markAllNotificationsReadAPI,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"]);
-      queryClient.invalidateQueries(["notification-count"]);
-    },
-  });
-
-  const deleteNotificationMutation = useMutation({
-    mutationFn: deleteNotificationAPI,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"]);
-      queryClient.invalidateQueries(["notification-count"]);
-    },
-  });
-
-  const deleteAllNotificationsMutation = useMutation({
-    mutationFn: deleteAllNotificationsAPI,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"]);
-      queryClient.invalidateQueries(["notification-count"]);
-    },
-  });
+  // Use shared notification context - no more duplicate API calls!
+  const {
+    notifications,
+    unreadCount,
+    filteredNotifications,
+    isLoading,
+    error,
+    filter,
+    setFilter,
+    showUnreadOnly,
+    setShowUnreadOnly,
+    handleMarkAsRead,
+    handleMarkAllAsRead,
+    handleDeleteNotification,
+    handleDeleteAllNotifications,
+    markAsReadMutation,
+    markAllAsReadMutation,
+    deleteNotificationMutation,
+    deleteAllNotificationsMutation
+  } = useNotifications();
 
   const getNotificationIcon = (type) => {
     switch (type) {
@@ -125,35 +91,35 @@ const Notifications = () => {
     // Handle admin notifications specially with contact info
     if (type === 'admin' && (title || message)) {
       return (
-        <div>
+        <div className="w-full overflow-hidden">
           {title && (
-            <div className="font-semibold text-red-600 dark:text-red-400 mb-1">
+            <div className="font-semibold text-red-600 dark:text-red-400 mb-1 break-words">
               {title}
             </div>
           )}
-          <div className="text-gray-700 dark:text-gray-300 mb-2">
+          <div className="text-gray-700 dark:text-gray-300 mb-2 break-words">
             {message}
           </div>
           
           {/* Admin Contact Information */}
           {metadata?.additionalData?.adminContact && (
-            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg overflow-hidden">
               <div className="text-sm text-blue-800 dark:text-blue-200 font-medium mb-1">
                 📧 Contact Admin:
               </div>
-              <div className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
+              <div className="text-xs text-blue-700 dark:text-blue-300 space-y-1 break-words">
                 {metadata.additionalData.adminContact.username && (
-                  <div>
+                  <div className="break-words">
                     <span className="font-medium">Admin:</span> {metadata.additionalData.adminContact.username}
                   </div>
                 )}
                 {metadata.additionalData.adminContact.email && (
-                  <div>
+                  <div className="break-words">
                     <span className="font-medium">Email:</span> {metadata.additionalData.adminContact.email}
                   </div>
                 )}
                 {metadata.additionalData.adminContact.role && (
-                  <div>
+                  <div className="break-words">
                     <span className="font-medium">Role:</span> {metadata.additionalData.adminContact.role}
                   </div>
                 )}
@@ -166,19 +132,19 @@ const Notifications = () => {
     
     if (metadata?.actorName && metadata?.action) {
       return (
-        <div>
-          <span className="font-semibold text-gray-900 dark:text-white">
+        <div className="w-full overflow-hidden">
+          <span className="font-semibold text-gray-900 dark:text-white break-words">
             {metadata.actorName}
           </span>
-          <span className="text-gray-600 dark:text-gray-400"> {metadata.action}</span>
+          <span className="text-gray-600 dark:text-gray-400 break-words"> {metadata.action}</span>
           {metadata.targetType && (
-            <span className="text-gray-600 dark:text-gray-400"> your {metadata.targetType}</span>
+            <span className="text-gray-600 dark:text-gray-400 break-words"> your {metadata.targetType}</span>
           )}
         </div>
       );
     }
     
-    return <span className="text-gray-700 dark:text-gray-300">{message || 'Notification'}</span>;
+    return <span className="text-gray-700 dark:text-gray-300 break-words">{message || 'Notification'}</span>;
   };
 
   const getNotificationLink = (notification) => {
@@ -202,31 +168,7 @@ const Notifications = () => {
     }
   };
 
-  const filteredNotifications = notifications?.filter(notification => {
-    if (showUnreadOnly && notification.isRead) return false;
-    if (filter !== 'all' && notification.type !== filter) return false;
-    return true;
-  }) || [];
 
-  const handleMarkAsRead = (notificationId) => {
-    markAsReadMutation.mutate(notificationId);
-  };
-
-  const handleMarkAllAsRead = () => {
-    markAllAsReadMutation.mutate();
-  };
-
-  const handleDeleteNotification = (notificationId) => {
-    if (window.confirm("Are you sure you want to delete this notification?")) {
-      deleteNotificationMutation.mutate(notificationId);
-    }
-  };
-
-  const handleDeleteAllNotifications = () => {
-    if (window.confirm("Are you sure you want to delete all notifications? This action cannot be undone.")) {
-      deleteAllNotificationsMutation.mutate();
-    }
-  };
 
   if (isLoading) {
     return (
@@ -257,26 +199,26 @@ const Notifications = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6 mb-4 lg:mb-6">
             <div className="flex items-center space-x-3">
-              <FaBell className="text-3xl text-green-600 dark:text-green-400" />
+              <FaBell className="text-2xl sm:text-3xl text-green-600 dark:text-green-400" />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                   Notifications
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                   {unreadCount?.unreadCount || 0} unread notifications
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
               {unreadCount?.unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
                   disabled={markAllAsReadMutation.isPending}
-                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors text-sm"
                 >
                   <FaCheck className="mr-2" />
                   Mark all as read
@@ -287,7 +229,7 @@ const Notifications = () => {
                 <button
                   onClick={handleDeleteAllNotifications}
                   disabled={deleteAllNotificationsMutation.isPending}
-                  className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors text-sm"
                 >
                   <FaTrashAlt className="mr-2" />
                   Delete all
@@ -297,7 +239,7 @@ const Notifications = () => {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 sm:gap-4">
             <div className="flex items-center space-x-2">
               <FaFilter className="text-gray-500" />
               <span className="text-sm text-gray-600 dark:text-gray-400">Filter:</span>
@@ -306,7 +248,7 @@ const Notifications = () => {
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              className="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
             >
               <option value="all">All Types</option>
               <option value="new_follower">Followers</option>
@@ -325,7 +267,7 @@ const Notifications = () => {
 
             <button
               onClick={() => setShowUnreadOnly(!showUnreadOnly)}
-              className={`inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 showUnreadOnly
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
@@ -356,33 +298,44 @@ const Notifications = () => {
             filteredNotifications.map((notification) => (
               <div
                 key={notification._id}
-                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-200 ${
+                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 transition-all duration-200 ${
                   !notification.isRead 
                     ? 'ring-2 ring-green-500/20 bg-green-50/50 dark:bg-green-900/10' 
                     : 'hover:shadow-xl'
                 }`}
               >
-                <div className="flex items-start space-x-4">
+                <div className="flex items-start space-x-3 sm:space-x-4">
                   {/* Icon */}
                   <div className="flex-shrink-0 mt-1">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                       {getNotificationIcon(notification.type)}
                     </div>
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0">
+                      <div className="flex-1 min-w-0 overflow-hidden">
                         {getNotificationContent(notification)}
                         
                         {notification.metadata?.additionalData && (
-                          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                            {/* Render additional data safely */}
-                            {typeof notification.metadata.additionalData === 'string' 
-                              ? notification.metadata.additionalData
-                              : JSON.stringify(notification.metadata.additionalData)
-                            }
+                          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 overflow-hidden">
+                            {/* Render additional data safely with proper overflow handling */}
+                            <div className="break-words max-w-full">
+                              {typeof notification.metadata.additionalData === 'string' 
+                                ? notification.metadata.additionalData
+                                : (
+                                  <details className="cursor-pointer">
+                                    <summary className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                                      View Additional Data
+                                    </summary>
+                                    <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono break-all overflow-x-auto">
+                                      {JSON.stringify(notification.metadata.additionalData, null, 2)}
+                                    </div>
+                                  </details>
+                                )
+                              }
+                            </div>
                           </div>
                         )}
                         
@@ -392,7 +345,7 @@ const Notifications = () => {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center space-x-2 ml-4">
+                      <div className="flex items-center justify-start sm:justify-end space-x-2 sm:ml-4">
                         {!notification.isRead && (
                           <button
                             onClick={() => handleMarkAsRead(notification._id)}
@@ -430,7 +383,7 @@ const Notifications = () => {
                 {/* Priority Badge */}
                 {notification.priority && notification.priority !== 'medium' && (
                   <div className="mt-3">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium break-words ${
                       notification.priority === 'urgent' 
                         ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                         : notification.priority === 'high'

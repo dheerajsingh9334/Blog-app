@@ -5,9 +5,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/slices/authSlices";
 import { useDarkMode } from "./DarkModeContext";
 import SearchBar from "../Search/SearchBar";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { logoutAPI } from "../../APIServices/users/usersAPI";
-import { getUnreadNotificationCountAPI } from "../../APIServices/notifications/nofitificationsAPI";
+import { useNotifications } from "../../contexts/NotificationContext";
 import Avatar from "../User/Avatar";
 
 const Navbar = () => {
@@ -16,18 +16,14 @@ const Navbar = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const mobileMenuRef = useRef(null);
   const profileDropdownRef = useRef(null);
+  const searchRef = useRef(null);
   const { darkMode, toggleDarkMode } = useDarkMode();
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const { userAuth } = useSelector((state) => state.auth);
 
-  // Real unread notifications count
-  const { data: unreadData } = useQuery({
-    queryKey: ["notification-count"],
-    queryFn: getUnreadNotificationCountAPI,
-    enabled: !!userAuth,
-    refetchInterval: 30000,
-  });
+  // Use shared notification context - no more duplicate API calls!
+  const { unreadCount } = useNotifications();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -36,6 +32,9 @@ const Navbar = () => {
       }
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
         setProfileDropdownOpen(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchOpen(false);
       }
     };
 
@@ -66,6 +65,7 @@ const Navbar = () => {
       queryClient.clear();
       setProfileDropdownOpen(false);
       setMobileMenuOpen(false);
+      setSearchOpen(false);
       window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
@@ -73,6 +73,7 @@ const Navbar = () => {
       queryClient.clear();
       setProfileDropdownOpen(false);
       setMobileMenuOpen(false);
+      setSearchOpen(false);
       window.location.href = '/';
     }
   };
@@ -80,6 +81,13 @@ const Navbar = () => {
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
     setSearchOpen(false);
+  };
+
+  const toggleSearch = () => {
+    setSearchOpen(!searchOpen);
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
   };
 
   return (
@@ -104,8 +112,6 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-3">
             {userAuth ? (
               <>
-
-
                 {/* Write Button */}
                 <Link
                   to="/dashboard/create-post"
@@ -122,9 +128,9 @@ const Navbar = () => {
                   title="Notifications"
                 >
                   <FaBell className="w-4 h-4" />
-                  {unreadData?.unreadCount > 0 && (
+                  {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 bg-red-600 text-white text-xs rounded-full flex items-center justify-center font-medium shadow-sm">
-                      {unreadData.unreadCount > 9 ? '9+' : unreadData.unreadCount}
+                      {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
                 </Link>
@@ -216,8 +222,13 @@ const Navbar = () => {
             {/* Mobile Search - Only for authenticated users */}
             {userAuth && (
               <button
-                onClick={() => setSearchOpen(!searchOpen)}
-                className="p-2 text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200"
+                ref={searchRef}
+                onClick={toggleSearch}
+                className={`p-2 rounded-lg transition-all duration-200 ${
+                  searchOpen 
+                    ? 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30' 
+                    : 'text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
                 title="Search"
               >
                 <FaSearch className="w-4 h-4" />
@@ -233,9 +244,9 @@ const Navbar = () => {
                 onClick={closeMobileMenu}
               >
                 <FaBell className="w-4 h-4" />
-                {unreadData?.unreadCount > 0 && (
+                {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 bg-red-600 text-white text-xs rounded-full flex items-center justify-center font-medium shadow-sm">
-                    {unreadData.unreadCount > 9 ? '9+' : unreadData.unreadCount}
+                    {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </Link>
@@ -262,10 +273,24 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Search Bar */}
+        {/* Enhanced Mobile Search Bar - Full width below navbar */}
         {searchOpen && userAuth && (
-          <div className="md:hidden py-3 border-t border-gray-200 dark:border-gray-700">
-            <SearchBar placeholder="Search posts, users, or content..." />
+          <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="relative">
+              <SearchBar 
+                placeholder="Search posts, users, or content..." 
+                className="w-full"
+                onSearchComplete={() => setSearchOpen(false)}
+              />
+              <div className="mt-3 text-center">
+                <button
+                  onClick={() => setSearchOpen(false)}
+                  className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                >
+                  Close search
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

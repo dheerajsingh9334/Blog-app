@@ -24,8 +24,7 @@ const AdminAuthRegister = () => {
     mutationKey: ["admin-auth-register"],
     mutationFn: adminRegisterAPI,
     onSuccess: (data) => {
-      console.log("AdminAuthRegister - Success:", data);
-      console.log("AdminAuthRegister - Admin data:", data.admin);
+      
       dispatch(adminLoginSuccess(data.admin));
       queryClient.invalidateQueries(['admin-auth-status']);
       setTimeout(() => {
@@ -33,7 +32,7 @@ const AdminAuthRegister = () => {
       }, 1000);
     },
     onError: (error) => {
-      console.error("AdminAuthRegister - Error:", error);
+      
     },
   });
 

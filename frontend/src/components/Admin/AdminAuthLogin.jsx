@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 import { adminLoginSuccess, adminLoginFailure } from "../../redux/slices/adminAuthSlice";
 
 const AdminAuthLogin = () => {
-  console.log("🔐 AdminAuthLogin component rendered");
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
@@ -20,15 +20,14 @@ const AdminAuthLogin = () => {
     mutationKey: ["admin-auth-login"],
     mutationFn: adminLoginAPI,
     onSuccess: (data) => {
-      console.log("AdminAuthLogin - Success:", data);
-      console.log("AdminAuthLogin - Admin data:", data.admin);
+      
       dispatch(adminLoginSuccess(data.admin));
       queryClient.invalidateQueries(['admin-auth-status']);
       // Navigate immediately after successful login
       navigate("/admin/dashboard");
     },
     onError: (error) => {
-      console.error("AdminAuthLogin - Error:", error);
+      
       dispatch(adminLoginFailure(error.message || "Admin login failed"));
     },
   });

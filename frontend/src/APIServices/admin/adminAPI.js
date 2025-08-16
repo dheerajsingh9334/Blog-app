@@ -301,6 +301,23 @@ export const sendNotificationAPI = async (userId, notificationData) => {
   return response.json();
 };
 
+export const sendDirectMessageAPI = async (userId, messageData) => {
+  const response = await fetch(`${BASE_URL}/admin/notifications/direct-message`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      userId,
+      message: messageData.message,
+      priority: messageData.priority || "normal",
+      messageType: messageData.messageType || "personal"
+    }),
+  });
+  return response.json();
+};
+
 export const sendNotificationToAllAPI = async (notificationData) => {
   const response = await fetch(`${BASE_URL}/admin/notifications/broadcast`, {
     method: "POST",

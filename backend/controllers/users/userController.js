@@ -90,30 +90,8 @@ const userController = {
 
     // Send admin notification for new user registration
     try {
-      const Admin = require("../../models/Admin/Admin");
-      const adminUsers = await Admin.find({ isActive: true });
-      
-      for (const admin of adminUsers) {
-        await Notification.create({
-          userId: admin._id,
-          title: "New User Registration",
-          message: `New user ${username} (${email}) has registered`,
-          type: "system",
-          priority: "medium",
-          metadata: {
-            actorId: userRegistered._id,
-            actorName: username,
-            actorEmail: email,
-            action: "registered",
-            targetType: "user",
-            additionalData: {
-              registrationTime: new Date(),
-              userRole: "user",
-              verificationStatus: "pending"
-            }
-          }
-        });
-      }
+      const AdminNotificationService = require("../../utils/adminNotificationService");
+      await AdminNotificationService.notifyNewUserRegistration(userRegistered);
       console.log("✅ Admin notifications sent for new user registration");
     } catch (notificationError) {
       console.error("❌ Failed to send admin notifications for new user:", notificationError);

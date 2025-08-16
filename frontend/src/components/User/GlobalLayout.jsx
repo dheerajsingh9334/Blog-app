@@ -9,14 +9,17 @@ import {
   TagIcon,
   CheckIcon,
   BookmarkIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  CreditCardIcon,
+  CurrencyDollarIcon,
+  SparklesIcon
 } from "@heroicons/react/24/outline";
 import { FaBlog, FaPen, FaBell, FaSun, FaMoon, FaBars, FaTimes } from "react-icons/fa";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getUnreadNotificationCountAPI } from "../../APIServices/notifications/nofitificationsAPI";
 import { getUserPlanAndUsageAPI, logoutAPI } from "../../APIServices/users/usersAPI";
+import { useNotifications } from "../../contexts/NotificationContext";
 import { logout } from "../../redux/slices/authSlices";
 import { useDarkMode } from "../Navbar/DarkModeContext";
 import SearchBar from "../Search/SearchBar";
@@ -32,7 +35,6 @@ const navigation = [
   { name: "Followers", href: "/dashboard/my-followers", icon: UserGroupIcon, current: false },
   { name: "Following", href: "/dashboard/my-followings", icon: UserGroupIcon, current: false },
   { name: "Categories", href: "/dashboard/add-category", icon: TagIcon, current: false },
-          // Earnings removed
   { name: "Trending", href: "/trending", icon: FaBlog, current: false },
 ];
 
@@ -59,20 +61,16 @@ const getUserInitials = (user) => {
  */
 // eslint-disable-next-line react/prop-types
 export default function GlobalLayout({ userAuth, children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [navbarSidebarOpen, setNavbarSidebarOpen] = useState(false);
   const location = useLocation();
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const { userAuth: authUser } = useSelector((state) => state.auth);
   const { darkMode, toggleDarkMode } = useDarkMode();
 
-  // Fetch real notification count
-  const { data: unreadCount } = useQuery({
-    queryKey: ["notification-count"],
-    queryFn: getUnreadNotificationCountAPI,
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
+  // Use shared notification context - no more duplicate API calls!
+  const { unreadCount } = useNotifications();
 
   // Get user's current plan
   const { data: usageData } = useQuery({
@@ -91,6 +89,29 @@ export default function GlobalLayout({ userAuth, children }) {
       item.current = location.pathname === item.href;
     });
   }, [location]);
+
+  // Close navbar sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if click is outside the sidebar and not on the toggle button
+      const sidebar = document.querySelector('[data-sidebar]');
+      const toggleButton = document.querySelector('[data-sidebar-toggle]');
+      
+      if (navbarSidebarOpen && 
+          sidebar && 
+          !sidebar.contains(event.target) && 
+          toggleButton && 
+          !toggleButton.contains(event.target)) {
+        setNavbarSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [navbarSidebarOpen]);
+
 
 
 
@@ -116,16 +137,19 @@ export default function GlobalLayout({ userAuth, children }) {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-gray-900/50 backdrop-blur supports-[backdrop-filter]:backdrop-blur border-b border-gray-200 dark:border-gray-800">
         <div className="w-full px-8 sm:px-10 lg:px-16">
           <div className="flex items-center justify-between h-20">
-            {/* Left: Logo and Sidebar Toggle */}
+            {/* Left: Logo and Navbar Sidebar Toggle */}
             <div className="flex items-center space-x-8">
-              {/* Sidebar Toggle Button */}
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 rounded-md text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
-                title={sidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}
-              >
-                {sidebarOpen ? <FaTimes className="h-5 w-5" /> : <FaBars className="h-5 w-5" />}
-              </button>
+              {/* Navbar Sidebar Toggle Button */}
+              {userAuth && (
+                <button
+                  onClick={() => setNavbarSidebarOpen(!navbarSidebarOpen)}
+                  className="p-2 rounded-md text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                  title="Open Navigation Menu"
+                  data-sidebar-toggle
+                >
+                  <FaBars className="h-5 w-5" />
+                </button>
+              )}
               
               {/* Logo */}
               <Link
@@ -144,14 +168,7 @@ export default function GlobalLayout({ userAuth, children }) {
 
 
             {/* Mobile menu button - Only show on small screens when sidebar is closed */}
-            <div className="lg:hidden">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 rounded-md text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
-              >
-                {sidebarOpen ? <FaTimes className="h-5 w-5" /> : <FaBars className="h-5 w-5" />}
-              </button>
-            </div>
+            {/* Removed mobile menu button */}
 
             {/* Center: Main Navigation (visible on lg and up) */}
             <div className="hidden lg:flex items-center space-x-6">
@@ -192,10 +209,10 @@ export default function GlobalLayout({ userAuth, children }) {
 
                   <Link
                     to="/dashboard/create-post"
-                    className="hidden md:flex items-center text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
+                    className="hidden md:flex items-center text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    title="Write Post"
                   >
-                    <FaPen className="mr-1" />
-                    <span>Write</span>
+                    <FaPen className="w-4 h-4" />
                   </Link>
 
                   <Link
@@ -203,9 +220,9 @@ export default function GlobalLayout({ userAuth, children }) {
                     className="relative text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
                   >
                     <FaBell />
-                    {unreadCount?.unreadCount > 0 && (
+                    {unreadCount > 0 && (
                       <span className="absolute -top-2 -right-2 h-5 min-w-5 px-1 bg-red-600 text-white text-xs rounded-full flex items-center justify-center">
-                        {unreadCount.unreadCount}
+                        {unreadCount}
                       </span>
                     )}
                   </Link>
@@ -292,198 +309,403 @@ export default function GlobalLayout({ userAuth, children }) {
           </div>
         </div>
       </nav>
-      
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
+
+      {/* Left Sliding Sidebar */}
+      {navbarSidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden"
-          style={{ top: '80px' }}
-          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-30 bg-black bg-opacity-50 transition-opacity duration-300"
+          onClick={() => setNavbarSidebarOpen(false)}
         />
       )}
 
-      {/* Mobile sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-800 transform transition-transform duration-300 ease-in-out lg:hidden ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`} style={{ top: '80px' }}>
-        <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
-          {/* Empty space - logo removed */}
+      {/* Left Sidebar with Slide Animation */}
+      <div 
+        data-sidebar
+        className={`fixed inset-y-0 left-0 z-40 w-80 bg-white dark:bg-gray-800 transform transition-transform duration-300 ease-in-out ${
+          navbarSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Sidebar Header */}
+        <div className="flex h-20 items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Navigation</h3>
+          <button
+            onClick={() => setNavbarSidebarOpen(false)}
+            className="p-2 rounded-md text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
+            title="Close Sidebar"
+          >
+            <FaTimes className="h-5 w-5" />
+          </button>
         </div>
         
-        <nav className="flex-1 px-6 py-4 overflow-y-auto">
-          <ul className="space-y-2">
-            {navigation.map((item) => (
-              <li key={item.name}>
-                <Link
-                  to={item.href}
-                  className={classNames(
-                    item.current
-                      ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600",
-                    "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
-                  )}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <item.icon
-                    className={classNames(
-                      item.current ? "text-green-600" : "text-gray-400 group-hover:text-green-600",
-                      "h-5 w-5 mr-3"
+        {/* Sidebar Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-6 py-6">
+            {/* Main Navigation */}
+            <div className="mb-8">
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                Main Navigation
+              </h3>
+              <div className="space-y-2">
+                                   {navigation.map((item) => (
+                     <Link
+                       key={item.name}
+                       to={item.href}
+                       className={classNames(
+                         item.current
+                           ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                           : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600",
+                         "group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-all duration-200"
+                       )}
+                     >
+                    <item.icon
+                      className={classNames(
+                        item.current ? "text-green-600" : "text-gray-400 group-hover:text-green-600",
+                        "h-5 w-5 mr-3"
+                      )}
+                      aria-hidden="true"
+                    />
+                    {item.name}
+                    {item.current && (
+                      <CheckIcon className="h-5 w-5 text-green-500 ml-auto" aria-hidden="true" />
                     )}
-                    aria-hidden="true"
-                  />
-                  {item.name}
-                  {item.current && (
-                    <CheckIcon className="h-5 w-5 text-green-500 ml-auto" aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Plan Management */}
+            <div className="mb-8">
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                Plan Management
+              </h3>
+              <div className="space-y-2">
+                                 <Link
+                   to="/plan-management"
+                   className="group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                 >
+                  <CreditCardIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
+                  Manage Plans
+                </Link>
+                                 <Link
+                   to="/pricing"
+                   className="group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                 >
+                  <CurrencyDollarIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
+                  View Pricing
+                </Link>
+                                   {hasFreePlan && (
+                     <Link
+                       to="/upgrade"
+                       className="group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                     >
+                    <SparklesIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
+                    Upgrade to Pro
+                  </Link>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mb-8">
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                Quick Actions
+              </h3>
+              <div className="space-y-2">
+                <Link
+                  to="/dashboard/notifications"
+                  className="group flex items-center justify-between px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                >
+                  <span className="flex items-center">
+                    <BellIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
+                    Notifications
+                  </span>
+                  {unreadCount > 0 && (
+                    <span className="inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-1 text-xs font-medium text-red-800 dark:text-red-400">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
                   )}
                 </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+                <Link
+                  to="/dashboard/settings"
+                  className="group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                >
+                  <Cog6ToothIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
+                  Settings
+                </Link>
+              </div>
+            </div>
 
-        {/* Mobile sidebar footer */}
-        <div className="border-t border-gray-200 dark:border-gray-700 p-6">
-          <Link 
-            to="/dashboard/notifications" 
-            className="group flex items-center justify-between mb-4"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-              <BellIcon className="h-5 w-5 mr-2 text-gray-400 group-hover:text-green-600" />
-              Notifications
-            </span>
-            {unreadCount?.unreadCount > 0 && (
-              <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                {unreadCount.unreadCount}
-              </span>
+            {/* User Profile Section */}
+            {authUser && (
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <div className="flex items-center">
+                  <img
+                    className="h-12 w-12 rounded-full object-cover"
+                    src={authUser.profilePicture?.url || authUser.profilePicture?.path || authUser.profilePicture || "https://via.placeholder.com/150"}
+                    alt="User profile"
+                  />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{authUser.name || authUser.username}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">@{authUser.username}</p>
+                  </div>
+                </div>
+              </div>
             )}
-          </Link>
-          
-          <Link
-            to="/dashboard/settings"
-            className="group flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600 rounded-md transition-colors"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <Cog6ToothIcon
-              className="h-5 w-5 mr-3 text-gray-400 group-hover:text-green-600"
-              aria-hidden="true"
-            />
-            Settings
-          </Link>
-
-          {/* User profile */}
-           {authUser && (
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center">
-                <img
-                  className="h-10 w-10 rounded-full object-cover"
-                  src={authUser.profilePicture?.url || authUser.profilePicture?.path || authUser.profilePicture || "https://via.placeholder.com/150"}
-                  alt="User profile"
-                />
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{authUser.name || authUser.username}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">@{authUser.username}</p>
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* Desktop sidebar - Using mobile sidebar design */}
-      <div className={`hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:flex-col transition-all duration-300 ease-in-out ${sidebarOpen ? 'lg:w-64' : 'lg:w-0 lg:overflow-hidden'}`} style={{ top: '80px' }}>
-        <div className={`flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white dark:bg-gray-800 px-6 pb-4 transition-all duration-300 ${sidebarOpen ? 'opacity-100' : 'lg:opacity-0'}`}>
-          <div className="flex h-16 shrink-0 items-center justify-between">
-            {/* Empty space - logo removed */}
-          </div>
-          
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Navigation</h2>
-            <nav className="space-y-1">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={classNames(
-                    item.current
-                      ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600",
-                    "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
-                  )}
-                >
-                  <item.icon
-                    className={classNames(
-                      item.current ? "text-green-600" : "text-gray-400 group-hover:text-green-600",
-                      "h-5 w-5 mr-3"
-                    )}
-                    aria-hidden="true"
-                  />
-                  {item.name}
-                  {item.current && (
-                    <CheckIcon className="h-5 w-5 text-green-500 ml-auto" aria-hidden="true" />
-                  )}
-                </Link>
-              ))}
-            </nav>
-          </div>
-
-          <div className="mt-auto pt-6 border-t border-gray-200 dark:border-gray-700">
-            <Link 
-              to="/dashboard/notifications" 
-              className="group flex items-center justify-between mb-4"
-            >
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                <BellIcon className="h-5 w-5 mr-2 text-gray-400 group-hover:text-green-600" />
-                Notifications
-              </span>
-              {unreadCount?.unreadCount > 0 && (
-                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                  {unreadCount.unreadCount}
-                </span>
-              )}
-            </Link>
-          </div>
-
-          <div className="mt-4">
-            <Link
-              to="/dashboard/settings"
-              className="group flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600 rounded-md transition-colors"
-            >
-              <Cog6ToothIcon
-                className="h-5 w-5 mr-3 text-gray-400 group-hover:text-green-600"
-                aria-hidden="true"
-              />
-              Settings
-            </Link>
-          </div>
-
-          {/* User profile section */}
-          {authUser && (
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center">
-                <img
-                  className="h-10 w-10 rounded-full object-cover"
-                  src={authUser.profilePicture?.url || authUser.profilePicture?.path || authUser.profilePicture || "https://via.placeholder.com/150"}
-                  alt="User profile"
-                />
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{authUser.name || authUser.username}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">@{authUser.username}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Main content area */}
-      <div className={`transition-all duration-300 ease-in-out ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'}`} style={{ marginTop: '80px' }}>
+      {/* Desktop content area - Hidden on small and medium screens */}
+      <div className="hidden lg:block transition-all duration-500 ease-in-out" style={{ marginTop: '80px' }}>
         <main className="pt-12 pb-8 w-full min-w-0 overflow-x-hidden">
           <div className="px-8 sm:px-10 lg:px-16 w-full">
+            {/* Upgrade Plan Banner - Show for free plan users */}
+            {userAuth && hasFreePlan && (
+              <div className="mb-8 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-700 rounded-lg p-6">
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
+                  <div className="flex-1 mb-4 lg:mb-0">
+                    <h2 className="text-2xl font-bold text-green-800 dark:text-green-200 mb-2">
+                      🚀 Upgrade Your Plan
+                    </h2>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4">
+                      Unlock unlimited posts, advanced analytics, and premium features with our premium plans.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="bg-green-100 dark:bg-green-800/30 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-sm">
+                        ✨ Unlimited Posts
+                      </span>
+                      <span className="bg-blue-100 dark:bg-blue-800/30 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm">
+                        📊 Advanced Analytics
+                      </span>
+                      <span className="bg-purple-100 dark:bg-purple-800/30 text-purple-800 dark:text-purple-200 px-3 py-1 rounded-full text-sm">
+                        🎯 Priority Support
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Link
+                      to="/plan-management"
+                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors text-center"
+                    >
+                      View Plans
+                    </Link>
+                    <Link
+                      to="/pricing"
+                      className="border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 px-6 py-3 rounded-lg font-medium transition-colors text-center"
+                    >
+                      Compare Features
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+
+
             {children || <Outlet />}
           </div>
         </main>
       </div>
+
+      {/* Small and Medium screen content area - Visible on sm, md, hidden on lg+ */}
+      <div className="block lg:hidden transition-all duration-300 ease-in-out" style={{ marginTop: '64px' }}>
+        <main className="pt-4 pb-8 w-full min-w-0 overflow-x-hidden">
+          <div className="px-4 sm:px-6 w-full">
+            {/* Upgrade Plan Banner - Show for free plan users */}
+            {userAuth && hasFreePlan && (
+              <div className="mb-6 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+                <div className="flex flex-col items-start">
+                  <div className="flex-1 mb-4">
+                    <h2 className="text-xl font-bold text-green-800 dark:text-green-200 mb-2">
+                      🚀 Upgrade Your Plan
+                    </h2>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                      Unlock unlimited posts, advanced analytics, and premium features.
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className="bg-green-100 dark:bg-green-800/30 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs">
+                        ✨ Unlimited Posts
+                      </span>
+                      <span className="bg-blue-100 dark:bg-blue-800/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
+                        📊 Analytics
+                      </span>
+                      <span className="bg-purple-100 dark:bg-purple-800/30 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full text-xs">
+                        🎯 Support
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 w-full">
+                    <Link
+                      to="/plan-management"
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center"
+                    >
+                      View Plans
+                    </Link>
+                    <Link
+                      to="/pricing"
+                      className="flex-1 border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center"
+                    >
+                      Compare
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+
+
+            {children || <Outlet />}
+          </div>
+        </main>
+      </div>
+
+      {/* Mobile Navbar - Only visible on small devices */}
+      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            {/* Left: Sidebar Toggle and Logo */}
+            <div className="flex items-center space-x-3">
+              {/* Navbar Sidebar Toggle Button for Mobile */}
+              {userAuth && (
+                <button
+                  onClick={() => setNavbarSidebarOpen(!navbarSidebarOpen)}
+                  className="navbar-sidebar p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  title="Open Navigation Menu"
+                >
+                  <FaBars className="h-5 w-5" />
+                </button>
+              )}
+              
+              <Link
+                to="/posts"
+                className="text-lg font-serif font-bold text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors"
+              >
+                WisdomShare
+              </Link>
+            </div>
+
+            {/* Center: Search Bar - Always visible */}
+            <div className="flex-1 max-w-xs mx-4">
+                  <SearchBar placeholder="Search posts, users..." />
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center space-x-2">
+              {userAuth ? (
+                <>
+                  {/* User Plan Status - Compact for mobile */}
+                  <div className="hidden sm:block">
+                    <UserPlanStatus />
+                  </div>
+
+                  {/* Write Button */}
+                  <Link
+                    to="/dashboard/create-post"
+                    className="p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    title="Write Post"
+                  >
+                    <FaPen className="w-4 h-4" />
+                  </Link>
+
+                  {/* Notifications */}
+                  <Link
+                    to="/dashboard/notifications"
+                    className="relative p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    title="Notifications"
+                  >
+                    <FaBell className="w-4 h-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 h-4 w-4 min-w-4 px-1 bg-red-600 text-white text-xs rounded-full flex items-center justify-center">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+
+                  {/* Dark mode toggle */}
+                  <button
+                    onClick={toggleDarkMode}
+                    className="p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    title={darkMode ? "Light Mode" : "Dark Mode"}
+                  >
+                    {darkMode ? <FaSun className="w-4 h-4" /> : <FaMoon className="w-4 h-4" />}
+                  </button>
+
+                  {/* User Profile - Compact */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className="flex items-center p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      title="Profile Menu"
+                    >
+                      {authUser?.profilePicture ? (
+                        <img
+                          className="h-7 w-7 rounded-full object-cover border-2 border-white dark:border-gray-700"
+                          src={authUser?.profilePicture?.url || authUser?.profilePicture?.path || authUser?.profilePicture || "https://via.placeholder.com/32"}
+                          alt="User profile"
+                        />
+                      ) : (
+                        <div className="h-7 w-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center border-2 border-white dark:border-gray-700">
+                          <span className="text-xs text-white font-medium">
+                            {getUserInitials(authUser)}
+                          </span>
+                        </div>
+                      )}
+                    </button>
+
+                    {dropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                        <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {authUser?.name || authUser?.username}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            @{authUser?.username}
+                          </p>
+                        </div>
+                        <Link
+                          to="/dashboard/profile"
+                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          Profile
+                        </Link>
+                        <Link
+                          to="/dashboard/settings"
+                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          Settings
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Link
+                    to="/login"
+                    className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 text-sm px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
     </div>
   );
 }

@@ -26,15 +26,15 @@ const AdminAuthRoute = ({ children }) => {
     if (adminData && adminData.success && adminData.admin) {
       // Ensure this is actually admin data
       if (adminData.admin.role && (adminData.admin.role === 'admin' || adminData.admin.role === 'super_admin')) {
-        console.log('Setting admin auth status for:', adminData.admin.username, 'Role:', adminData.admin.role);
+
         dispatch(adminAuthStatus(adminData.admin));
       } else {
-        console.log('Access denied - user does not have admin role:', adminData.admin.role);
+        
         dispatch(adminAuthStatus(null));
       }
     } else if (adminData && !adminData.success) {
       // Clear admin auth status if the API returned failure
-      console.log('Clearing admin auth status - API returned failure');
+      
       dispatch(adminAuthStatus(null));
     }
   }, [adminData, dispatch]);
@@ -63,7 +63,7 @@ const AdminAuthRoute = ({ children }) => {
 
   // If we have valid admin data but Redux state is not set, update it and continue
   if (adminData && adminData.success && adminData.admin && !isAdminAuthenticated) {
-    console.log('Updating Redux state from API data');
+    
     dispatch(adminAuthStatus(adminData.admin));
     return children;
   }

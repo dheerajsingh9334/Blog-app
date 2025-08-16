@@ -40,6 +40,17 @@ const adminAuthController = {
       // Find admin by credentials
       const admin = await Admin.findByCredentials(email, password);
       
+      // Send admin login notification
+      try {
+        const AdminNotificationService = require("../../utils/adminNotificationService");
+        await AdminNotificationService.notifyAdminLogin(admin, {
+          ip: req.ip,
+          userAgent: req.get('User-Agent')
+        });
+      } catch (notificationError) {
+        console.error("Failed to send admin login notification:", notificationError);
+      }
+      
       // Send token response
       sendAdminTokenResponse(admin, 200, res);
     } catch (error) {
@@ -66,6 +77,14 @@ const adminAuthController = {
     try {
       // Create admin without admin code validation
       const admin = await Admin.createAdminWithoutCode({ username, email, password });
+
+      // Send admin notification for new admin registration
+      try {
+        const AdminNotificationService = require("../../utils/adminNotificationService");
+        await AdminNotificationService.notifyNewAdminRegistration(admin);
+      } catch (notificationError) {
+        console.error("Failed to send admin registration notification:", notificationError);
+      }
 
       // Send token response
       sendAdminTokenResponse(admin, 201, res);

@@ -29,13 +29,13 @@ const AdminProfile = () => {
   const deleteAdminAccountMutation = useMutation({
     mutationFn: deleteAdminAccountAPI,
     onSuccess: (data) => {
-      console.log('Admin account deleted successfully:', data);
+      
       dispatch(adminLogout());
       navigate('/admin/login');
       alert('Your admin account has been permanently deleted. Your posts will remain on the platform.');
     },
     onError: (error) => {
-      console.error('Delete admin account error:', error);
+      
       setDeleteError(error.response?.data?.message || 'Failed to delete admin account');
     }
   });
@@ -114,7 +114,7 @@ const AdminProfile = () => {
       alert("Password updated successfully!");
     },
     onError: (error) => {
-      console.error('Password change error:', error);
+      
       if (error.response?.data?.message) {
         alert("Failed to update password: " + error.response.data.message);
       } else if (error.message) {

@@ -47,6 +47,24 @@ adminManagementRouter.put("/categories/:categoryId", adminController.updateCateg
 adminManagementRouter.delete("/categories/:categoryId", adminController.deleteCategory);
 
 // ===== NOTIFICATION MANAGEMENT =====
+// Test endpoint to verify admin notifications
+adminManagementRouter.get("/notifications/test", (req, res) => {
+  res.json({ 
+    message: 'Admin notification endpoint is working',
+    adminId: req.admin._id,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Create system notifications for admins
+adminManagementRouter.post("/notifications/system", adminController.createAdminSystemNotification);
+
+// Send custom admin notifications
+adminManagementRouter.post("/notifications/custom", adminController.notifyCustomAdminMessage);
+
+// Send direct message from admin to user
+adminManagementRouter.post("/notifications/direct-message", adminController.sendDirectMessage);
+
 adminManagementRouter.post("/notifications/broadcast", (req, res, next) => {
   console.log('Route hit: POST /notifications/broadcast');
   console.log('Request body:', req.body);
@@ -57,13 +75,15 @@ adminManagementRouter.post("/notifications/broadcast", (req, res, next) => {
 // Individual notification route - must come after broadcast to avoid conflicts
 adminManagementRouter.post("/notifications/user/:userId", adminController.sendNotification);
 
-// Admin notifications (admin inbox)
+// Admin notifications (admin inbox) - General routes first
 adminManagementRouter.get("/notifications", adminController.fetchAdminNotifications);
 adminManagementRouter.get("/notifications/unread-count", adminController.getAdminUnreadCount);
 adminManagementRouter.put("/notifications/mark-all-read", adminController.markAllAdminNotificationsRead);
+adminManagementRouter.delete("/notifications", adminController.deleteAllAdminNotifications);
+
+// Specific notification routes - must come after general routes to avoid conflicts
 adminManagementRouter.put("/notifications/:notificationId", adminController.readAdminNotification);
 adminManagementRouter.delete("/notifications/:notificationId", adminController.deleteAdminNotification);
-adminManagementRouter.delete("/notifications", adminController.deleteAllAdminNotifications);
 
 // ===== SYSTEM SETTINGS =====
 adminManagementRouter.get("/settings", adminController.getSystemSettings);

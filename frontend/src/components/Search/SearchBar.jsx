@@ -4,7 +4,7 @@ import { FaSearch, FaTimes } from "react-icons/fa";
 import { searchAllAPI } from "../../APIServices/posts/postsAPI";
 import { useQuery } from "@tanstack/react-query";
 
-const SearchBar = ({ className = "", placeholder = "Search posts, users, or content..." }) => {
+const SearchBar = ({ className = "", placeholder = "Search posts, users, or content...", onSearchComplete }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -37,6 +37,10 @@ const SearchBar = ({ className = "", placeholder = "Search posts, users, or cont
       navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
       setShowResults(false);
       setSearchTerm("");
+      // Call the callback if provided
+      if (onSearchComplete) {
+        onSearchComplete();
+      }
     }
   };
 
@@ -48,6 +52,10 @@ const SearchBar = ({ className = "", placeholder = "Search posts, users, or cont
     }
     setShowResults(false);
     setSearchTerm("");
+    // Call the callback if provided
+    if (onSearchComplete) {
+      onSearchComplete();
+    }
   };
 
   const handleInputChange = (e) => {
@@ -183,6 +191,10 @@ const SearchBar = ({ className = "", placeholder = "Search posts, users, or cont
                     navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
                     setShowResults(false);
                     setSearchTerm("");
+                    // Call the callback if provided
+                    if (onSearchComplete) {
+                      onSearchComplete();
+                    }
                   }}
                   className="w-full text-center text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium"
                 >

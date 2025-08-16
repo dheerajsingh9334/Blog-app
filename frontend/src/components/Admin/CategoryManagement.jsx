@@ -28,17 +28,7 @@ const CategoryManagement = () => {
     queryFn: getAllCategoriesAPI,
   });
 
-  // Debug: Log the structure of categories data
-  console.log('Categories data structure:', categoriesData);
-  if (categoriesData?.categories) {
-    console.log('Categories array:', categoriesData.categories);
-    categoriesData.categories.forEach((cat, index) => {
-      console.log(`Category ${index}:`, cat);
-      console.log(`Category ${index} type:`, typeof cat);
-      console.log(`Category ${index} name:`, cat?.name, 'type:', typeof cat?.name);
-      console.log(`Category ${index} posts:`, cat?.posts, 'type:', typeof cat?.posts);
-    });
-  }
+  
 
   const createCategoryMutation = useMutation({
     mutationFn: (categoryData) => createCategoryAPI(categoryData),
@@ -196,7 +186,7 @@ const CategoryManagement = () => {
               </div>
             );
           } catch (error) {
-            console.error('Error rendering category:', error, category);
+    
             return (
               <div key={Math.random()} className="bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-700 p-6">
                 <p className="text-red-600 dark:text-red-400">Error rendering category</p>

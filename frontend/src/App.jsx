@@ -36,6 +36,7 @@ import Login from "./components/User/Login";
 import Register from "./components/User/Register";
 import Profile from "./components/User/Profile";
 import { DarkModeProvider } from "./components/Navbar/DarkModeContext";
+import { NotificationProvider } from "./contexts/NotificationContext";
 import TrendingPosts from "./components/Posts/TrendingPosts";
 import SavedPosts from "./components/Posts/SavedPosts";
 import UserProfile from "./components/User/UserProfile";
@@ -117,8 +118,9 @@ function App() {
 
   return (
     <DarkModeProvider>
-      <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
-        <BrowserRouter>
+      <NotificationProvider>
+        <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+          <BrowserRouter>
           <Routes>
           {/* Admin Routes - MUST come first to avoid conflicts */}
           <Route path="/admin" element={<Navigate to="/admin/auth/login" replace />} />
@@ -461,6 +463,7 @@ function App() {
     </BrowserRouter>
     
     </div>
+    </NotificationProvider>
     </DarkModeProvider>
   );
 }
