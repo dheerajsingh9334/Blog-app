@@ -5,6 +5,7 @@ import { FaSearch, FaEye, FaHeart, FaComment, FaTimes, FaFilter, FaSort } from '
 import { fetchAllPosts, fetchTrendingPostsAPI, getPopularTagsAPI } from '../../APIServices/posts/postsAPI';
 import { fetchCategoriesAPI } from '../../APIServices/category/categoryAPI';
 import { r } from '../../utils/unifiedResponsive';
+import { stripHtmlTags, truncateText } from '../../utils/responsiveUtils';
 
 const PostsList = () => {
   const [searchTerm, setSearchTerm] = useState("");

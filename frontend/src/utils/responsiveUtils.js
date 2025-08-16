@@ -293,6 +293,20 @@ export const r = {
   }
 };
 
+// Utility function to strip HTML tags
+export const stripHtmlTags = (html) => {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+};
+
+// Utility function to truncate text
+export const truncateText = (text, maxLength = 150) => {
+  if (!text) return '';
+  const stripped = stripHtmlTags(text);
+  if (stripped.length <= maxLength) return stripped;
+  return stripped.substring(0, maxLength) + '...';
+};
+
 // Common responsive combinations
 export const responsiveCombos = {
   // Container with responsive padding
@@ -302,7 +316,13 @@ export const responsiveCombos = {
   section: responsiveSpacing.mb.xl,
   
   // Card with responsive padding
-  card: responsiveSpacing.p.sm,
+  card: responsiveCard.padding.sm,
+  
+  // Card with responsive spacing
+  cardSpacing: responsiveCard.spacing.md,
+  
+  // Card with responsive margin
+  cardMargin: responsiveCard.margin.md,
   
   // Button with responsive text and padding
   button: `${responsiveSpacing.p.md} ${responsiveText.sm}`,

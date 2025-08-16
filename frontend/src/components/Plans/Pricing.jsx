@@ -188,35 +188,35 @@ const Pricing = () => {
               </span>
             </div>
             <div className="text-center">
-              <h3 className="text-2xl font-bold text-white mb-2">
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
                 {premiumPlan?.planName || "Premium"}
               </h3>
               {premiumPlan?.description && (
-                <p className="text-green-100 mb-6">{premiumPlan.description}</p>
+                <p className="text-green-100 mb-4 sm:mb-6 text-sm sm:text-base">{premiumPlan.description}</p>
               )}
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">${premiumPlan?.price || "29"}</span>
-                <span className="text-green-100">/month</span>
+              <div className="mb-4 sm:mb-6">
+                <span className="text-3xl sm:text-4xl font-bold text-white">${premiumPlan?.price || "29"}</span>
+                <span className="text-green-100 text-sm sm:text-base">/month</span>
               </div>
-              <div className="mb-6">
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 text-sm text-white mr-2">
+              <div className="mb-4 sm:mb-6">
+                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-white/20 text-xs sm:text-sm text-white mr-2">
                   Unlimited posts
                 </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-white text-green-600 text-xs font-semibold">
+                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-white text-green-600 text-xs font-semibold">
                   PREMIUM
                 </span>
               </div>
               <button
                 onClick={() => handlePlanSelection(premiumPlan)}
                 disabled={!premiumPlan?._id}
-                className="w-full inline-flex items-center justify-center px-6 py-3 bg-white text-green-600 rounded-lg text-sm font-semibold hover:bg-gray-50 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-white text-green-600 rounded-lg text-xs sm:text-sm font-semibold hover:bg-gray-50 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {premiumPlan?._id ? "Start Premium" : "Loading..."}
               </button>
             </div>
-            <div className="mt-8">
-              <h4 className="font-semibold text-white mb-4">What's included:</h4>
-              <ul className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="mt-6 sm:mt-8">
+              <h4 className="font-semibold text-white mb-3 sm:mb-4 text-sm sm:text-base">What's included:</h4>
+              <ul className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
                 {(premiumPlan?.features || [
                   "Unlimited posts",
                   "Priority support",
@@ -282,10 +282,10 @@ const Pricing = () => {
                   "Multi-site management"
                 ]).map((feature, index) => (
                   <li key={index} className="flex items-center">
-                    <svg className="w-5 h-5 text-green-200 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-200 mr-2 sm:mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-green-100 text-sm">{feature}</span>
+                    <span className="text-green-100 text-xs sm:text-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -293,39 +293,39 @@ const Pricing = () => {
           </div>
 
           {/* Pro Plan */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 relative">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-              <span className="bg-indigo-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8 relative">
+            <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2">
+              <span className="bg-indigo-500 text-white px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold">
                 PRO
               </span>
             </div>
             <div className="text-center">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {proPlan?.planName || "Pro"}
               </h3>
               {proPlan?.description && (
-                <p className="text-gray-600 dark:text-gray-400 mb-6">{proPlan.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base">{proPlan.description}</p>
               )}
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900 dark:text-white">${proPlan?.price || "99"}</span>
-                <span className="text-gray-600 dark:text-gray-400">/month</span>
+              <div className="mb-4 sm:mb-6">
+                <span className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">${proPlan?.price || "99"}</span>
+                <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">/month</span>
               </div>
-              <div className="mb-6">
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:indigo-300 text-sm">
+              <div className="mb-4 sm:mb-6">
+                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:indigo-300 text-xs sm:text-sm">
                   Unlimited everything
                 </span>
               </div>
               <button
                 onClick={() => handlePlanSelection(proPlan)}
                 disabled={!proPlan?._id}
-                className="w-full inline-flex items-center justify-center px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-indigo-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {proPlan?._id ? "Start Pro" : "Loading..."}
               </button>
             </div>
-            <div className="mt-8">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-4">What's included:</h4>
-              <ul className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="mt-6 sm:mt-8">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 text-sm sm:text-base">What's included:</h4>
+              <ul className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
                 {(proPlan?.features || [
                   "Everything in Premium",
                   "API access",
@@ -381,10 +381,10 @@ const Pricing = () => {
                   "Multi-site management"
                 ]).map((feature, index) => (
                   <li key={index} className="flex items-center">
-                    <svg className="w-5 h-5 text-indigo-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500 mr-2 sm:mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-gray-600 dark:text-gray-400 text-sm">{feature}</span>
+                    <span className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
