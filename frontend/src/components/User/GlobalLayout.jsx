@@ -112,9 +112,6 @@ export default function GlobalLayout({ userAuth, children }) {
     };
   }, [navbarSidebarOpen]);
 
-
-
-
   const handleLogout = async () => {
     try {
       await logoutAPI();
@@ -132,205 +129,28 @@ export default function GlobalLayout({ userAuth, children }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 overflow-x-hidden">
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-gray-900/50 backdrop-blur supports-[backdrop-filter]:backdrop-blur border-b border-gray-200 dark:border-gray-800">
-        <div className="w-full px-8 sm:px-10 lg:px-16">
-          <div className="flex items-center justify-between h-20">
-            {/* Left: Logo and Navbar Sidebar Toggle */}
-            <div className="flex items-center space-x-8">
-              {/* Navbar Sidebar Toggle Button */}
-              {userAuth && (
-                <button
-                  onClick={() => setNavbarSidebarOpen(!navbarSidebarOpen)}
-                  className="p-2 rounded-md text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-                  title="Open Navigation Menu"
-                  data-sidebar-toggle
-                >
-                  <FaBars className="h-5 w-5" />
-                </button>
-              )}
-              
-              {/* Logo */}
-              <Link
-                to="/posts"
-                className="text-2xl font-serif font-bold text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors"
-              >
-                WisdomShare
-              </Link>
-            </div>
-
-            {/* Center: Search Bar */}
-            <div className="hidden md:flex flex-1 max-w-md mx-4">
-              <SearchBar placeholder="Search posts, users, or content..." />
-            </div>
-
-
-
-            {/* Mobile menu button - Only show on small screens when sidebar is closed */}
-            {/* Removed mobile menu button */}
-
-            {/* Center: Main Navigation (visible on lg and up) */}
-            <div className="hidden lg:flex items-center space-x-6">
-              <Link
-                to="/posts"
-                className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
-              >
-                Posts
-              </Link>
-              <Link
-                to="/plan-management"
-                className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
-              >
-                Plan Management
-              </Link>
-              <Link
-                to="/ranking"
-                className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
-              >
-                Ranking
-              </Link>
-              {!hasFreePlan && (
-                <Link
-                  to="/free-subscription"
-                  className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
-                >
-                  Free Plan
-                </Link>
-              )}
-            </div>
-
-            {/* Right: Actions */}
-            <div className="flex items-center space-x-6">
-              {userAuth ? (
-                <>
-                  {/* User Plan Status */}
-                  <UserPlanStatus />
-
-                  <Link
-                    to="/dashboard/create-post"
-                    className="hidden md:flex items-center text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    title="Write Post"
-                  >
-                    <FaPen className="w-4 h-4" />
-                  </Link>
-
-                  <Link
-                    to="/dashboard/notifications"
-                    className="relative text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
-                  >
-                    <FaBell />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-2 -right-2 h-5 min-w-5 px-1 bg-red-600 text-white text-xs rounded-full flex items-center justify-center">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </Link>
-
-                  {/* Dark mode toggle */}
-                  <button
-                    onClick={toggleDarkMode}
-                    className="p-2 rounded-full text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
-                  >
-                    {darkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
-                  </button>
-
-                  {/* User dropdown */}
-                  <div className="relative">
-                    <button
-                      onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="flex items-center space-x-2 text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
-                    >
-                      {authUser?.profilePicture ? (
-                        <img
-                          className="h-8 w-8 rounded-full object-cover border-2 border-white dark:border-gray-700"
-                          src={authUser?.profilePicture?.url || authUser?.profilePicture?.path || authUser?.profilePicture || "https://via.placeholder.com/32"}
-                          alt="User profile"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextElementSibling.style.display = 'flex';
-                          }}
-                        />
-                      ) : null}
-                      <div 
-                        className={`h-8 w-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center border-2 border-white dark:border-gray-700 ${authUser?.profilePicture ? 'hidden' : 'flex'}`}
-                        style={{ display: authUser?.profilePicture ? 'none' : 'flex' }}
-                      >
-                        <span className="text-xs text-white font-medium">
-                          {getUserInitials(authUser)}
-                        </span>
-                      </div>
-                      <span className="hidden md:block">{authUser?.name || authUser?.username}</span>
-                    </button>
-
-                    {dropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50">
-                        <Link
-                          to="/profile"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => setDropdownOpen(false)}
-                        >
-                          Profile
-                        </Link>
-                        <Link
-                          to="/dashboard/settings"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => setDropdownOpen(false)}
-                        >
-                          Settings
-                        </Link>
-                        <button
-                          onClick={handleLogout}
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center space-x-4">
-                  <Link
-                    to="/login"
-                    className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Left Sliding Sidebar */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+      {/* Sidebar Overlay - Only on mobile */}
       {navbarSidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black bg-opacity-50 transition-opacity duration-300"
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={() => setNavbarSidebarOpen(false)}
         />
       )}
 
-      {/* Left Sidebar with Slide Animation */}
+      {/* Left Sidebar */}
       <div 
         data-sidebar
-        className={`fixed inset-y-0 left-0 z-40 w-80 bg-white dark:bg-gray-800 transform transition-transform duration-300 ease-in-out ${
-          navbarSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-40 w-80 bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out ${
+          navbarSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:-translate-x-full'
         }`}
       >
         {/* Sidebar Header */}
-        <div className="flex h-20 items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Navigation</h3>
           <button
             onClick={() => setNavbarSidebarOpen(false)}
-            className="p-2 rounded-md text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
+            className="p-2 rounded-md text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors lg:hidden"
             title="Close Sidebar"
           >
             <FaTimes className="h-5 w-5" />
@@ -338,25 +158,25 @@ export default function GlobalLayout({ userAuth, children }) {
         </div>
         
         {/* Sidebar Content */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="px-6 py-6">
+        <div className="flex-1 overflow-y-auto h-full" style={{ scrollbarWidth: 'thin', scrollbarColor: '#10b981 #374151' }}>
+          <div className="px-6 py-4">
             {/* Main Navigation */}
-            <div className="mb-8">
-              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                 Main Navigation
               </h3>
-              <div className="space-y-2">
-                                   {navigation.map((item) => (
-                     <Link
-                       key={item.name}
-                       to={item.href}
-                       className={classNames(
-                         item.current
-                           ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                           : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600",
-                         "group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-all duration-200"
-                       )}
-                     >
+              <div className="space-y-1">
+                {navigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={classNames(
+                      item.current
+                        ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600",
+                      "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200"
+                    )}
+                  >
                     <item.icon
                       className={classNames(
                         item.current ? "text-green-600" : "text-gray-400 group-hover:text-green-600",
@@ -374,30 +194,30 @@ export default function GlobalLayout({ userAuth, children }) {
             </div>
 
             {/* Plan Management */}
-            <div className="mb-8">
-              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                 Plan Management
               </h3>
-              <div className="space-y-2">
-                                 <Link
-                   to="/plan-management"
-                   className="group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
-                 >
+              <div className="space-y-1">
+                <Link
+                  to="/plan-management"
+                  className="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                >
                   <CreditCardIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
                   Manage Plans
                 </Link>
-                                 <Link
-                   to="/pricing"
-                   className="group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
-                 >
+                <Link
+                  to="/pricing"
+                  className="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                >
                   <CurrencyDollarIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
                   View Pricing
                 </Link>
-                                   {hasFreePlan && (
-                     <Link
-                       to="/upgrade"
-                       className="group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
-                     >
+                {hasFreePlan && (
+                  <Link
+                    to="/upgrade"
+                    className="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                  >
                     <SparklesIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
                     Upgrade to Pro
                   </Link>
@@ -406,14 +226,14 @@ export default function GlobalLayout({ userAuth, children }) {
             </div>
 
             {/* Quick Actions */}
-            <div className="mb-8">
-              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                 Quick Actions
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Link
                   to="/dashboard/notifications"
-                  className="group flex items-center justify-between px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                  className="group flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
                 >
                   <span className="flex items-center">
                     <BellIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
@@ -427,7 +247,7 @@ export default function GlobalLayout({ userAuth, children }) {
                 </Link>
                 <Link
                   to="/dashboard/settings"
-                  className="group flex items-center px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
+                  className="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
                 >
                   <Cog6ToothIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
                   Settings
@@ -437,10 +257,10 @@ export default function GlobalLayout({ userAuth, children }) {
 
             {/* User Profile Section */}
             {authUser && (
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div className="flex items-center">
                   <img
-                    className="h-12 w-12 rounded-full object-cover"
+                    className="h-10 w-10 rounded-full object-cover"
                     src={authUser.profilePicture?.url || authUser.profilePicture?.path || authUser.profilePicture || "https://via.placeholder.com/150"}
                     alt="User profile"
                   />
@@ -455,108 +275,236 @@ export default function GlobalLayout({ userAuth, children }) {
         </div>
       </div>
 
-      {/* Desktop content area - Hidden on small and medium screens */}
-      <div className="hidden lg:block transition-all duration-500 ease-in-out" style={{ marginTop: '80px' }}>
-        <main className="pt-12 pb-8 w-full min-w-0 overflow-x-hidden">
-          <div className="px-8 sm:px-10 lg:px-16 w-full">
+      {/* Main Content Area */}
+      <div className={`transition-all duration-300 ease-in-out ${navbarSidebarOpen ? 'lg:ml-80' : 'lg:ml-0'} flex-1 min-h-screen`}>
+        {/* Navbar - Fixed Header */}
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-800">
+          <div className="w-full px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Left: Logo and Navbar Sidebar Toggle */}
+              <div className="flex items-center space-x-4">
+                {/* Navbar Sidebar Toggle Button */}
+                {userAuth && (
+                  <button
+                    onClick={() => setNavbarSidebarOpen(!navbarSidebarOpen)}
+                    className="p-2 rounded-md text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                    title={navbarSidebarOpen ? "Hide Sidebar" : "Show Sidebar"}
+                    data-sidebar-toggle
+                  >
+                    {navbarSidebarOpen ? (
+                      <FaTimes className="h-5 w-5" />
+                    ) : (
+                      <FaBars className="h-5 w-5" />
+                    )}
+                  </button>
+                )}
+                
+                {/* Logo */}
+                <Link
+                  to="/posts"
+                  className="text-xl font-serif font-bold text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                >
+                  WisdomShare
+                </Link>
+              </div>
+
+              {/* Center: Search Bar */}
+              <div className="hidden md:flex flex-1 max-w-md mx-4">
+                <SearchBar placeholder="Search posts, users, or content..." />
+              </div>
+
+              {/* Center: Main Navigation (visible on lg and up) */}
+              <div className="hidden lg:flex items-center space-x-6">
+                <Link
+                  to="/posts"
+                  className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
+                >
+                  Posts
+                </Link>
+                <Link
+                  to="/plan-management"
+                  className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
+                >
+                  Plan Management
+                </Link>
+                <Link
+                  to="/ranking"
+                  className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
+                >
+                  Ranking
+                </Link>
+                {!hasFreePlan && (
+                  <Link
+                    to="/free-subscription"
+                    className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors"
+                  >
+                    Free Plan
+                  </Link>
+                )}
+              </div>
+
+              {/* Right: Actions */}
+              <div className="flex items-center space-x-4">
+                {userAuth ? (
+                  <>
+                    {/* User Plan Status */}
+                    <UserPlanStatus />
+
+                    <Link
+                      to="/dashboard/create-post"
+                      className="hidden md:flex items-center text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      title="Write Post"
+                    >
+                      <FaPen className="w-4 h-4" />
+                    </Link>
+
+                    <Link
+                      to="/dashboard/notifications"
+                      className="relative text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
+                    >
+                      <FaBell />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-2 -right-2 h-5 min-w-5 px-1 bg-red-600 text-white text-xs rounded-full flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </Link>
+
+                    {/* Dark mode toggle */}
+                    <button
+                      onClick={toggleDarkMode}
+                      className="p-2 rounded-full text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
+                    >
+                      {darkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
+                    </button>
+
+                    {/* User dropdown */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                        className="flex items-center space-x-2 text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
+                      >
+                        {authUser?.profilePicture ? (
+                          <img
+                            className="h-8 w-8 rounded-full object-cover border-2 border-white dark:border-gray-700"
+                            src={authUser?.profilePicture?.url || authUser?.profilePicture?.path || authUser?.profilePicture || "https://via.placeholder.com/32"}
+                            alt="User profile"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextElementSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className={`h-8 w-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center border-2 border-white dark:border-gray-700 ${authUser?.profilePicture ? 'hidden' : 'flex'}`}
+                          style={{ display: authUser?.profilePicture ? 'none' : 'flex' }}
+                        >
+                          <span className="text-xs text-white font-medium">
+                            {getUserInitials(authUser)}
+                          </span>
+                        </div>
+                        <span className="hidden md:block">{authUser?.name || authUser?.username}</span>
+                      </button>
+
+                      {dropdownOpen && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50">
+                          <Link
+                            to="/profile"
+                            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            onClick={() => setDropdownOpen(false)}
+                          >
+                            Profile
+                          </Link>
+                          <Link
+                            to="/dashboard/settings"
+                            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            onClick={() => setDropdownOpen(false)}
+                          >
+                            Settings
+                          </Link>
+                          <button
+                            onClick={handleLogout}
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          >
+                            Logout
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center space-x-4">
+                    <Link
+                      to="/login"
+                      className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        {/* Page Content */}
+        <div style={{ marginTop: '64px' }}>
+          <main className="min-h-screen">
             {/* Upgrade Plan Banner - Show for free plan users */}
             {userAuth && hasFreePlan && (
-              <div className="mb-8 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-700 rounded-lg p-6">
-                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
-                  <div className="flex-1 mb-4 lg:mb-0">
-                    <h2 className="text-2xl font-bold text-green-800 dark:text-green-200 mb-2">
-                      🚀 Upgrade Your Plan
-                    </h2>
-                    <p className="text-gray-700 dark:text-gray-300 mb-4">
-                      Unlock unlimited posts, advanced analytics, and premium features with our premium plans.
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      <span className="bg-green-100 dark:bg-green-800/30 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-sm">
-                        ✨ Unlimited Posts
-                      </span>
-                      <span className="bg-blue-100 dark:bg-blue-800/30 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm">
-                        📊 Advanced Analytics
-                      </span>
-                      <span className="bg-purple-100 dark:bg-purple-800/30 text-purple-800 dark:text-purple-200 px-3 py-1 rounded-full text-sm">
-                        🎯 Priority Support
-                      </span>
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-b border-green-200 dark:border-green-700 p-4">
+                <div className="max-w-7xl mx-auto">
+                  <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
+                    <div className="flex-1 mb-4 lg:mb-0">
+                      <h2 className="text-xl font-bold text-green-800 dark:text-green-200 mb-2">
+                        🚀 Upgrade Your Plan
+                      </h2>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                        Unlock unlimited posts, advanced analytics, and premium features.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="bg-green-100 dark:bg-green-800/30 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs">
+                          ✨ Unlimited Posts
+                        </span>
+                        <span className="bg-blue-100 dark:bg-blue-800/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
+                          📊 Analytics
+                        </span>
+                        <span className="bg-purple-100 dark:bg-purple-800/30 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full text-xs">
+                          🎯 Support
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Link
-                      to="/plan-management"
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors text-center"
-                    >
-                      View Plans
-                    </Link>
-                    <Link
-                      to="/pricing"
-                      className="border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 px-6 py-3 rounded-lg font-medium transition-colors text-center"
-                    >
-                      Compare Features
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link
+                        to="/plan-management"
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        View Plans
+                      </Link>
+                      <Link
+                        to="/pricing"
+                        className="border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Compare
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-
-
-            {children || <Outlet />}
-          </div>
-        </main>
-      </div>
-
-      {/* Small and Medium screen content area - Visible on sm, md, hidden on lg+ */}
-      <div className="block lg:hidden transition-all duration-300 ease-in-out" style={{ marginTop: '64px' }}>
-        <main className="pt-4 pb-8 w-full min-w-0 overflow-x-hidden">
-          <div className="px-4 sm:px-6 w-full">
-            {/* Upgrade Plan Banner - Show for free plan users */}
-            {userAuth && hasFreePlan && (
-              <div className="mb-6 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
-                <div className="flex flex-col items-start">
-                  <div className="flex-1 mb-4">
-                    <h2 className="text-xl font-bold text-green-800 dark:text-green-200 mb-2">
-                      🚀 Upgrade Your Plan
-                    </h2>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                      Unlock unlimited posts, advanced analytics, and premium features.
-                    </p>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <span className="bg-green-100 dark:bg-green-800/30 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs">
-                        ✨ Unlimited Posts
-                      </span>
-                      <span className="bg-blue-100 dark:bg-blue-800/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
-                        📊 Analytics
-                      </span>
-                      <span className="bg-purple-100 dark:bg-purple-800/30 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full text-xs">
-                        🎯 Support
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 w-full">
-                    <Link
-                      to="/plan-management"
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center"
-                    >
-                      View Plans
-                    </Link>
-                    <Link
-                      to="/pricing"
-                      className="flex-1 border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center"
-                    >
-                      Compare
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-
-
-
-            {children || <Outlet />}
-          </div>
-        </main>
+            {/* Page Content */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              {children || <Outlet />}
+            </div>
+          </main>
+        </div>
       </div>
 
       {/* Mobile Navbar - Only visible on small devices */}
@@ -586,7 +534,7 @@ export default function GlobalLayout({ userAuth, children }) {
 
             {/* Center: Search Bar - Always visible */}
             <div className="flex-1 max-w-xs mx-4">
-                  <SearchBar placeholder="Search posts, users..." />
+              <SearchBar placeholder="Search posts, users..." />
             </div>
 
             {/* Right: Actions */}
