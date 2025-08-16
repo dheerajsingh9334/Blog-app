@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { fetchPlansAPI } from "../../APIServices/plans/plans";
 import { getUserPlanAndUsageAPI } from "../../APIServices/users/usersAPI";
 import { getPlanBadge } from "../../utils/planUtils";
+import { r } from "../../utils/unifiedResponsive";
 import { 
   FaCrown, 
   FaChartLine, 
@@ -43,7 +44,7 @@ const PlanManagement = () => {
 
   if (plansLoading || usageLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 sm:py-12">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
@@ -140,25 +141,25 @@ const PlanManagement = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 sm:py-12">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl lg:text-6xl font-bold font-serif text-gray-900 dark:text-white mb-6">
+        <div className="text-center mb-12 sm:mb-16">
+          <h1 className={`${r.text.h1} font-serif text-gray-900 dark:text-white mb-4 sm:mb-6`}>
             Plan Management
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className={`${r.text.bodyLarge} text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-2`}>
             Manage your subscription and explore upgrade options to unlock more features.
           </p>
           
           {/* Refresh Button */}
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <button
               onClick={() => {
                 refetchPlans();
                 refetchUsage();
               }}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className={`${r.components.button.primary} inline-flex items-center`}
             >
               <FaSync className="mr-2" />
               Refresh Data
@@ -168,15 +169,15 @@ const PlanManagement = () => {
 
         {/* Current Plan Status */}
         {usage && (
-          <div className="max-w-4xl mx-auto mb-16">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <div className="max-w-4xl mx-auto mb-12 sm:mb-16">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8">
+              <div className="text-center mb-4 sm:mb-6">
+                <h2 className={`${r.text.h2} text-gray-900 dark:text-white mb-2`}>
                   Current Plan Status
                 </h2>
-                <div className="flex items-center justify-center space-x-3">
+                <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-3">
                   {getPlanIcon(currentPlan?.tier)}
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${currentPlanBadge?.className}`}>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full ${r.text.bodySmall} font-medium ${currentPlanBadge?.className}`}>
                     {currentPlanBadge?.text}
                   </span>
                   <span className="text-gray-600 dark:text-gray-400">
@@ -187,7 +188,7 @@ const PlanManagement = () => {
 
               {/* Usage Progress */}
               {!usage.posts.unlimited && (
-                <div className="mb-6">
+                <div className="mb-4 sm:mb-6">
                   <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
                     <span>Post Usage</span>
                     <span>{usage.posts.current}/{usage.posts.limit}</span>
@@ -214,10 +215,10 @@ const PlanManagement = () => {
               )}
 
               {/* Posts */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Posts</h3>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                    <h3 className={`${r.text.h4} text-gray-900 dark:text-white`}>Posts</h3>
+                    <span className={`${r.text.bodySmall} text-gray-500 dark:text-gray-400`}>
                       {usage.posts.current} / {usage.posts.unlimited ? '∞' : usage.posts.limit}
                     </span>
                   </div>
@@ -239,7 +240,7 @@ const PlanManagement = () => {
                       }}
                     ></div>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                  <p className={`${r.text.bodySmall} text-gray-600 dark:text-gray-400 mt-2`}>
                     {usage.posts.unlimited
                       ? 'Unlimited posts available'
                       : `${usage.posts.limit - usage.posts.current} posts remaining`
@@ -248,11 +249,11 @@ const PlanManagement = () => {
                 </div>
 
               {/* Plan Actions */}
-              <div className="flex flex-wrap justify-center gap-4">
+              <div className="flex flex-col sm:flex-wrap justify-center gap-3 sm:gap-4 mt-6">
                 {canUpgrade(currentPlan?.tier) && upgradePlan && (
                   <Link
                     to={`/checkout/${upgradePlan._id}`}
-                    className="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    className={`${r.components.button.success} inline-flex items-center justify-center`}
                   >
                     <FaArrowUp className="mr-2" />
                     Upgrade to {upgradePlan.planName}
@@ -262,7 +263,7 @@ const PlanManagement = () => {
                 {canDowngrade(currentPlan?.tier) && downgradePlan && (
                   <Link
                     to={`/checkout/${downgradePlan._id}`}
-                    className="inline-flex items-center px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+                    className={`${r.components.button.secondary} inline-flex items-center justify-center`}
                   >
                     <FaArrowDown className="mr-2" />
                     Downgrade to {downgradePlan.planName}
@@ -270,7 +271,7 @@ const PlanManagement = () => {
                 )}
                 <Link
                   to="/dashboard/content-calendar"
-                  className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                  className={`${r.components.button.outline} inline-flex items-center justify-center`}
                 >
                   <FaCalendar className="mr-2" />
                   Content Calendar
@@ -281,9 +282,9 @@ const PlanManagement = () => {
         )}
 
         {/* Billing History */}
-        <div className="max-w-4xl mx-auto mb-16">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">
+        <div className="max-w-4xl mx-auto mb-12 sm:mb-16">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8">
+            <h2 className={`${r.text.h2} text-gray-900 dark:text-white text-center mb-6 sm:mb-8`}>
               Billing History
             </h2>
             {billingHistory.length > 0 ? (
@@ -291,30 +292,30 @@ const PlanManagement = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-4 px-6 text-gray-900 dark:text-white font-semibold">Date</th>
-                      <th className="text-left py-4 px-6 text-gray-900 dark:text-white font-semibold">Amount</th>
-                      <th className="text-left py-4 px-6 text-gray-900 dark:text-white font-semibold">Plan</th>
-                      <th className="text-left py-4 px-6 text-gray-900 dark:text-white font-semibold">Status</th>
-                      <th className="text-left py-4 px-6 text-gray-900 dark:text-white font-semibold">Invoice</th>
+                      <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Date</th>
+                      <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Amount</th>
+                      <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Plan</th>
+                      <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Status</th>
+                      <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Invoice</th>
                     </tr>
                   </thead>
                   <tbody>
                     {billingHistory.map((item) => (
                       <tr key={item.id} className="border-b border-gray-200 dark:border-gray-700">
-                        <td className="py-4 px-6 text-gray-600 dark:text-gray-400">
+                        <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">
                           <div className="flex items-center">
                             <FaCalendarAlt className="mr-2 text-blue-500" />
                             {item.date}
                           </div>
                         </td>
-                        <td className="py-4 px-6 text-gray-900 dark:text-white font-semibold">{item.amount}</td>
-                        <td className="py-4 px-6 text-gray-600 dark:text-gray-400">{item.plan}</td>
-                        <td className="py-4 px-6">
+                        <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">{item.amount}</td>
+                        <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">{item.plan}</td>
+                        <td className="py-3 sm:py-4 px-3 sm:px-6">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             {item.status}
                           </span>
                         </td>
-                        <td className="py-4 px-6 text-gray-600 dark:text-gray-400">{item.invoice}</td>
+                        <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">{item.invoice}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -330,51 +331,51 @@ const PlanManagement = () => {
         </div>
 
         {/* Plan Comparison Table */}
-        <div className="max-w-7xl mx-auto mb-16">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">
+        <div className="max-w-7xl mx-auto mb-12 sm:mb-16">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8">
+            <h2 className={`${r.text.h2} text-gray-900 dark:text-white text-center mb-6 sm:mb-8`}>
               Plan Comparison
             </h2>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-4 px-6 text-gray-900 dark:text-white font-semibold">Features</th>
-                    <th className="text-center py-4 px-6 text-gray-900 dark:text-white font-semibold">Free</th>
-                    <th className="text-center py-4 px-6 text-gray-900 dark:text-white font-semibold">Premium</th>
-                    <th className="text-center py-4 px-6 text-gray-900 dark:text-white font-semibold">Pro</th>
+                    <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Features</th>
+                    <th className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Free</th>
+                    <th className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Premium</th>
+                    <th className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Pro</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="py-4 px-6 text-gray-600 dark:text-gray-400">Monthly Price</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white font-semibold">$0</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white font-semibold">${premiumPlan?.price || '29'}</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white font-semibold">${proPlan?.price || '99'}</td>
+                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">Monthly Price</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">$0</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">${premiumPlan?.price || '29'}</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">${proPlan?.price || '99'}</td>
                   </tr>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="py-4 px-6 text-gray-600 dark:text-gray-400">Post Limit</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">{freePlan?.postLimit || '10'}</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">Unlimited</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">Unlimited</td>
+                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">Post Limit</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">{freePlan?.postLimit || '10'}</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Unlimited</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Unlimited</td>
                   </tr>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="py-4 px-6 text-gray-600 dark:text-gray-400">Analytics</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">Basic</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">Advanced</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">Enterprise</td>
+                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">Analytics</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Basic</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Advanced</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Enterprise</td>
                   </tr>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="py-4 px-6 text-gray-600 dark:text-gray-400">Support</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">Email</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">Priority</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">Dedicated</td>
+                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">Support</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Email</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Priority</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Dedicated</td>
                   </tr>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="py-4 px-6 text-gray-600 dark:text-gray-400">API Access</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">❌</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">❌</td>
-                    <td className="text-center py-4 px-6 text-gray-900 dark:text-white">✅</td>
+                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">API Access</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">✅</td>
                   </tr>
                 </tbody>
               </table>
@@ -383,37 +384,37 @@ const PlanManagement = () => {
         </div>
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mb-16">
+        <div className={`${r.layout.grid3} gap-6 sm:gap-8 max-w-7xl mx-auto mb-12 sm:mb-16`}>
           {/* Free Plan */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 relative">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8 relative">
             <div className="text-center">
               <div className="flex items-center justify-center mb-4">
-                <FaGift className="text-3xl text-blue-500 mr-3" />
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <FaGift className="text-2xl sm:text-3xl text-blue-500 mr-3" />
+                <h3 className={`${r.text.h3} text-gray-900 dark:text-white`}>
                   {freePlan?.planName || "Free"}
                 </h3>
               </div>
               {freePlan?.description && (
-                <p className="text-gray-600 dark:text-gray-400 mb-6">{freePlan.description}</p>
+                <p className={`${r.text.body} text-gray-600 dark:text-gray-400 mb-4 sm:mb-6`}>{freePlan.description}</p>
               )}
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900 dark:text-white">$0</span>
-                <span className="text-gray-600 dark:text-gray-400">/month</span>
+              <div className="mb-4 sm:mb-6">
+                <span className={`${r.text.h1} font-bold text-gray-900 dark:text-white`}>$0</span>
+                <span className={`${r.text.body} text-gray-600 dark:text-gray-400`}>/month</span>
               </div>
-              <div className="mb-6">
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-300">
+              <div className="mb-4 sm:mb-6">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 ${r.text.bodySmall} text-gray-700 dark:text-gray-300`}>
                   {freePlan?.postLimit ? `Limit: ${freePlan.postLimit} posts` : "Limited posts"}
                 </span>
               </div>
               <Link
                 to="/free-subscription"
-                className="w-full inline-flex items-center justify-center px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200"
+                className={`w-full inline-flex items-center justify-center ${r.components.button.outline}`}
               >
                 Get Started Free
               </Link>
             </div>
-            <div className="mt-8">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="mt-6 sm:mt-8">
+              <h4 className={`font-semibold text-gray-900 dark:text-white mb-4 flex items-center ${r.text.h4}`}>
                 <FaCheck className="text-green-500 mr-2" />
                 What's included:
               </h4>
@@ -421,7 +422,7 @@ const PlanManagement = () => {
                 {getPlanFeatures(freePlan).slice(0, 10).map((feature, index) => (
                   <li key={index} className="flex items-center">
                     <FaCheck className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-600 dark:text-gray-400 text-sm">{feature}</span>
+                    <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>{feature}</span>
                   </li>
                 ))}
                 {getPlanFeatures(freePlan).length > 10 && (
@@ -434,7 +435,7 @@ const PlanManagement = () => {
           </div>
 
           {/* Premium Plan */}
-          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-xl p-8 relative transform scale-105">
+          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 relative transform scale-105">
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
               <span className="bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-semibold">
                 MOST POPULAR
@@ -442,19 +443,19 @@ const PlanManagement = () => {
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center mb-4">
-                <FaChartLine className="text-3xl text-white mr-3" />
-                <h3 className="text-2xl font-bold text-white">
+                <FaChartLine className="text-2xl sm:text-3xl text-white mr-3" />
+                <h3 className={`${r.text.h3} text-white`}>
                   {premiumPlan?.planName || "Premium"}
                 </h3>
               </div>
               {premiumPlan?.description && (
-                <p className="text-green-100 mb-6">{premiumPlan.description}</p>
+                <p className={`${r.text.body} text-green-100 mb-4 sm:mb-6`}>{premiumPlan.description}</p>
               )}
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">${premiumPlan?.price || "29"}</span>
-                <span className="text-green-100">/month</span>
+              <div className="mb-4 sm:mb-6">
+                <span className={`${r.text.h1} font-bold text-white`}>${premiumPlan?.price || "29"}</span>
+                <span className={`${r.text.body} text-green-100`}>/month</span>
               </div>
-              <div className="mb-6">
+              <div className="mb-4 sm:mb-6">
                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 text-sm text-white mr-2">
                   <FaInfinity className="mr-1" />
                   Unlimited posts
@@ -465,13 +466,13 @@ const PlanManagement = () => {
               </div>
               <Link
                 to={`/checkout/${premiumPlan?._id}`}
-                className="w-full inline-flex items-center justify-center px-6 py-3 bg-white text-green-600 rounded-lg text-sm font-semibold hover:bg-gray-50 transition duration-200"
+                className={`w-full inline-flex items-center justify-center px-6 py-3 bg-white text-green-600 rounded-lg text-sm font-semibold hover:bg-gray-50 transition duration-200`}
               >
                 Start Premium
               </Link>
             </div>
-            <div className="mt-8">
-              <h4 className="font-semibold text-white mb-4 flex items-center">
+            <div className="mt-6 sm:mt-8">
+              <h4 className={`font-semibold text-white mb-4 flex items-center ${r.text.h4}`}>
                 <FaCheck className="text-green-200 mr-2" />
                 What's included:
               </h4>
@@ -479,7 +480,7 @@ const PlanManagement = () => {
                 {getPlanFeatures(premiumPlan).slice(0, 10).map((feature, index) => (
                   <li key={index} className="flex items-center">
                     <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
-                    <span className="text-green-100 text-sm">{feature}</span>
+                    <span className={`text-green-100 ${r.text.bodySmall}`}>{feature}</span>
                   </li>
                 ))}
                 {getPlanFeatures(premiumPlan).length > 10 && (
@@ -492,7 +493,7 @@ const PlanManagement = () => {
           </div>
 
           {/* Pro Plan */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 relative">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8 relative">
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
               <span className="bg-indigo-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
                 PRO
@@ -500,33 +501,33 @@ const PlanManagement = () => {
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center mb-4">
-                <FaCrown className="text-3xl text-yellow-500 mr-3" />
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <FaCrown className="text-2xl sm:text-3xl text-yellow-500 mr-3" />
+                <h3 className={`${r.text.h3} text-gray-900 dark:text-white`}>
                   {proPlan?.planName || "Pro"}
                 </h3>
               </div>
               {proPlan?.description && (
-                <p className="text-gray-600 dark:text-gray-400 mb-6">{proPlan.description}</p>
+                <p className={`${r.text.body} text-gray-600 dark:text-gray-400 mb-4 sm:mb-6`}>{proPlan.description}</p>
               )}
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900 dark:text-white">${proPlan?.price || "99"}</span>
-                <span className="text-gray-600 dark:text-gray-400">/month</span>
+              <div className="mb-4 sm:mb-6">
+                <span className={`${r.text.h1} font-bold text-gray-900 dark:text-white`}>${proPlan?.price || "99"}</span>
+                <span className={`${r.text.body} text-gray-600 dark:text-gray-400`}>/month</span>
               </div>
-              <div className="mb-6">
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:indigo-300 text-sm">
+              <div className="mb-4 sm:mb-6">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 ${r.text.bodySmall}`}>
                   <FaRocket className="mr-1" />
                   Unlimited everything
                 </span>
               </div>
               <Link
                 to={`/checkout/${proPlan?._id}`}
-                className="w-full inline-flex items-center justify-center px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition duration-200"
+                className={`w-full inline-flex items-center justify-center ${r.components.button.primary}`}
               >
                 Start Pro
               </Link>
             </div>
-            <div className="mt-8">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="mt-6 sm:mt-8">
+              <h4 className={`font-semibold text-gray-900 dark:text-white mb-4 flex items-center ${r.text.h4}`}>
                 <FaCheck className="text-indigo-500 mr-2" />
                 What's included:
               </h4>
@@ -534,7 +535,7 @@ const PlanManagement = () => {
                 {getPlanFeatures(proPlan).slice(0, 10).map((feature, index) => (
                   <li key={index} className="flex items-center">
                     <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-600 dark:text-gray-400 text-sm">{feature}</span>
+                    <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>{feature}</span>
                   </li>
                 ))}
                 {getPlanFeatures(proPlan).length > 10 && (
@@ -548,40 +549,40 @@ const PlanManagement = () => {
         </div>
 
         {/* Additional Features */}
-        <div className="max-w-7xl mx-auto mb-16">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
-              <FaShieldAlt className="text-4xl text-blue-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Secure Payments</h3>
-              <p className="text-gray-600 dark:text-gray-400">All payments are processed securely through Stripe with industry-standard encryption.</p>
+        <div className="max-w-7xl mx-auto mb-12 sm:mb-16">
+          <div className={`${r.layout.grid3} gap-6 sm:gap-8`}>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8 text-center">
+              <FaShieldAlt className="text-3xl sm:text-4xl text-blue-500 mx-auto mb-4" />
+              <h3 className={`${r.text.h4} text-gray-900 dark:text-white mb-2`}>Secure Payments</h3>
+              <p className={`${r.text.body} text-gray-600 dark:text-gray-400`}>All payments are processed securely through Stripe with industry-standard encryption.</p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
-              <FaSync className="text-4xl text-green-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Flexible Plans</h3>
-              <p className="text-gray-600 dark:text-gray-400">Upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8 text-center">
+              <FaSync className="text-3xl sm:text-4xl text-green-500 mx-auto mb-4" />
+              <h3 className={`${r.text.h4} text-gray-900 dark:text-white mb-2`}>Flexible Plans</h3>
+              <p className={`${r.text.body} text-gray-600 dark:text-gray-400`}>Upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
-              <FaQuestionCircle className="text-4xl text-purple-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">24/7 Support</h3>
-              <p className="text-gray-600 dark:text-gray-400">Get help whenever you need it with our comprehensive support system.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8 text-center">
+              <FaQuestionCircle className="text-3xl sm:text-4xl text-purple-500 mx-auto mb-4" />
+              <h3 className={`${r.text.h4} text-gray-900 dark:text-white mb-2`}>24/7 Support</h3>
+              <p className={`${r.text.body} text-gray-600 dark:text-gray-400`}>Get help whenever you need it with our comprehensive support system.</p>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Quick Actions</h2>
-          <div className="flex flex-wrap justify-center gap-4">
+          <h2 className={`${r.text.h2} text-gray-900 dark:text-white mb-6 sm:mb-8`}>Quick Actions</h2>
+          <div className="flex flex-col sm:flex-wrap justify-center gap-3 sm:gap-4">
             <Link
               to="/dashboard"
-              className="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className={`${r.components.button.secondary} inline-flex items-center justify-center`}
             >
               <FaCog className="mr-2" />
               Dashboard
             </Link>
             <Link
               to="/profile"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className={`${r.components.button.primary} inline-flex items-center justify-center`}
             >
               <FaUsers className="mr-2" />
               Profile
@@ -589,7 +590,7 @@ const PlanManagement = () => {
             {/* Earnings removed */}
             <Link
               to="/pricing"
-              className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              className={`${r.components.button.outline} inline-flex items-center justify-center`}
             >
               <FaCreditCard className="mr-2" />
               View All Plans

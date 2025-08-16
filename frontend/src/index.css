@@ -56,3 +56,52 @@ html {
 .dark .prose {
   color-scheme: dark;
 }
+
+/* Custom scrollbar hiding for trending posts carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+/* Enhanced trending carousel for mobile */
+.trending-carousel {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 1rem;
+}
+
+.trending-carousel > div {
+  scroll-snap-align: start;
+}
+
+/* Touch-friendly scrolling for mobile */
+@media (max-width: 640px) {
+  .trending-carousel {
+    scroll-snap-type: x proximity;
+    scroll-padding: 0 0.5rem;
+  }
+  
+  .trending-carousel > div {
+    scroll-snap-align: center;
+  }
+}
+
+/* Smooth scrolling for carousel */
+.trending-carousel {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced hover effects for post cards */
+.post-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.post-card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}

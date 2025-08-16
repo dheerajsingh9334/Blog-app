@@ -400,7 +400,7 @@ const DashboardPosts = () => {
                         <img 
                           src={post.image} 
                           alt={post.title || "Post image"}
-                          className="w-full h-48 object-cover rounded-lg"
+                          className="w-full h-32 sm:h-36 md:h-40 lg:h-48 object-cover rounded-lg"
                           onError={(e) => {
                             e.target.style.display = 'none';
                           }}

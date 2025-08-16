@@ -210,7 +210,7 @@ const PostDetails = () => {
         <article className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Hero Image */}
           {image && (
-            <div className="relative h-64 md:h-96 overflow-hidden">
+            <div className="relative h-48 sm:h-56 md:h-64 lg:h-80 xl:h-96 overflow-hidden">
               <img
                 src={image}
                 alt={post?.title || "Post image"}

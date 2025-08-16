@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { userProfileAPI } from "../../APIServices/users/usersAPI";
 import AlertMessage from "../Alert/AlertMessage";
+import { r } from "../../utils/unifiedResponsive";
 // Earnings functionality removed
 import { 
   getPlanTier, 
@@ -118,20 +119,20 @@ const AccountSummaryDashboard = () => {
   ];
 
   return (
-    <div className="p-4 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+    <div className={`${r.spacing.containerSmall} space-y-4 sm:space-y-6`}>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <h1 className={`${r.text.h1} font-bold text-gray-900 dark:text-white`}>
           Welcome back, {data?.user?.username}! 👋
         </h1>
         {userPlan && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
             {planTier === PLAN_TIERS.PREMIUM && (
               <FaCrown className="text-yellow-500 text-xl" />
             )}
             {planTier === PLAN_TIERS.PRO && (
               <FaInfinity className="text-indigo-500 text-xl" />
             )}
-            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+            <span className={`px-3 py-1 rounded-full ${r.text.bodySmall} font-semibold ${
               planTier === PLAN_TIERS.FREE 
                 ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                 : planTier === PLAN_TIERS.PREMIUM
@@ -143,7 +144,7 @@ const AccountSummaryDashboard = () => {
             {upgradeButton && (
               <Link
                 to={upgradeButton.href}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition duration-200 ${upgradeButton.className}`}
+                className={`px-3 sm:px-4 py-2 rounded-lg ${r.text.bodySmall} font-semibold transition duration-200 ${upgradeButton.className}`}
               >
                 {upgradeButton.text}
               </Link>
@@ -159,7 +160,7 @@ const AccountSummaryDashboard = () => {
               <FaCrown className="h-5 w-5 text-yellow-400" />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+              <h3 className={`${r.text.bodySmall} font-medium text-yellow-800 dark:text-yellow-200`}>
                 Plan Selection Required
               </h3>
               <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
@@ -186,7 +187,7 @@ const AccountSummaryDashboard = () => {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+              <h3 className={`${r.text.bodySmall} font-medium text-blue-800 dark:text-blue-200`}>
                 Email Required
               </h3>
               <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
@@ -205,12 +206,12 @@ const AccountSummaryDashboard = () => {
 
       {/* Plan Usage Section */}
       {userPlan && postLimit && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+            <h3 className={`${r.text.h4} font-semibold text-gray-900 dark:text-white`}>
               Plan Usage
             </h3>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            <span className={`${r.text.bodySmall} text-gray-500 dark:text-gray-400`}>
               {postsUsed} / {postLimit} posts used
             </span>
           </div>
@@ -246,11 +247,11 @@ const AccountSummaryDashboard = () => {
       )}
 
       {/* Quick Actions Grid */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
+        <h3 className={`${r.text.h4} font-semibold text-gray-900 dark:text-white mb-4`}>
           Quick Actions
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className={`${r.layout.grid3} gap-4`}>
           {quickActions.map((action, index) => (
             <div key={index} className={`p-4 rounded-lg border transition-all duration-200 ${
               action.isLocked 
@@ -265,20 +266,20 @@ const AccountSummaryDashboard = () => {
                   <FaUnlock className="text-green-500 text-sm" />
                 )}
               </div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+              <h4 className={`font-semibold text-gray-900 dark:text-white mb-1 ${r.text.bodySmall}`}>
                 {action.title}
               </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              <p className={`${r.text.bodySmall} text-gray-600 dark:text-gray-400 mb-3`}>
                 {action.description}
               </p>
               {action.isLocked ? (
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className={`${r.text.bodySmall} text-gray-500 dark:text-gray-400`}>
                     Requires {action.planRequired}
                   </span>
                   <Link
                     to="/pricing"
-                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition duration-200"
+                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition duration-200 text-center"
                   >
                     Upgrade
                   </Link>
@@ -286,7 +287,7 @@ const AccountSummaryDashboard = () => {
               ) : (
                 <Link
                   to={action.href}
-                  className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition duration-200"
+                  className="inline-block w-full text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition duration-200"
                 >
                   {action.action}
                 </Link>
@@ -297,14 +298,14 @@ const AccountSummaryDashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`${r.layout.grid4} gap-3 sm:gap-4`}>
         {stats.map((stat, index) => (
-          <div key={index} className={`${stat.bgColor} text-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-200`}>
-            <div className="flex items-center space-x-4">
-              <div className="text-2xl">{stat.icon}</div>
+          <div key={index} className={`${stat.bgColor} text-white rounded-lg shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-200`}>
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="text-xl sm:text-2xl">{stat.icon}</div>
               <div>
-                <div className="text-xl font-semibold">{stat.value}</div>
-                <div className="text-sm opacity-90">{stat.label}</div>
+                <div className={`${r.text.h3} font-semibold`}>{stat.value}</div>
+                <div className={`${r.text.bodySmall} opacity-90`}>{stat.label}</div>
               </div>
             </div>
           </div>

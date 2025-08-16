@@ -220,24 +220,28 @@ function App() {
           <Route element={<GlobalLayout userAuth={userAuth}><CheckoutForm /></GlobalLayout>} path="/checkout/:planId" />
           <Route element={<GlobalLayout userAuth={userAuth}><PostLimitReached /></GlobalLayout>} path="/post-limit-reached" />
           
+          {/* Profile route - Standalone */}
+          <Route 
+            element={
+              <GlobalLayout userAuth={userAuth}>
+                <AuthRoute>
+                  <Profile />
+                </AuthRoute>
+              </GlobalLayout>
+            } 
+            path="/profile" 
+          />
+          
           {/* Home page */}
           <Route 
             path="/" 
-            element={userAuth ? <Navigate to="/dashboard" /> : <GlobalLayout userAuth={userAuth}><PostsList /></GlobalLayout>} 
+            element={userAuth ? <Navigate to="/posts" /> : <GlobalLayout userAuth={userAuth}><PostsList /></GlobalLayout>} 
           />
         
         {/* Routes with GlobalLayout wrapper - Main authenticated routes */}
         <Route element={<GlobalLayout userAuth={userAuth} />}>
           
           {/* Authenticated routes */}
-          <Route
-            element={
-              <AuthRoute>
-                <Profile />
-              </AuthRoute>
-            }
-            path="/profile"
-          />
           <Route
             element={
               <AuthRoute>
