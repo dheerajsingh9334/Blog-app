@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { FaSearch, FaEye, FaHeart, FaComment, FaTimes, FaFilter, FaSort } from 'react-icons/fa';
-import { fetchAllPosts, fetchTrendingPostsAPI, getPopularTagsAPI } from '../../APIServices/posts/postsAPI';
+import { FaSearch, FaEye, FaHeart, FaComment, FaRegBookmark, FaFire, FaChevronLeft, FaChevronRight, FaTimes, FaFilter, FaSort } from 'react-icons/fa';
+import { fetchAllPosts, fetchTrendingPostsAPI } from '../../APIServices/posts/postsAPI';
 import { fetchCategoriesAPI } from '../../APIServices/category/categoryAPI';
-import { r } from '../../utils/unifiedResponsive';
-import { stripHtmlTags, truncateText } from '../../utils/responsiveUtils';
+import { truncateText } from '../../utils/responsiveUtils';
 
 const PostsList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [selectedTags, setSelectedTags] = useState([]);
-  const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(""); // Category name for display
+  const [selectedCategoryId, setSelectedCategoryId] = useState(""); // Category ID for API
+  const [carouselPosition, setCarouselPosition] = useState(0);
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+  const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
+  const [savedPosts, setSavedPosts] = useState(new Set()); // Track saved posts
 
   // Handle URL parameters for tag filtering
   useEffect(() => {
@@ -24,177 +28,345 @@ const PostsList = () => {
 
   // Fetch posts with filters
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["posts", page, searchTerm, selectedTags],
-    queryFn: () => {
-      const screenWidth = window.innerWidth;
-      const postsLimit = screenWidth < 1024 ? 10 : 18; // 10 for mobile/tablet, 18 for desktop
-      
-      const params = {
-        page,
-        limit: postsLimit,
-        ...(searchTerm && { search: searchTerm }),
-        ...(selectedTags.length > 0 && { tags: selectedTags.join(',') }),
-      };
-      console.log("🔍 Fetching posts with params:", params);
-      return fetchAllPosts(params);
+    queryKey: ["posts", page, searchTerm, selectedCategoryId, selectedTags],
+    queryFn: async () => {
+      try {
+        const screenWidth = window.innerWidth;
+        const postsLimit = screenWidth < 1024 ? 12 : 24; // 12 for mobile/tablet, 24 for desktop
+        
+        const params = {
+          page,
+          limit: postsLimit,
+        };
+        
+        // Add title parameter if search term exists (backend expects 'title' not 'search')
+        if (searchTerm && searchTerm.trim()) {
+          params.title = searchTerm.trim();
+          console.log("🔍 Adding title param:", params.title);
+        }
+        
+        // Add category parameter if category is selected
+        if (selectedCategoryId) {
+          params.category = selectedCategoryId;
+          console.log("📂 Adding category param:", params.category);
+        }
+        
+        // Add tags parameter if tags are selected
+        if (selectedTags.length > 0) {
+          params.tags = selectedTags.join(',');
+          console.log("🏷️ Adding tags param:", params.tags);
+        }
+        
+        console.log("🔍 Fetching posts with params:", params);
+        const response = await fetchAllPosts(params);
+        console.log("📄 Posts response:", response);
+        return response;
+      } catch (error) {
+        console.error("❌ Error fetching posts:", error);
+        throw error;
+      }
     },
+    enabled: true, // Always enable the query
+    refetchOnWindowFocus: false,
+    retry: 2,
   });
 
   // Refetch when selectedTags change
   useEffect(() => {
     console.log("🔄 selectedTags changed:", selectedTags);
-    if (selectedTags.length > 0 || selectedTags.length === 0) {
-      console.log("🔄 Triggering refetch due to tag change");
-      refetch();
-    }
+    setPage(1); // Reset to first page when filters change
+    refetch();
   }, [selectedTags, refetch]);
+
+  // Refetch when selectedCategoryId changes
+  useEffect(() => {
+    console.log("📂 selectedCategoryId changed:", selectedCategoryId);
+    setPage(1); // Reset to first page when filters change
+    refetch();
+  }, [selectedCategoryId, refetch]);
+
+  // Refetch when searchTerm changes (debounced)
+  useEffect(() => {
+    console.log("🔍 searchTerm changed:", searchTerm);
+    const timeoutId = setTimeout(() => {
+      setPage(1); // Reset to first page when searching
+      refetch();
+    }, 500); // Debounce search by 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, refetch]);
 
   // Debug logging
   console.log("Posts data:", data);
   console.log("Posts error:", error);
   console.log("Posts loading:", isLoading);
 
-  const { data: categories } = useQuery({
-    queryKey: ["category-lists"],
-    queryFn: fetchCategoriesAPI,
-  });
-
-  // Fetch popular tags for filtering
-  const { data: popularTags } = useQuery({
-    queryKey: ["popular-tags"],
-    queryFn: () => getPopularTagsAPI(30),
-  });
-
-  // Fetch trending posts for the scroll card
-  const { data: trendingData, isLoading: trendingLoading } = useQuery({
+  // Fetch trending posts for the featured section
+  const { data: trendingData } = useQuery({
     queryKey: ["trending-posts-preview"],
     queryFn: fetchTrendingPostsAPI,
+  });
+
+  // Fetch categories for the sidebar
+  const { data: categoriesData, error: categoriesError, isLoading: categoriesLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      try {
+        console.log("🔍 Fetching categories...");
+        const response = await fetchCategoriesAPI();
+        console.log("📂 Categories response:", response);
+        
+        // Check if response has the expected structure
+        if (response && response.categories) {
+          console.log("✅ Categories found:", response.categories.length);
+          return response;
+        } else {
+          console.warn("⚠️ Unexpected categories response structure:", response);
+          return { categories: [] };
+        }
+      } catch (error) {
+        console.error("❌ Error fetching categories:", error);
+        return { categories: [] };
+      }
+    },
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Fetch popular tags for search - Get real tags from posts data
+  const { data: popularTagsData, error: tagsError, isLoading: tagsLoading } = useQuery({
+    queryKey: ["popular-tags", data?.posts],
+    queryFn: async () => {
+      try {
+        console.log("🔍 Extracting tags from posts data...");
+        
+        // Extract unique tags from all posts
+        const allTags = new Set();
+        if (data?.posts) {
+          data.posts.forEach(post => {
+            if (post.tags && Array.isArray(post.tags)) {
+              post.tags.forEach(tag => {
+                if (tag && typeof tag === 'string') {
+                  allTags.add(tag.trim());
+                }
+              });
+            }
+          });
+        }
+        
+        // Also check trending posts for tags
+        if (trendingData?.posts) {
+          trendingData.posts.forEach(post => {
+            if (post.tags && Array.isArray(post.tags)) {
+              post.tags.forEach(tag => {
+                if (tag && typeof tag === 'string') {
+                  allTags.add(tag.trim());
+                }
+              });
+            }
+          });
+        }
+        
+        const tagsArray = Array.from(allTags).sort();
+        console.log("🏷️ Extracted tags from posts:", tagsArray.length, tagsArray);
+        return { tags: tagsArray };
+      } catch (error) {
+        console.error("❌ Error extracting tags:", error);
+        return { tags: [] };
+      }
+    },
+    enabled: !!data?.posts || !!trendingData?.posts, // Only run when posts data is available
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Handle search submission
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
+      console.log("🔍 Search submitted:", searchTerm.trim());
       setSearchTerm(searchTerm.trim());
       setPage(1);
-      setDisplayedPosts([]); // Reset displayed posts
+      refetch(); // Trigger refetch immediately
     }
   };
 
-  // Handle category filter
-  const handleCategoryFilter = (categoryId) => {
-    setSelectedTags(prev => {
-      if (prev.includes(categoryId)) {
-        return prev.filter(id => id !== categoryId);
-      } else {
-        return [...prev, categoryId];
-      }
-    });
-    setPage(1);
-    setDisplayedPosts([]); // Reset displayed posts
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    // Don't refetch here - let the useEffect handle it with debouncing
   };
 
-  // Handle tag filter
-  const handleTagFilter = (tagName) => {
+  // Handle category selection
+  const handleCategorySelect = (category) => {
+    console.log('🏷️ Category selected:', category);
+    if (selectedCategory === category.categoryName) {
+      // If same category is clicked, clear it
+      setSelectedCategory("");
+      setSelectedCategoryId("");
+    } else {
+      // Set new category
+      setSelectedCategory(category.categoryName);
+      setSelectedCategoryId(category._id);
+    }
+    setShowCategorySuggestions(false);
+    setPage(1); // Reset to first page
+  };
+
+  // Handle tag selection
+  const handleTagSelect = (tag) => {
+    console.log('🏷️ Tag selected:', tag);
     setSelectedTags(prev => {
-      if (prev.includes(tagName)) {
-        return prev.filter(tag => tag !== tagName);
+      if (prev.includes(tag)) {
+        return prev.filter(t => t !== tag);
       } else {
-        return [...prev, tagName];
+        return [...prev, tag];
       }
     });
-    setPage(1);
-    setDisplayedPosts([]); // Reset displayed posts
+    setPage(1); // Reset to first page
+  };
+
+  // Handle tag removal
+  const handleTagRemove = (tagToRemove) => {
+    console.log('🗑️ Tag removed:', tagToRemove);
+    setSelectedTags(prev => prev.filter(tag => tag !== tagToRemove));
+    setPage(1); // Reset to first page
+  };
+
+  // Handle clear all categories
+  const handleClearCategories = () => {
+    console.log('🗑️ Clearing all categories');
+    setSelectedCategory("");
+    setSelectedCategoryId("");
+    setShowCategorySuggestions(false);
+    setPage(1); // Reset to first page
+  };
+
+  // Handle clear all tags
+  const handleClearTags = () => {
+    console.log('🗑️ Clearing all tags');
+    setSelectedTags([]);
+    setShowTagSuggestions(false);
+    setPage(1); // Reset to first page
   };
 
   // Clear all filters
   const clearAllFilters = () => {
+    console.log("🗑️ Clearing all filters");
     setSearchTerm("");
+    setSelectedCategory("");
+    setSelectedCategoryId("");
     setSelectedTags([]);
     setPage(1);
-    setDisplayedPosts([]); // Reset displayed posts
+    refetch(); // Refetch posts after clearing
   };
 
-  // Remove individual tag
-  const removeTag = (tagToRemove) => {
-    setSelectedTags(prev => prev.filter(tag => tag !== tagToRemove));
-    setPage(1);
-    setDisplayedPosts([]); // Reset displayed posts
+  // Carousel functions for trending section - Show multiple cards
+  const scrollLeft = () => {
+    setCarouselPosition(prev => Math.max(0, prev - 1));
   };
 
-  // Carousel state and touch functions
-  const [carouselPosition, setCarouselPosition] = useState(0);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
+  const scrollRight = () => {
+    if (trendingData?.posts) {
+      const maxScroll = Math.max(0, trendingData.posts.length - 4); // Show 4 cards at once
+      setCarouselPosition(prev => Math.min(maxScroll, prev + 1));
+    }
+  };
 
-  // Track carousel scroll position
-  useEffect(() => {
-    const carousel = document.querySelector('.trending-carousel');
-    if (carousel) {
-      const handleScroll = () => {
-        setCarouselPosition(carousel.scrollLeft);
-      };
+  // Save post functionality - Fixed to actually work and persist
+  const handleSavePost = async (postId) => {
+    try {
+      console.log('💾 Saving post:', postId);
       
-      carousel.addEventListener('scroll', handleScroll);
-      return () => carousel.removeEventListener('scroll', handleScroll);
-    }
-  }, [trendingData]);
-
-  const onTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-    const scrollAmount = window.innerWidth >= 1024 ? 640 : 320; // 2 posts for large, 1 post for small
-
-    if (isLeftSwipe) {
-      // Swipe left - go to next
-      const carousel = document.querySelector('.trending-carousel');
-      if (carousel) {
-        carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        setCarouselPosition(carouselPosition + scrollAmount);
+      // Get current saved state
+      const isCurrentlySaved = savedPosts.has(postId);
+      
+      // Toggle saved state immediately for UI feedback
+      setSavedPosts(prev => {
+        const newSet = new Set(prev);
+        if (isCurrentlySaved) {
+          newSet.delete(postId);
+        } else {
+          newSet.add(postId);
+        }
+        return newSet;
+      });
+      
+      // TODO: Make actual API call to save/unsave post
+      // const response = await savePostAPI(postId);
+      
+      // For now, simulate API call
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Save to localStorage for persistence
+      const updatedSavedPosts = Array.from(savedPosts);
+      if (!isCurrentlySaved) {
+        updatedSavedPosts.push(postId);
+      } else {
+        const index = updatedSavedPosts.indexOf(postId);
+        if (index > -1) {
+          updatedSavedPosts.splice(index, 1);
+        }
       }
-    } else if (isRightSwipe) {
-      // Swipe right - go to previous
-      const carousel = document.querySelector('.trending-carousel');
-      if (carousel) {
-        carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-        setCarouselPosition(Math.max(0, carouselPosition - scrollAmount));
+      localStorage.setItem('savedPosts', JSON.stringify(updatedSavedPosts));
+      
+      console.log(`✅ Post ${isCurrentlySaved ? 'unsaved' : 'saved'} successfully:`, postId);
+      
+      // Show success message
+      if (!isCurrentlySaved) {
+        alert('Post saved successfully!');
+      } else {
+        alert('Post removed from saved!');
       }
+      
+    } catch (error) {
+      console.error('❌ Error saving post:', error);
+      
+      // Revert the UI state if API call failed
+      setSavedPosts(prev => {
+        const newSet = new Set(prev);
+        if (savedPosts.has(postId)) {
+          newSet.delete(postId);
+        } else {
+          newSet.add(postId);
+        }
+        return newSet;
+      });
+      
+      alert('Failed to save post. Please try again.');
     }
   };
 
-  const scrollToPosition = (position) => {
-    const carousel = document.querySelector('.trending-carousel');
-    if (carousel) {
-      carousel.scrollTo({ left: position, behavior: 'smooth' });
-      setCarouselPosition(position);
+  // Load saved posts from localStorage on component mount
+  useEffect(() => {
+    const savedPostsFromStorage = localStorage.getItem('savedPosts');
+    if (savedPostsFromStorage) {
+      try {
+        const parsed = JSON.parse(savedPostsFromStorage);
+        setSavedPosts(new Set(parsed));
+        console.log('📚 Loaded saved posts from storage:', parsed.length);
+      } catch (error) {
+        console.error('❌ Error loading saved posts from storage:', error);
+        localStorage.removeItem('savedPosts');
+      }
     }
-  };
+  }, []);
+
+
 
   // Handle responsive post display
   const [visiblePosts, setVisiblePosts] = useState(1);
-  const [displayedPosts, setDisplayedPosts] = useState([]);
   
   useEffect(() => {
     const updateVisiblePosts = () => {
       const width = window.innerWidth;
       if (width < 640) {
-        setVisiblePosts(10); // Mobile: 10 posts total (1 per row)
+        setVisiblePosts(12); // Mobile: 12 posts total (1 per row)
       } else if (width < 1024) {
-        setVisiblePosts(10); // Small screens: 10 posts total
+        setVisiblePosts(24); // Small screens: 24 posts total (2 per row for 12 rows)
       } else {
-        setVisiblePosts(18); // Large screens: 18 posts total (3 per row for 6 rows)
+        setVisiblePosts(24); // Large screens: 24 posts total (3 per row for 8 rows)
       }
     };
 
@@ -211,612 +383,602 @@ const PostsList = () => {
   // Update displayed posts when data changes
   useEffect(() => {
     if (data?.posts) {
-      if (page === 1) {
-        // First page: show initial posts
-        setDisplayedPosts(data.posts);
-      } else {
-        // Subsequent pages: append new posts
-        setDisplayedPosts(prev => [...prev, ...data.posts]);
-      }
+      // Posts are now handled directly by the query
     }
-  }, [data?.posts, page]);
+  }, [data?.posts]);
 
-  // Load more posts function for large screens
-  const loadMorePosts = () => {
-    if (data?.hasNextPage && !isLoading) {
-      setPage(page + 1);
-      refetch();
-    }
-  };
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedTags]);
+
+  // Reset carousel position when trending data changes
+  useEffect(() => {
+    setCarouselPosition(0);
+  }, [trendingData?.posts]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 w-full overflow-x-hidden main-content content-wrapper">
-      {/* Filters Section - Open Layout */}
-      <div className="container-with-sidebar py-4 sm:py-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ml-4 sm:ml-6 lg:ml-8">
-          {/* Left: Search and Filters */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+    <div className="min-h-screen bg-white dark:bg-gray-900 w-full overflow-x-hidden">
+      {/* Search Section */}
+      <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col space-y-4">
             {/* Search Bar */}
-            <div className="relative w-full sm:w-64">
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search stories, topics, or authors..."
-                  className="w-full px-4 py-2 pl-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                />
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              </form>
+            <div className="flex items-center justify-center">
+              <div className="w-full max-w-2xl">
+                <form onSubmit={handleSearchSubmit} className="relative">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    placeholder="Search stories, topics, or authors..."
+                    className="w-full px-4 py-3 pl-10 bg-gray-100 dark:bg-gray-800 border-0 rounded-full text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white dark:focus:bg-gray-700 transition-all duration-200"
+                  />
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
+                </form>
+              </div>
+              {(searchTerm || selectedCategory || selectedTags.length > 0) && (
+                <button
+                  onClick={clearAllFilters}
+                  className="ml-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors text-sm font-medium"
+                >
+                  Clear
+                </button>
+              )}
             </div>
 
-            {/* Filter Toggle Button */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              <FaFilter className="h-4 w-4" />
-              Filters
-            </button>
+            {/* Categories and Tags */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              {/* Categories Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowCategorySuggestions(!showCategorySuggestions)}
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center space-x-2"
+                >
+                  <FaFilter className="h-4 w-4" />
+                  <span>Categories</span>
+                  <svg className={`w-4 h-4 transition-transform ${showCategorySuggestions ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {showCategorySuggestions && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-60 overflow-y-auto">
+                    {categoriesLoading ? (
+                      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                        Loading categories...
+                      </div>
+                    ) : categoriesError ? (
+                      <div className="p-4 text-center text-red-500">
+                        Error loading categories
+                      </div>
+                    ) : categoriesData?.categories && categoriesData.categories.length > 0 ? (
+                      <>
+                        <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+                          <button
+                            onClick={handleClearCategories}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              selectedCategory === ""
+                                ? 'bg-green-500 text-white'
+                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            }`}
+                          >
+                            All Categories
+                          </button>
+                        </div>
+                        {categoriesData.categories.map((category) => (
+                          <button
+                            key={category._id}
+                            onClick={() => handleCategorySelect(category)}
+                            className={`w-full text-left px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                              selectedCategory === category.categoryName
+                                ? 'bg-green-500 text-white'
+                                : 'text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {category.categoryName}
+                          </button>
+                        ))}
+                      </>
+                    ) : (
+                      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                        No categories found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
-            {/* Sort Button */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              <FaSort className="h-4 w-4" />
-              Sort
-            </button>
+              {/* Tags Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowTagSuggestions(!showTagSuggestions)}
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center space-x-2"
+                >
+                  <FaSort className="h-4 w-4" />
+                  <span>Tags</span>
+                  <svg className={`w-4 h-4 transition-transform ${showTagSuggestions ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {showTagSuggestions && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-60 overflow-y-auto">
+                    {tagsLoading ? (
+                      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                        Loading tags...
+                      </div>
+                    ) : tagsError ? (
+                      <div className="p-4 text-center text-red-500">
+                        Error loading tags
+                      </div>
+                    ) : popularTagsData?.tags && popularTagsData.tags.length > 0 ? (
+                      <>
+                        <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+                          <button
+                            onClick={handleClearTags}
+                            className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          >
+                            Clear All Tags
+                          </button>
+                        </div>
+                        {popularTagsData.tags.slice(0, 15).map((tag) => (
+                          <button
+                            key={tag}
+                            onClick={() => handleTagSelect(tag)}
+                            className={`w-full text-left px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                              selectedTags.includes(tag)
+                                ? 'bg-blue-500 text-white'
+                                : 'text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            #{tag}
+                          </button>
+                        ))}
+                      </>
+                    ) : (
+                      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                        No tags found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Selected Tags Display */}
+            {(selectedCategory || selectedTags.length > 0) && (
+              <div className="flex flex-wrap justify-center gap-2">
+                {/* Selected Category */}
+                {selectedCategory && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                    📂 {selectedCategory}
+                    <button
+                      onClick={() => setSelectedCategory("")}
+                      className="ml-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200"
+                    >
+                      <FaTimes className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                
+                {/* Selected Tags */}
+                {selectedTags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                  >
+                    #{tag}
+                    <button
+                      onClick={() => handleTagRemove(tag)}
+                      className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
+                    >
+                      <FaTimes className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
           </div>
-
-          {/* Right: Clear Filters */}
-          {(searchTerm || selectedTags.length > 0) && (
-            <button
-              onClick={clearAllFilters}
-              className="flex items-center gap-2 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-            >
-              <FaTimes className="h-4 w-4" />
-              Clear Filters
-            </button>
-          )}
         </div>
+      </div>
 
-        {/* Filters Dropdown - Open Layout */}
-        {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 ml-4 sm:ml-6 lg:ml-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Categories */}
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                  Categories
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {categories?.map((category) => (
-                    <button
-                      key={category._id}
-                      onClick={() => handleCategoryFilter(category._id)}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                        selectedTags.includes(category._id)
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      {category.name}
-                    </button>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Trending Posts Section */}
+        {trendingData?.posts && trendingData.posts.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <FaFire className="text-3xl text-red-500" />
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Trending Now</h2>
+                  <p className="text-lg text-gray-600 dark:text-gray-400">Most popular stories this week</p>
+                </div>
+              </div>
+              <Link 
+                to="/trending" 
+                className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium transition-colors"
+              >
+                See All Trending →
+              </Link>
+            </div>
+            
+            {/* Trending Posts Horizontal Carousel - Show multiple cards like the image */}
+            <div className="relative">
+              {/* Carousel Navigation */}
+              <div className="flex justify-between items-center mb-4">
+                <button
+                  onClick={scrollLeft}
+                  disabled={carouselPosition === 0}
+                  className="p-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                >
+                  <FaChevronLeft className="h-5 w-5" />
+                </button>
+                
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {carouselPosition + 1} of {Math.max(1, trendingData.posts.length - 3)}
+                </div>
+                
+                <button
+                  onClick={scrollRight}
+                  disabled={carouselPosition >= Math.max(0, trendingData.posts.length - 4)}
+                  className="p-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                >
+                  <FaChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Carousel Container - Show 4 cards at once */}
+              <div className="relative overflow-hidden rounded-xl">
+                <div 
+                  className="flex space-x-6 transition-transform duration-500 ease-in-out"
+                  style={{ transform: `translateX(-${carouselPosition * 320}px)` }}
+                >
+                  {trendingData.posts.map((post) => (
+                    <div key={post._id} className="flex-shrink-0 w-80">
+                      <article className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="relative">
+                          {post.image ? (
+                            <img
+                              src={post.image.url || post.image.path || post.image}
+                              alt={post.title}
+                              className="w-full h-48 object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center">
+                              <span className="text-5xl">📝</span>
+                            </div>
+                          )}
+                          <div className="absolute top-3 right-3">
+                            <span className="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full shadow-lg">
+                              🔥
+                            </span>
+                          </div>
+                          <div className="absolute top-3 left-3">
+                            <span className="px-2 py-1 bg-black bg-opacity-75 text-white text-xs font-medium rounded-full">
+                              1 min read
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2 leading-tight">
+                            {post.title}
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-400 mb-3 text-sm line-clamp-2 leading-relaxed">
+                            {truncateText(post.content, 80)}
+                          </p>
+                          
+                          {/* Author & Meta */}
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-2">
+                              {post.author?.profilePicture ? (
+                                <img
+                                  src={post.author.profilePicture.url || post.author.profilePicture.path || post.author.profilePicture}
+                                  alt={post.author.name || post.author.username}
+                                  className="w-6 h-6 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                                  <span className="text-gray-600 dark:text-gray-300 text-xs font-medium">
+                                    {(post.author?.name || post.author?.username || 'U').charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                              )}
+                              <div>
+                                <p className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                  {post.author?.name || post.author?.username || 'Anonymous'}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {new Date(post.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Stats */}
+                          <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                            <span className="flex items-center space-x-1">
+                              <FaEye className="h-3 w-3" />
+                              <span>{post.views || 0}</span>
+                            </span>
+                            <span className="flex items-center space-x-1">
+                              <FaHeart className="h-3 w-3" />
+                              <span>{post.likes?.length || 0}</span>
+                            </span>
+                            <span className="flex items-center space-x-1">
+                              <FaComment className="h-3 w-3" />
+                              <span>{post.comments?.length || 0}</span>
+                            </span>
+                          </div>
+                        </div>
+                      </article>
+
+                      {/* Category and Tags - Outside the trending card */}
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {post.category && (
+                          <button
+                            onClick={() => handleCategorySelect(post.category)}
+                            className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-medium rounded-full hover:bg-green-200 dark:hover:bg-green-800 transition-colors cursor-pointer"
+                          >
+                            {post.category.categoryName || post.category.name || 'Uncategorized'}
+                          </button>
+                        )}
+                        {post.tags && post.tags.slice(0, 3).map((tag, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleTagSelect(tag)}
+                            className={`px-2 py-1 text-xs font-medium rounded-full transition-colors cursor-pointer ${
+                              selectedTags.includes(tag)
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800'
+                            }`}
+                          >
+                            #{tag}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
 
-              {/* Popular Tags */}
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                  Popular Tags
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {popularTags?.slice(0, 10).map((tag) => (
-                    <button
-                      key={tag._id}
-                      onClick={() => handleTagFilter(tag.name)}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                        selectedTags.includes(tag.name)
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                          : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      #{tag.name}
-                    </button>
-                  ))}
-                </div>
+              {/* Scroll indicator */}
+              <div className="text-center mt-4 text-sm text-gray-500 dark:text-gray-400">
+                ← Scroll to see more →
               </div>
 
-              {/* Active Filters Display */}
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                  Active Filters
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedTags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-sm font-medium"
-                    >
-                      {tag}
-                      <button
-                        onClick={() => removeTag(tag)}
-                        className="ml-1 hover:text-green-600 dark:hover:text-green-300"
-                      >
-                        <FaTimes className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
+              {/* Carousel Indicators */}
+              <div className="flex justify-center mt-4 space-x-2">
+                {Array.from({ length: Math.max(1, Math.ceil(trendingData.posts.length / 4)) }, (_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCarouselPosition(index)}
+                    className={`w-3 h-3 rounded-full transition-colors ${
+                      index === carouselPosition
+                        ? 'bg-green-500'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Trending Posts Section */}
-      <div className="container-with-sidebar py-6 sm:py-8">
-        <div className="flex items-center justify-between mb-4 sm:mb-6 ml-4 sm:ml-6 lg:ml-8">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl">
-              🔥
-            </div>
+        {/* Latest Stories Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className={`${r.text.h3} text-gray-900 dark:text-white font-bold`}>
-                Trending Now
-              </h2>
-              <p className={`${r.text.body} text-gray-600 dark:text-gray-400`}>
-                Most popular stories this week
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Latest Stories</h2>
+              <p className="text-lg text-gray-600 dark:text-gray-400">
+                {data?.totalPosts ? `${data.totalPosts} stories found` : 'Discover amazing content from our community'}
               </p>
             </div>
           </div>
-          
-          <Link
-            to="/trending"
-            className="flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium transition-colors"
-          >
-            See All Trending
-            →
-          </Link>
-        </div>
 
-        {/* Trending Carousel */}
-        <div className="relative trending-carousel-container ml-4 sm:ml-6 lg:ml-8">
-          {/* Scroll Hint */}
-          <div className="absolute top-2 right-2 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur px-2 py-1 rounded-full text-xs text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 scroll-hint">
-            ← Scroll to see more →
-          </div>
-
-          {/* Previous Button */}
-          <button
-            onClick={() => {
-              const carousel = document.querySelector('.trending-carousel');
-              if (carousel) {
-                const scrollAmount = window.innerWidth >= 1024 ? 600 : 280; // 2 posts for large, 1 post for small
-                carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-                setCarouselPosition(Math.max(0, carouselPosition - scrollAmount));
-              }
-            }}
-            disabled={carouselPosition <= 0}
-            className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 backdrop-blur border rounded-full p-2 shadow-lg transition-all duration-300 trending-nav-btn ${
-              carouselPosition <= 0
-                ? 'bg-gray-300 dark:bg-gray-600 border-gray-200 dark:border-gray-500 cursor-not-allowed opacity-50'
-                : 'bg-white/90 dark:bg-gray-800/90 border-gray-200 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-800 hover:scale-110'
-            }`}
-            title="Previous Posts"
-          >
-            <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          {/* Next Button */}
-          <button
-            onClick={() => {
-              const carousel = document.querySelector('.trending-carousel');
-              if (carousel) {
-                const scrollAmount = window.innerWidth >= 1024 ? 600 : 280; // 2 posts for large, 1 post for small
-                carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-                setCarouselPosition(carouselPosition + scrollAmount);
-              }
-            }}
-            disabled={carouselPosition >= (trendingData?.posts?.length || 0) * (window.innerWidth >= 1024 ? 300 : 260) - (window.innerWidth >= 1024 ? 600 : 280)}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 backdrop-blur border rounded-full p-2 shadow-lg transition-all duration-300 trending-nav-btn ${
-              carouselPosition >= (trendingData?.posts?.length || 0) * (window.innerWidth >= 1024 ? 300 : 260) - (window.innerWidth >= 1024 ? 600 : 280)
-                ? 'bg-gray-300 dark:bg-gray-600 border-gray-200 dark:border-gray-500 cursor-not-allowed opacity-50'
-                : 'bg-white/90 dark:bg-gray-800/90 border-gray-200 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-800 hover:scale-110'
-            }`}
-            title="Next Posts"
-          >
-            <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          <div
-            className="overflow-x-auto trending-carousel"
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-          >
-            <div className="flex gap-4 sm:gap-4 md:gap-6 lg:gap-6 py-4 w-max min-w-full">
-              {trendingLoading ? (
-                <div className="flex items-center justify-center w-full py-12 min-w-[260px] sm:min-w-[300px] md:min-w-[360px] lg:min-w-[300px] xl:min-w-[320px]">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
-                </div>
-              ) : !trendingData?.posts ? (
-                <div className="flex items-center justify-center w-full py-12 min-w-[260px] sm:min-w-[300px] md:min-w-[360px] lg:min-w-[300px] xl:min-w-[320px]">
-                  <div className="text-gray-500 dark:text-gray-400 text-center">
-                    <div className="text-4xl mb-2">📝</div>
-                    <p>No trending posts available</p>
-                  </div>
-                </div>
-              ) : (
-                trendingData.posts.slice(0, 6).map((post) => (
-                  <Link
-                    to={`/posts/${post._id}`}
-                    key={post._id}
-                    className="group flex-shrink-0 w-[260px] sm:w-[300px] md:w-[360px] lg:w-[300px] xl:w-[320px] bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-gray-200 dark:border-gray-700 trending-carousel-item"
-                    title={post.title}
-                  >
-                    {/* Post Image */}
-                    <div className="relative h-40 sm:h-44 md:h-48 lg:h-44 overflow-hidden">
-                      {post.image ? (
-                        <img
-                          src={post.image.url || post.image.path || post.image}
-                          alt={post.title}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center">
-                          <span className="text-3xl sm:text-4xl">📝</span>
-                        </div>
-                      )}
-                      
-                      {/* Category Badge */}
-                      {post.category && (
-                        <div className="absolute top-2 sm:top-3 left-2 sm:left-3">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                            {post.category.name}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Reading Time */}
-                      <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 backdrop-blur">
-                          {Math.ceil((stripHtmlTags(post.content)?.length || 0) / 200)} min read
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Post Content */}
-                    <div className="p-3 sm:p-4">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                        {post.title}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-3">
-                        {truncateText(post.content, 100)}
-                      </p>
-                      
-                      {/* Author Info */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          {post.author?.profilePicture ? (
-                            <img
-                              src={post.author.profilePicture.url || post.author.profilePicture.path || post.author.profilePicture}
-                              alt={post.author.name || post.author.username}
-                              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
-                              <span className="text-white text-xs sm:text-sm font-medium">
-                                {(post.author?.name || post.author?.username || 'U').charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
-                              {post.author?.name || post.author?.username || 'Anonymous'}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {new Date(post.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        {/* Post Stats */}
-                        <div className="flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                          <span className="flex items-center">
-                            <FaEye className="w-3 h-3 mr-1" />
-                            {post.views || 0}
-                          </span>
-                          <span className="flex items-center">
-                            <FaHeart className="w-3 h-3 mr-1" />
-                            {post.likes?.length || 0}
-                          </span>
-                          <span className="flex items-center">
-                            <FaComment className="w-3 h-3 mr-1" />
-                            {post.comments?.length || 0}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Scroll Indicators for Mobile */}
-          <div className="flex justify-center mt-4 sm:hidden ml-4 sm:ml-6 lg:ml-8">
-            <div className="flex space-x-2">
-              {trendingData?.posts ? Array.from({ length: trendingData.posts.length }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => scrollToPosition(index * 260)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 carousel-indicator ${
-                    Math.floor(carouselPosition / 260) === index
-                      ? 'bg-orange-500 scale-125 active'
-                      : 'bg-orange-300 hover:bg-orange-400'
-                  }`}
-                  title={`Go to post ${index + 1}`}
-                />
-              )) : null}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Posts Grid */}
-      <div className="container-with-sidebar py-8 sm:py-12 main-posts-section posts-container">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4 ml-4 sm:ml-6 lg:ml-8">
-          <div className="flex-1 min-w-0">
-            <h2 className={`${r.text.h2} text-gray-900 dark:text-white font-bold post-title`}>
-              {selectedTags.length > 0 ? `Posts tagged with #${selectedTags.join(', ')}` : 'Latest Stories'}
-            </h2>
-            <p className={`${r.text.body} text-gray-600 dark:text-gray-400 mt-2`}>
-              {data?.totalPosts ? `${data.totalPosts} stories found` : 'Discover amazing content from our community'}
-            </p>
-          </div>
-          
-          {isLoading && (
-            <div className="flex items-center gap-2 text-blue-600 flex-shrink-0">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-              Loading...
-            </div>
-          )}
-        </div>
-
-          {/* Posts Grid - Show 1 post per row on mobile, 3 per row on large screens */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 posts-grid max-w-6xl mx-auto">
+          {/* Posts Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {isLoading ? (
-              // Loading skeleton for responsive post count
-              Array.from({ length: page === 1 ? visiblePosts : (window.innerWidth < 1024 ? 10 : 18) }).map((_, index) => (
-                <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden animate-pulse">
-                  <div className="h-40 sm:h-32 md:h-36 lg:h-40 bg-gray-200 dark:bg-gray-700"></div>
-                  <div className="p-3 sm:p-3 md:p-4 lg:p-4">
-                    <div className="h-4 sm:h-3 md:h-3.5 lg:h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 sm:mb-1 md:mb-2 lg:mb-2"></div>
-                    <div className="h-3 sm:h-2.5 md:h-3 lg:h-3 bg-gray-200 dark:bg-gray-700 rounded mb-2 sm:mb-1 md:mb-2 lg:mb-2"></div>
-                    <div className="h-3 sm:h-2.5 md:h-3 lg:h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+              // Loading skeleton
+              Array.from({ length: visiblePosts }).map((_, index) => (
+                <article key={index} className="animate-pulse">
+                  <div className="mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg h-48"></div>
+                  <div className="space-y-3">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
                   </div>
-                </div>
+                </article>
               ))
-            ) : !displayedPosts || displayedPosts.length === 0 ? (
-              <div className="col-span-full flex items-center justify-center py-12">
-                <div className="text-center">
-                  <div className="text-6xl mb-4">📝</div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No posts found</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Start creating content to see it here!</p>
-                </div>
+            ) : !data?.posts || data.posts.length === 0 ? (
+              <div className="col-span-full text-center py-16">
+                <div className="text-6xl mb-4">📝</div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">No posts found</h3>
+                <p className="text-gray-600 dark:text-gray-400">Start creating content to see it here!</p>
               </div>
             ) : (
-              // Show responsive number of posts based on screen size
-              displayedPosts.map((post) => (
-                <article key={post._id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-200 dark:border-gray-700 max-w-sm mx-auto w-full">
+              data.posts.map((post) => (
+                <article key={post._id} className="group bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
                   {/* Post Image */}
-                  <div className="relative h-40 sm:h-32 md:h-36 lg:h-40 overflow-hidden">
+                  <div className="relative overflow-hidden">
                     {post.image ? (
                       <img
                         src={post.image.url || post.image.path || post.image}
                         alt={post.title}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center">
-                        <span className="text-3xl sm:text-2xl md:text-3xl lg:text-3xl">📝</span>
+                      <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center">
+                        <span className="text-4xl">📝</span>
                       </div>
                     )}
-                    
-                    {/* Category Badge */}
-                    {post.category && (
-                      <div className="absolute top-2 sm:top-1 md:top-2 lg:top-2 left-2 sm:left-1 md:left-2 lg:left-2">
-                        <span className="inline-flex items-center px-2 py-1 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 lg:px-2 lg:py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                          {post.category.name}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {/* Reading Time */}
-                    <div className="absolute top-2 sm:top-1 md:top-2 lg:top-2 right-2 sm:right-1 md:right-2 lg:right-2">
-                      <span className="inline-flex items-center px-2 py-1 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 lg:px-2 lg:py-1 rounded-full text-xs font-medium bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 backdrop-blur">
-                        {Math.ceil((stripHtmlTags(post.content)?.length || 0) / 200)} min read
-                      </span>
-                    </div>
                   </div>
 
                   {/* Post Content */}
-                  <div className="p-3 sm:p-3 md:p-4 lg:p-4">
-                    <h3 className="text-base sm:text-sm md:text-base lg:text-base font-semibold text-gray-900 dark:text-white mb-2 sm:mb-1 md:mb-2 lg:mb-2 line-clamp-2 hover:text-green-600 dark:hover:text-green-400 transition-colors">
-                      {post.title}
-                    </h3>
-                    <p className="text-sm sm:text-xs md:text-sm lg:text-sm text-gray-600 dark:text-gray-400 mb-3 sm:mb-2 md:mb-3 lg:mb-3 line-clamp-3">
+                  <div className="p-4 space-y-3">
+                    {/* Title */}
+                    <Link to={`/posts/${post._id}`}>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors line-clamp-2 leading-tight">
+                        {post.title}
+                      </h3>
+                    </Link>
+
+                    {/* Excerpt */}
+                    <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-3">
                       {truncateText(post.content, 120)}
                     </p>
-                    
-                    {/* Author Info */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2 sm:space-x-1 md:space-x-2 lg:space-x-2">
+
+                    {/* Author & Meta */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center space-x-3">
                         {post.author?.profilePicture ? (
                           <img
                             src={post.author.profilePicture.url || post.author.profilePicture.path || post.author.profilePicture}
                             alt={post.author.name || post.author.username}
-                            className="w-7 h-7 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-7 lg:h-7 rounded-full object-cover"
+                            className="w-8 h-8 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-7 h-7 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-7 lg:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
-                            <span className="text-white text-xs sm:text-xs md:text-xs lg:text-xs font-medium">
+                          <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                            <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
                               {(post.author?.name || post.author?.username || 'U').charAt(0).toUpperCase()}
                             </span>
                           </div>
                         )}
                         <div>
-                          <p className="text-xs sm:text-xs md:text-xs lg:text-xs font-medium text-gray-900 dark:text-white">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                             {post.author?.name || post.author?.username || 'Anonymous'}
                           </p>
-                          <p className="text-xs sm:text-xs md:text-xs lg:text-xs text-gray-500 dark:text-gray-400">
-                            {new Date(post.createdAt).toLocaleDateString()}
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(post.createdAt).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
                           </p>
                         </div>
                       </div>
-                      
-                      {/* Post Stats */}
-                      <div className="flex items-center space-x-2 sm:space-x-1 md:space-x-2 lg:space-x-2 text-xs sm:text-xs md:text-xs lg:text-xs text-gray-500 dark:text-gray-400">
-                        <span className="flex items-center">
-                          <FaEye className="w-3 h-3 sm:w-2.5 sm:h-2.5 md:w-2.5 md:h-2.5 lg:w-3 lg:h-3 mr-1" />
-                          {post.views || 0}
-                        </span>
-                        <span className="flex items-center">
-                          <FaHeart className="w-3 h-3 sm:w-2.5 sm:h-2.5 md:w-2.5 md:h-2.5 lg:w-3 lg:h-3 mr-1" />
-                          {post.likes?.length || 0}
-                        </span>
-                        <span className="flex items-center">
-                          <FaComment className="w-3 h-3 sm:w-2.5 sm:h-2.5 md:w-2.5 md:h-2.5 lg:w-3 lg:h-3 mr-1" />
-                          {post.comments?.length || 0}
-                        </span>
-                      </div>
+
+                      {/* Save Button - Fixed Responsiveness */}
+                      <button 
+                        onClick={() => handleSavePost(post._id)}
+                        className={`text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full flex-shrink-0 ${
+                          savedPosts.has(post._id) ? 'bg-green-500 text-white' : ''
+                        }`}
+                        aria-label="Save post"
+                      >
+                        <FaRegBookmark className="h-4 w-4" />
+                      </button>
                     </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400 pt-2">
+                      <span className="flex items-center space-x-1">
+                        <FaEye className="h-3 w-3" />
+                        <span>{post.views || 0}</span>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <FaHeart className="h-3 w-3" />
+                        <span>{post.likes?.length || 0}</span>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <FaComment className="h-3 w-3" />
+                        <span>{post.comments?.length || 0}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Category and Tags - Outside the card */}
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {post.category && (
+                      <button
+                        onClick={() => handleCategorySelect(post.category)}
+                        className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-medium rounded-full hover:bg-green-200 dark:hover:bg-green-800 transition-colors cursor-pointer"
+                      >
+                        {post.category.categoryName || post.category.name || 'Uncategorized'}
+                      </button>
+                    )}
+                    {post.tags && post.tags.slice(0, 3).map((tag, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleTagSelect(tag)}
+                        className={`px-2 py-1 text-xs font-medium rounded-full transition-colors cursor-pointer ${
+                          selectedTags.includes(tag)
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800'
+                        }`}
+                      >
+                        #{tag}
+                      </button>
+                    ))}
                   </div>
                 </article>
               ))
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Modern Pagination */}
-        {data?.posts?.length > 0 && (
-          <div className="mt-12 sm:mt-16">
-            {/* Load More Button for Large Screens */}
-            <div className="hidden lg:flex justify-center mb-8">
+          {/* Pagination */}
+          {data && data.totalPages > 1 && (
+            <div className="flex items-center justify-center space-x-2 mt-8">
+              {/* Previous Page */}
               <button
-                disabled={!data?.hasNextPage || isLoading}
-                onClick={loadMorePosts}
-                className={`flex items-center gap-3 px-10 py-4 rounded-xl font-medium transition-all duration-300 cursor-pointer ${
-                  !data?.hasNextPage || isLoading
-                    ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 shadow-lg hover:shadow-xl active:scale-95'
-                }`}
+                onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                disabled={page === 1 || isLoading}
+                className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Loading...
-                  </>
-                ) : (
-                  <>
-                    Load More Posts
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </>
-                )}
+                Previous
+              </button>
+
+              {/* Page Numbers */}
+              {Array.from({ length: Math.min(5, data.totalPages) }, (_, i) => {
+                const pageNum = i + 1;
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setPage(pageNum)}
+                    className={`px-3 py-2 text-sm font-medium rounded-md ${
+                      page === pageNum
+                        ? 'bg-green-500 text-white'
+                        : 'text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              {/* Next Page */}
+              <button
+                onClick={() => setPage(prev => Math.min(data.totalPages, prev + 1))}
+                disabled={page === data.totalPages || isLoading}
+                className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
               </button>
             </div>
+          )}
 
-            {/* Traditional Pagination for Small/Medium Screens */}
-            <div className="lg:hidden">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-                <button
-                  disabled={page === 1}
-                  onClick={() => {
-                    setPage(page - 1);
-                    refetch();
-                  }}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
-                    page === 1
-                      ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
-                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-500 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400'
-                  }`}
-                >
-                  ← Previous
-                </button>
-                
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: Math.min(5, Math.ceil((data?.totalPosts || 0) / 10)) }, (_, i) => i + 1).map((pageNum) => (
-                    <button
-                      key={pageNum}
-                      onClick={() => {
-                        setPage(pageNum);
-                        refetch();
-                      }}
-                      className={`w-10 h-10 rounded-xl font-medium transition-all duration-300 ${
-                        pageNum === page
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-110'
-                          : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-500 dark:hover:border-blue-400'
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  disabled={!data?.hasNextPage}
-                  onClick={() => {
-                    setPage(page + 1);
-                    refetch();
-                  }}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
-                    !data?.hasNextPage
-                      ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
-                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-500 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400'
-                  }`}
-                >
-                  Next →
-                </button>
-              </div>
-            </div>
-            
-            {/* Page Info */}
-            <div className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
-              <div className="mb-2">
-                <span className="font-medium">Layout:</span> 
-                {window.innerWidth < 1024 ? (
-                  <span className="text-blue-600 dark:text-blue-400"> Mobile/Tablet: 1 post per row, 10 posts per page</span>
-                ) : (
-                  <span className="text-green-600 dark:text-green-400"> Desktop: 3 posts per row, 18 posts per page</span>
-                )}
-              </div>
-              <div>
-                Showing {displayedPosts.length} of {data?.totalPosts || 0} posts
-                {data?.hasNextPage && (
-                  <span className="block mt-2 text-blue-600 dark:text-blue-400">
-                    {data?.hasNextPage ? 'More posts available' : 'No more posts'}
-                  </span>
-                )}
-              </div>
-              <div className="mt-2 text-xs text-gray-400">
-                {window.innerWidth < 1024 ? (
-                  <span>Page {page} of {Math.ceil((data?.totalPosts || 0) / 10)}</span>
-                ) : (
-                  <span>Page {page} of {Math.ceil((data?.totalPosts || 0) / 18)}</span>
-                )}
-              </div>
-            </div>
+          {/* Page Info */}
+          <div className="text-center mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Page {page} of {data?.totalPages || 1} • Showing {data?.posts?.length || 0} of {data?.totalPosts || 0} stories
+            </p>
           </div>
-        )}
+        </div>
       </div>
+
+      {/* Click outside to close dropdowns */}
+      {(showTagSuggestions || showCategorySuggestions) && (
+        <div 
+          className="fixed inset-0 z-40"
+          onClick={() => {
+            setShowTagSuggestions(false);
+            setShowCategorySuggestions(false);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -1,229 +1,232 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { FaEye, FaHeart, FaComment, FaBookmark, FaTrash, FaArrowLeft } from "react-icons/fa";
-import { getSavedPostsAPI, unsavePostAPI } from "../../APIServices/users/usersAPI";
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { FaEye, FaHeart, FaComment, FaRegBookmark, FaTrash } from 'react-icons/fa';
+import { fetchAllPosts } from '../../APIServices/posts/postsAPI';
+import { truncateText } from '../../utils/responsiveUtils';
 
 const SavedPosts = () => {
-  const queryClient = useQueryClient();
+  const [savedPosts, setSavedPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch saved posts
-  const { data: savedPostsData, isLoading, isError, error } = useQuery({
-    queryKey: ["saved-posts"],
-    queryFn: getSavedPostsAPI,
-  });
+  // Load saved posts from localStorage and fetch post data
+  useEffect(() => {
+    const loadSavedPosts = async () => {
+      try {
+        setLoading(true);
+        
+        // Get saved post IDs from localStorage
+        const savedPostsFromStorage = localStorage.getItem('savedPosts');
+        if (!savedPostsFromStorage) {
+          setSavedPosts([]);
+          setLoading(false);
+          return;
+        }
 
-  // Unsave post mutation
-  const unsaveMutation = useMutation({
-    mutationFn: unsavePostAPI,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-    }
-  });
+        const savedPostIds = JSON.parse(savedPostsFromStorage);
+        console.log('📚 Loading saved posts:', savedPostIds);
 
-  const handleUnsave = async (postId) => {
-    if (window.confirm("Remove this post from saved posts?")) {
-      await unsaveMutation.mutateAsync(postId);
+        if (savedPostIds.length === 0) {
+          setSavedPosts([]);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch all posts to get the saved ones
+        const response = await fetchAllPosts({ limit: 1000 }); // Get all posts
+        const allPosts = response.posts || [];
+        
+        // Filter to only show saved posts
+        const savedPostsData = allPosts.filter(post => 
+          savedPostIds.includes(post._id)
+        );
+
+        console.log('📚 Found saved posts:', savedPostsData.length);
+        setSavedPosts(savedPostsData);
+        
+      } catch (error) {
+        console.error('❌ Error loading saved posts:', error);
+        setSavedPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSavedPosts();
+  }, []);
+
+  // Remove post from saved
+  const removeFromSaved = (postId) => {
+    try {
+      // Remove from localStorage
+      const savedPostsFromStorage = localStorage.getItem('savedPosts');
+      if (savedPostsFromStorage) {
+        const savedPostIds = JSON.parse(savedPostsFromStorage);
+        const updatedSavedPostIds = savedPostIds.filter(id => id !== postId);
+        localStorage.setItem('savedPosts', JSON.stringify(updatedSavedPostIds));
+        
+        // Update local state
+        setSavedPosts(prev => prev.filter(post => post._id !== postId));
+        
+        console.log('🗑️ Post removed from saved:', postId);
+      }
+    } catch (error) {
+      console.error('❌ Error removing post from saved:', error);
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Loading saved posts...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading saved posts...</p>
         </div>
       </div>
     );
   }
 
-  if (isError) {
+  if (savedPosts.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 text-lg mb-4">Error loading saved posts</p>
-          <p className="text-gray-600 dark:text-gray-300">{error.message}</p>
+          <div className="text-6xl mb-4">📚</div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">No saved posts yet</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Start saving posts to see them here!</p>
+          <Link 
+            to="/posts" 
+            className="inline-flex items-center px-6 py-3 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-colors"
+          >
+            Browse Posts
+          </Link>
         </div>
       </div>
     );
   }
-
-  const savedPosts = savedPostsData?.savedPosts || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                to="/dashboard"
-                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-              >
-                <FaArrowLeft className="h-5 w-5" />
-              </Link>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  Saved Posts
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Posts you&apos;ve saved for later reading • {savedPosts.length} posts
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <FaBookmark className="h-4 w-4" />
-              <span>{savedPosts.length} saved</span>
-            </div>
-          </div>
+    <div className="min-h-screen bg-white dark:bg-gray-900 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            Saved Posts
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            {savedPosts.length} saved {savedPosts.length === 1 ? 'post' : 'posts'}
+          </p>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {savedPosts.length === 0 ? (
-          <div className="max-w-2xl mx-auto text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-12">
-            <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FaBookmark className="h-12 w-12 text-gray-400" />
-            </div>
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
-              No saved posts yet
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto">
-              When you save posts, they&apos;ll appear here for easy access later.
-              Start exploring and save posts you want to read again!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                to="/posts"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <FaEye className="h-4 w-4" />
-                Explore Posts
-              </Link>
-              <Link
-                to="/trending"
-                className="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <FaHeart className="h-4 w-4" />
-                Trending Posts
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {savedPosts.map((post) => (
-              <div
-                key={post._id}
-                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200"
-              >
-                {/* Post Image */}
-                {post.image && (
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={typeof post.image === 'string' ? post.image : post.image?.path}
-                      alt={post.title || "Post image"}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                    {/* Unsave Button */}
-                    <button
-                      onClick={() => handleUnsave(post._id)}
-                      disabled={unsaveMutation.isPending}
-                      className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
-                      title="Remove from saved posts"
-                    >
-                      <FaTrash className="h-4 w-4" />
-                    </button>
+        {/* Saved Posts Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {savedPosts.map((post) => (
+            <article key={post._id} className="group bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
+              {/* Post Image */}
+              <div className="relative overflow-hidden">
+                {post.image ? (
+                  <img
+                    src={post.image.url || post.image.path || post.image}
+                    alt={post.title}
+                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center">
+                    <span className="text-4xl">📝</span>
                   </div>
                 )}
+                
+                {/* Remove from saved button */}
+                <button
+                  onClick={() => removeFromSaved(post._id)}
+                  className="absolute top-3 right-3 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                  aria-label="Remove from saved"
+                >
+                  <FaTrash className="h-4 w-4" />
+                </button>
+              </div>
 
-                <div className="p-6">
-                  {/* Author Info */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <Link to={`/user/${post.author?._id}`}>
-                        <img
-                          src={post.author?.profilePicture?.path || post.author?.profilePicture || `https://ui-avatars.com/api/?name=${post.author?.username}&background=random&color=fff`}
-                          alt={post.author?.username}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                      </Link>
-                      <div>
-                        <Link
-                          to={`/user/${post.author?._id}`}
-                          className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                        >
-                          {post.author?.username}
-                        </Link>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {new Date(post.createdAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Post Title */}
-                  <Link to={`/posts/${post._id}`}>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                      {post.title || "Untitled"}
-                    </h3>
-                  </Link>
-
-                  {/* Category */}
+              {/* Post Content */}
+              <div className="p-4 space-y-3">
+                {/* Category and Tags */}
+                <div className="flex flex-wrap items-center gap-2 mb-2">
                   {post.category && (
-                    <div className="mb-4">
-                      <span className="inline-block bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium">
-                        {post.category?.categoryName}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Post Description */}
-                  <div
-                    className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3"
-                    dangerouslySetInnerHTML={{
-                      __html: post.description?.substring(0, 150) + (post.description?.length > 150 ? '...' : '')
-                    }}
-                  />
-
-                  {/* Post Stats */}
-                  <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                    <div className="flex items-center gap-4">
-                      <span className="flex items-center gap-1">
-                        <FaEye className="h-4 w-4" />
-                        {post.viewers?.length || 0}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <FaHeart className="h-4 w-4" />
-                        {post.likes?.length || 0}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <FaComment className="h-4 w-4" />
-                        {post.comments?.length || 0}
-                      </span>
-                    </div>
-                    <span>
-                      {new Date(post.createdAt).toLocaleDateString()}
+                    <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-medium rounded-full">
+                      {post.category.categoryName || post.category.name || 'Uncategorized'}
                     </span>
+                  )}
+                  {post.tags && post.tags.slice(0, 3).map((tag, index) => (
+                    <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium rounded-full">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Title */}
+                <Link to={`/posts/${post._id}`}>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors line-clamp-2 leading-tight">
+                    {post.title}
+                  </h3>
+                </Link>
+
+                {/* Excerpt */}
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-3">
+                  {truncateText(post.content, 120)}
+                </p>
+
+                {/* Author & Meta */}
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center space-x-3">
+                    {post.author?.profilePicture ? (
+                      <img
+                        src={post.author.profilePicture.url || post.author.profilePicture.path || post.author.profilePicture}
+                        alt={post.author.name || post.author.username}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                        <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                          {(post.author?.name || post.author?.username || 'U').charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {post.author?.name || post.author?.username || 'Anonymous'}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {new Date(post.createdAt).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Read More Button */}
-                  <div className="mt-4">
-                    <Link
-                      to={`/posts/${post._id}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Read More
-                    </Link>
+                  {/* Saved indicator */}
+                  <div className="text-green-500">
+                    <FaRegBookmark className="h-4 w-4" />
                   </div>
                 </div>
+
+                {/* Stats */}
+                <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400 pt-2">
+                  <span className="flex items-center space-x-1">
+                    <FaEye className="h-3 w-3" />
+                    <span>{post.views || 0}</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <FaHeart className="h-3 w-3" />
+                    <span>{post.likes?.length || 0}</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <FaComment className="h-3 w-3" />
+                    <span>{post.comments?.length || 0}</span>
+                  </span>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
+            </article>
+          ))}
+        </div>
       </div>
     </div>
   );
