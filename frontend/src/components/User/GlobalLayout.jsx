@@ -95,13 +95,12 @@ export default function GlobalLayout({ userAuth, children }) {
     const handleClickOutside = (event) => {
       // Check if click is outside the sidebar and not on the toggle button
       const sidebar = document.querySelector('[data-sidebar]');
-      const toggleButton = document.querySelector('[data-sidebar-toggle]');
+    const isToggleClick = event.target.closest('[data-sidebar-toggle]');
       
       if (navbarSidebarOpen && 
           sidebar && 
           !sidebar.contains(event.target) && 
-          toggleButton && 
-          !toggleButton.contains(event.target)) {
+      !isToggleClick) {
         setNavbarSidebarOpen(false);
       }
     };
@@ -130,18 +129,23 @@ export default function GlobalLayout({ userAuth, children }) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
-      {/* Sidebar Overlay - Only on mobile */}
-      {navbarSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setNavbarSidebarOpen(false)}
-        />
-      )}
+      {/* Sidebar Overlay - show when we do NOT shift content (e.g., trending) */}
+      {(() => {
+        const isTrendingPage = location.pathname.startsWith('/trending');
+        const isPostsList = location.pathname === '/posts' || location.pathname.startsWith('/posts');
+        const shouldShiftContent = navbarSidebarOpen && isPostsList && !isTrendingPage;
+        return navbarSidebarOpen && !shouldShiftContent ? (
+          <div 
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            onClick={() => setNavbarSidebarOpen(false)}
+          />
+        ) : null;
+      })()}
 
       {/* Left Sidebar */}
       <div 
         data-sidebar
-        className={`fixed inset-y-0 left-0 z-40 w-48 sm:w-56 lg:w-64 bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-40 w-40 sm:w-48 md:w-56 lg:w-64 bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out ${
           navbarSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:-translate-x-full'
         }`}
       >
@@ -276,13 +280,16 @@ export default function GlobalLayout({ userAuth, children }) {
       </div>
 
       {/* Main Content Area */}
-      <div className={`transition-all duration-300 ease-in-out flex-1 min-h-screen pt-16 ${
-        navbarSidebarOpen 
-          ? 'ml-48 sm:ml-56 lg:ml-64' 
-          : 'ml-0'
-      }`}>
-        {/* Navbar - Fixed Header */}
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-800">
+      {(() => {
+        const isTrendingPage = location.pathname.startsWith('/trending');
+        const isPostsList = location.pathname === '/posts' || location.pathname.startsWith('/posts');
+        const shouldShiftContent = navbarSidebarOpen && isPostsList && !isTrendingPage;
+        return (
+          <div className={`transition-all duration-300 ease-in-out flex-1 min-h-screen pt-16 ${
+            shouldShiftContent ? 'ml-40 sm:ml-48 md:ml-56 lg:ml-64' : 'ml-0'
+          }`}>
+            {/* Navbar - Fixed Header */}
+            <nav className="hidden lg:block fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-800">
           <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               {/* Left: Logo and Navbar Sidebar Toggle */}
@@ -311,12 +318,12 @@ export default function GlobalLayout({ userAuth, children }) {
                   WisdomShare
                 </Link>
               </div>
-
+ 
               {/* Center: Search Bar */}
               <div className="hidden md:flex flex-1 max-w-md mx-4">
                 <SearchBar placeholder="Search posts, users, or content..." />
               </div>
-
+ 
               {/* Center: Main Navigation (visible on lg and up) */}
               <div className="hidden lg:flex items-center space-x-6">
                 <Link
@@ -346,14 +353,14 @@ export default function GlobalLayout({ userAuth, children }) {
                   </Link>
                 )}
               </div>
-
+ 
               {/* Right: Actions */}
               <div className="flex items-center space-x-4">
                 {userAuth ? (
                   <>
                     {/* User Plan Status */}
                     <UserPlanStatus />
-
+ 
                     <Link
                       to="/dashboard/create-post"
                       className="hidden md:flex items-center text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -361,7 +368,7 @@ export default function GlobalLayout({ userAuth, children }) {
                     >
                       <FaPen className="w-4 h-4" />
                     </Link>
-
+ 
                     <Link
                       to="/dashboard/notifications"
                       className="relative text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
@@ -373,7 +380,7 @@ export default function GlobalLayout({ userAuth, children }) {
                         </span>
                       )}
                     </Link>
-
+ 
                     {/* Dark mode toggle */}
                     <button
                       onClick={toggleDarkMode}
@@ -381,7 +388,7 @@ export default function GlobalLayout({ userAuth, children }) {
                     >
                       {darkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
                     </button>
-
+ 
                     {/* User dropdown */}
                     <div className="relative">
                       <button
@@ -409,7 +416,7 @@ export default function GlobalLayout({ userAuth, children }) {
                         </div>
                         <span className="hidden md:block">{authUser?.name || authUser?.username}</span>
                       </button>
-
+ 
                       {dropdownOpen && (
                         <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50">
                           <Link
@@ -456,63 +463,65 @@ export default function GlobalLayout({ userAuth, children }) {
             </div>
           </div>
         </nav>
-
-        {/* Page Content */}
-        <div className="pt-16">
-          <main className="min-h-screen">
-            {/* Upgrade Plan Banner - Show for free plan users */}
-            {userAuth && hasFreePlan && (
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-b border-green-200 dark:border-green-700 p-3 sm:p-4">
-                <div className="max-w-7xl mx-auto">
-                  <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
-                    <div className="flex-1 mb-3 lg:mb-0">
-                      <h2 className="text-lg sm:text-xl font-bold text-green-800 dark:text-green-200 mb-2">
-                        🚀 Upgrade Your Plan
-                      </h2>
-                      <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">
-                        Unlock unlimited posts, advanced analytics, and premium features.
-                      </p>
-                      <div className="flex flex-wrap gap-1 sm:gap-2">
-                        <span className="bg-green-100 dark:bg-green-800/30 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs">
-                          ✨ Unlimited Posts
-                        </span>
-                        <span className="bg-blue-100 dark:bg-blue-800/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
-                          📊 Analytics
-                        </span>
-                        <span className="bg-purple-100 dark:bg-purple-800/30 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full text-xs">
-                          🎯 Support
-                        </span>
+ 
+            {/* Page Content */}
+            <div className="pt-16">
+              <main className="min-h-screen">
+                {/* Upgrade Plan Banner - Show for free plan users */}
+                {userAuth && hasFreePlan && (
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-b border-green-200 dark:border-green-700 p-3 sm:p-4">
+                    <div className="max-w-7xl mx-auto">
+                      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
+                        <div className="flex-1 mb-3 lg:mb-0">
+                          <h2 className="text-lg sm:text-xl font-bold text-green-800 dark:text-green-200 mb-2">
+                            🚀 Upgrade Your Plan
+                          </h2>
+                          <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">
+                            Unlock unlimited posts, advanced analytics, and premium features.
+                          </p>
+                          <div className="flex flex-wrap gap-1 sm:gap-2">
+                            <span className="bg-green-100 dark:bg-green-800/30 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs">
+                              ✨ Unlimited Posts
+                            </span>
+                            <span className="bg-blue-100 dark:bg-blue-800/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
+                              📊 Analytics
+                            </span>
+                            <span className="bg-purple-100 dark:bg-purple-800/30 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full text-xs">
+                              🎯 Support
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Link
+                            to="/plan-management"
+                            className="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+                          >
+                            View Plans
+                          </Link>
+                          <Link
+                            to="/pricing"
+                            className="border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+                          >
+                            Compare
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Link
-                        to="/plan-management"
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
-                      >
-                        View Plans
-                      </Link>
-                      <Link
-                        to="/pricing"
-                        className="border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
-                      >
-                        Compare
-                      </Link>
-                    </div>
                   </div>
+                )}
+ 
+                {/* Page Content */}
+                <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
+                  {children || <Outlet />}
                 </div>
-              </div>
-            )}
-
-            {/* Page Content */}
-            <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
-              {children || <Outlet />}
+              </main>
             </div>
-          </main>
-        </div>
-      </div>
+          </div>
+        );
+  })()}
 
       {/* Mobile Navbar - Only visible on small devices */}
-      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg">
+  <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg">
         <div className="px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Left: Sidebar Toggle and Logo */}
@@ -522,9 +531,15 @@ export default function GlobalLayout({ userAuth, children }) {
                 <button
                   onClick={() => setNavbarSidebarOpen(!navbarSidebarOpen)}
                   className="navbar-sidebar p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  title="Open Navigation Menu"
+                  title={navbarSidebarOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+                  aria-expanded={navbarSidebarOpen}
+                  data-sidebar-toggle
                 >
-                  <FaBars className="h-4 w-4 sm:h-5 sm:w-5" />
+                  {navbarSidebarOpen ? (
+                    <FaTimes className="h-4 w-4 sm:h-5 sm:w-5" />
+                  ) : (
+                    <FaBars className="h-4 w-4 sm:h-5 sm:w-5" />
+                  )}
                 </button>
               )}
               
