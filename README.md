@@ -1,5 +1,9 @@
 # MERN Blog Platform
 
+```markdown
+Live Demo : https://blog-app-sigma-tan.vercel.app/ 
+![Admin Dashboard] : https://blog-app-sigma-tan.vercel.app/admin/dashboard
+```
 ![License](https://img.shields.io/badge/license-ISC-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
 ![React](https://img.shields.io/badge/react-18-blue)
@@ -156,10 +160,6 @@ npm run lint      # run eslint
 
 Place screenshots under `frontend/public/screenshots` and reference them here. Example:
 
-```markdown
-![Home](./frontend/public/screenshots/home.png)
-![Admin Dashboard](./frontend/public/screenshots/admin-dashboard.png)
-```
 
 If you just took screenshots, drop them into that folder and rename the links above to match your filenames.
 
