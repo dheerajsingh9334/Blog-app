@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Cog6ToothIcon,
   HomeIcon,
@@ -14,7 +14,7 @@ import {
   CurrencyDollarIcon,
   SparklesIcon
 } from "@heroicons/react/24/outline";
-import { FaBlog, FaPen, FaBell, FaSun, FaMoon, FaBars, FaTimes } from "react-icons/fa";
+import { FaBlog, FaPen, FaBell, FaSun, FaMoon, FaBars, FaTimes, FaLock } from "react-icons/fa";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -22,20 +22,21 @@ import { getUserPlanAndUsageAPI, logoutAPI } from "../../APIServices/users/users
 import { useNotifications } from "../../contexts/NotificationContext";
 import { logout } from "../../redux/slices/authSlices";
 import { useDarkMode } from "../Navbar/DarkModeContext";
+import { PLAN_TIERS, hasFeatureAccess } from "../../utils/planUtils";
 import SearchBar from "../Search/SearchBar";
 import UserPlanStatus from "../Navbar/UserPlanStatus";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: false },
-  { name: "Create Post", href: "/dashboard/create-post", icon: BookOpenIcon, current: false },
-  { name: "My Posts", href: "/dashboard/posts", icon: BookOpenIcon, current: false },
-  { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon, current: false },
-  { name: "Content Calendar", href: "/dashboard/content-calendar", icon: CalendarIcon, current: false },
-  { name: "Saved Posts", href: "/dashboard/saved-posts", icon: BookmarkIcon, current: false },
-  { name: "Followers", href: "/dashboard/my-followers", icon: UserGroupIcon, current: false },
-  { name: "Following", href: "/dashboard/my-followings", icon: UserGroupIcon, current: false },
-  { name: "Categories", href: "/dashboard/add-category", icon: TagIcon, current: false },
-  { name: "Trending", href: "/trending", icon: FaBlog, current: false },
+  { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: false, feature: null },
+  { name: "Posts", href: "/posts", icon: BookOpenIcon, current: false, feature: null },
+  { name: "Create Post", href: "/create-post", icon: BookOpenIcon, current: false, feature: null },
+  { name: "Profile", href: "/profile", icon: UserGroupIcon, current: false, feature: null },
+  { name: "Analytics", href: "/analytics", icon: ChartBarIcon, current: false, feature: "advanced_analytics" },
+  { name: "Content Calendar", href: "/calendar", icon: CalendarIcon, current: false, feature: "content_calendar" },
+  { name: "Scheduled Posts", href: "/scheduled-posts", icon: BookmarkIcon, current: false, feature: "scheduled_posts" },
+  { name: "SEO Tools", href: "/seo-tools", icon: TagIcon, current: false, feature: "advanced_seo_tools" },
+  { name: "Team", href: "/team", icon: UserGroupIcon, current: false, feature: "team_collaboration" },
+  { name: "Trending", href: "/trending", icon: FaBlog, current: false, feature: null },
 ];
 
 function classNames(...classes) {
@@ -72,23 +73,84 @@ export default function GlobalLayout({ userAuth, children }) {
   // Use shared notification context - no more duplicate API calls!
   const { unreadCount } = useNotifications();
 
-  // Get user's current plan
+  // Get user's current plan with optimized settings
   const { data: usageData } = useQuery({
     queryKey: ["user-plan-usage"],
     queryFn: getUserPlanAndUsageAPI,
     enabled: !!userAuth,
     refetchInterval: 300000,
+    staleTime: 240000, // 4 minutes
+    cacheTime: 600000, // 10 minutes
   });
 
-  const currentPlan = usageData?.usage?.plan;
-  const hasFreePlan = currentPlan && (currentPlan.tier === 'free' || currentPlan.planName === 'Free');
+  // Memoize computed values
+  const currentPlan = useMemo(() => usageData?.usage?.plan, [usageData?.usage?.plan]);
+  const hasFreePlan = useMemo(() => 
+    currentPlan && (currentPlan.tier === 'free' || currentPlan.planName === 'Free'),
+    [currentPlan]
+  );
 
-  // Update current navigation item based on route
-  useEffect(() => {
-    navigation.forEach((item) => {
-      item.current = location.pathname === item.href;
-    });
-  }, [location]);
+  // Memoize navigation items with access control
+  const accessibleNavigation = useMemo(() => {
+    const userPlan = usageData?.usage?.plan?.tier || PLAN_TIERS.FREE;
+    return navigation.map(item => ({
+      ...item,
+      hasAccess: !item.feature || hasFeatureAccess(item.feature, userPlan),
+      current: location.pathname === item.href
+    }));
+  }, [usageData?.usage?.plan?.tier, location.pathname]);
+
+  // Memoized logout handler
+  const handleLogout = useCallback(async () => {
+    try {
+      // Clear local state first
+      setDropdownOpen(false);
+      setNavbarSidebarOpen(false);
+      
+      // Call logout API
+      await logoutAPI();
+      
+      // Clear Redux store and React Query cache
+      dispatch(logout());
+      queryClient.clear();
+      queryClient.invalidateQueries();
+      
+      // Clear any local storage items
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // Force a hard redirect to clear all state
+      window.location.replace('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      
+      // Even if API call fails, clear local state
+      setDropdownOpen(false);
+      setNavbarSidebarOpen(false);
+      dispatch(logout());
+      queryClient.clear();
+      queryClient.invalidateQueries();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // Force redirect anyway
+      window.location.replace('/');
+    }
+  }, [dispatch, queryClient]);
+
+  // Memoize layout calculations
+  const layoutConfig = useMemo(() => {
+    const isTrendingPage = location.pathname.startsWith('/trending');
+    const isPostsList = location.pathname === '/posts' || location.pathname.startsWith('/posts');
+    const shouldShiftContent = navbarSidebarOpen && isPostsList && !isTrendingPage;
+    
+    return {
+      isTrendingPage,
+      isPostsList,
+      shouldShiftContent,
+      showOverlay: navbarSidebarOpen && !shouldShiftContent
+    };
+  }, [location.pathname, navbarSidebarOpen]);
 
   // Close navbar sidebar when clicking outside
   useEffect(() => {
@@ -111,36 +173,15 @@ export default function GlobalLayout({ userAuth, children }) {
     };
   }, [navbarSidebarOpen]);
 
-  const handleLogout = async () => {
-    try {
-      await logoutAPI();
-      dispatch(logout());
-      queryClient.clear();
-      setDropdownOpen(false);
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Logout error:', error);
-      dispatch(logout());
-      queryClient.clear();
-      setDropdownOpen(false);
-      window.location.href = '/';
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       {/* Sidebar Overlay - show when we do NOT shift content (e.g., trending) */}
-      {(() => {
-        const isTrendingPage = location.pathname.startsWith('/trending');
-        const isPostsList = location.pathname === '/posts' || location.pathname.startsWith('/posts');
-        const shouldShiftContent = navbarSidebarOpen && isPostsList && !isTrendingPage;
-        return navbarSidebarOpen && !shouldShiftContent ? (
-          <div 
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-            onClick={() => setNavbarSidebarOpen(false)}
-          />
-        ) : null;
-      })()}
+      {layoutConfig.showOverlay && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setNavbarSidebarOpen(false)}
+        />
+      )}
 
       {/* Left Sidebar */}
       <div 
@@ -170,30 +211,50 @@ export default function GlobalLayout({ userAuth, children }) {
                 Main Navigation
               </h3>
               <div className="space-y-1">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={classNames(
-                      item.current
-                        ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600",
-                      "group flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-all duration-200"
-                    )}
-                  >
-                    <item.icon
-                      className={classNames(
-                        item.current ? "text-green-600" : "text-gray-400 group-hover:text-green-600",
-                        "h-5 w-5 mr-2 sm:mr-3"
-                      )}
-                      aria-hidden="true"
-                    />
-                    {item.name}
-                    {item.current && (
-                      <CheckIcon className="h-5 w-5 text-green-500 ml-auto" aria-hidden="true" />
-                    )}
-                  </Link>
-                ))}
+                {accessibleNavigation.map((item) => {
+                  if (item.hasAccess) {
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className={classNames(
+                          item.current
+                            ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600",
+                          "group flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-all duration-200"
+                        )}
+                      >
+                        <item.icon
+                          className={classNames(
+                            item.current ? "text-green-600" : "text-gray-400 group-hover:text-green-600",
+                            "h-5 w-5 mr-2 sm:mr-3"
+                          )}
+                          aria-hidden="true"
+                        />
+                        {item.name}
+                        {item.current && (
+                          <CheckIcon className="h-5 w-5 text-green-500 ml-auto" aria-hidden="true" />
+                        )}
+                      </Link>
+                    );
+                  }
+                  
+                  return (
+                    <div
+                      key={item.name}
+                      className="group flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium rounded-md opacity-50 cursor-not-allowed"
+                    >
+                      <div className="flex items-center">
+                        <item.icon
+                          className="h-5 w-5 mr-2 sm:mr-3 text-gray-400"
+                          aria-hidden="true"
+                        />
+                        {item.name}
+                      </div>
+                      <FaLock className="h-3 w-3 text-gray-400" />
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -280,14 +341,9 @@ export default function GlobalLayout({ userAuth, children }) {
       </div>
 
       {/* Main Content Area */}
-      {(() => {
-        const isTrendingPage = location.pathname.startsWith('/trending');
-        const isPostsList = location.pathname === '/posts' || location.pathname.startsWith('/posts');
-        const shouldShiftContent = navbarSidebarOpen && isPostsList && !isTrendingPage;
-        return (
-          <div className={`transition-all duration-300 ease-in-out flex-1 min-h-screen pt-16 ${
-            shouldShiftContent ? 'ml-40 sm:ml-48 md:ml-56 lg:ml-64' : 'ml-0'
-          }`}>
+      <div className={`transition-all duration-300 ease-in-out flex-1 min-h-screen pt-16 ${
+        layoutConfig.shouldShiftContent ? 'ml-40 sm:ml-48 md:ml-56 lg:ml-64' : 'ml-0'
+      }`}>
             {/* Navbar - Fixed Header */}
             <nav className="hidden lg:block fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-800">
           <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -517,11 +573,9 @@ export default function GlobalLayout({ userAuth, children }) {
               </main>
             </div>
           </div>
-        );
-  })()}
 
-      {/* Mobile Navbar - Only visible on small devices */}
-  <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg">
+          {/* Mobile Navbar - Only visible on small devices */}
+          <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg">
         <div className="px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Left: Sidebar Toggle and Logo */}

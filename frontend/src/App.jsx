@@ -35,6 +35,7 @@ import PostDetails from "./components/Posts/PostDetails";
 import Login from "./components/User/Login";
 import Register from "./components/User/Register";
 import Profile from "./components/User/Profile";
+import Dashboard from "./components/User/Dashboard";
 import { DarkModeProvider } from "./components/Navbar/DarkModeContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import TrendingPosts from "./components/Posts/TrendingPosts";
@@ -220,6 +221,18 @@ function App() {
           <Route element={<GlobalLayout userAuth={userAuth}><CheckoutForm /></GlobalLayout>} path="/checkout/:planId" />
           <Route element={<GlobalLayout userAuth={userAuth}><PostLimitReached /></GlobalLayout>} path="/post-limit-reached" />
           
+          {/* Dashboard route */}
+          <Route 
+            element={
+              <GlobalLayout userAuth={userAuth}>
+                <AuthRoute>
+                  <Dashboard />
+                </AuthRoute>
+              </GlobalLayout>
+            } 
+            path="/dashboard" 
+          />
+
           {/* Profile route - Standalone */}
           <Route 
             element={
@@ -235,7 +248,7 @@ function App() {
           {/* Home page */}
           <Route 
             path="/" 
-            element={userAuth ? <Navigate to="/posts" /> : <GlobalLayout userAuth={userAuth}><PostsList /></GlobalLayout>} 
+            element={userAuth ? <Navigate to="/dashboard" /> : <GlobalLayout userAuth={userAuth}><PostsList /></GlobalLayout>} 
           />
         
         {/* Routes with GlobalLayout wrapper - Main authenticated routes */}
