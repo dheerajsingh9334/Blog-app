@@ -355,7 +355,11 @@ const AccountSummaryDashboard = () => {
               <div>
                 <h4 className={`${r.text.bodySmall} font-semibold text-gray-800 dark:text-gray-200 mb-1`}>Plan Changes</h4>
                 <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300 max-h-48 overflow-auto">
-                  {(planHistoryData?.history || []).slice(0,5).map((h) => (
+                  {(planHistoryData?.history || [])
+                    .slice()
+                    .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0,5)
+                    .map((h) => (
                     <li key={h._id} className="flex items-center justify-between">
                       <span>
                         {new Date(h.createdAt).toLocaleDateString()} • {h.action} {h.fromPlan?.planName || h.fromPlan?.tier} → {h.toPlan?.planName || h.toPlan?.tier}
@@ -377,12 +381,16 @@ const AccountSummaryDashboard = () => {
               <div>
                 <h4 className={`${r.text.bodySmall} font-semibold text-gray-800 dark:text-gray-200 mb-1`}>Billing</h4>
                 <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300 max-h-48 overflow-auto">
-                  {(planHistoryData?.billing || []).slice(0,5).map((b) => (
+                  {(planHistoryData?.billing || [])
+                    .slice()
+                    .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0,5)
+                    .map((b) => (
                     <li key={b.id} className="flex items-center justify-between">
                       <span>
-                        {new Date(b.createdAt).toLocaleDateString()} • {b.plan?.planName || b.plan?.tier} • {(b.amount/100).toLocaleString(undefined,{style:'currency',currency:b.currency?.toUpperCase()||'USD'})}
+                        {new Date(b.createdAt).toLocaleDateString()} • {b.plan?.planName || b.plan?.tier} • {new Intl.NumberFormat(undefined, { style: 'currency', currency: (b.currency || 'USD').toUpperCase() }).format(b.amount ?? 0)}
                       </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${b.status === 'succeeded' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${(['succeeded','success','paid'].includes((b.status||'').toLowerCase())) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
                         {b.status}
                       </span>
                     </li>

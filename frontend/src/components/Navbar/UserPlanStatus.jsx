@@ -1,4 +1,3 @@
-import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserPlanAndUsageAPI } from "../../APIServices/users/usersAPI";
 import { getPlanBadge, getUpgradeButton } from "../../utils/planUtils";
@@ -26,9 +25,9 @@ const UserPlanStatus = () => {
 
   const { usage } = usageData;
   const { plan, posts } = usage;
-  
   const planBadge = getPlanBadge(plan);
   const upgradeButton = getUpgradeButton(plan);
+  const isFreePlan = (plan?.tier?.toLowerCase?.() === 'free') || (/^free$/i.test(plan?.planName || ''));
   
   // Check if user is approaching or has reached limit
   const isNearLimit = posts.unlimited ? false : posts.current >= posts.limit * 0.8;
@@ -36,12 +35,14 @@ const UserPlanStatus = () => {
 
   return (
     <div className="flex items-center space-x-3">
-      {/* Plan Badge */}
-      <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${planBadge.className}`}>
-        {plan.tier === 'pro' && <FaCrown className="mr-1" />}
-        {plan.tier === 'premium' && <FaChartLine className="mr-1" />}
-        {planBadge.text}
-      </div>
+      {/* Plan Badge (hidden for Free plan) */}
+      {!isFreePlan && (
+        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${planBadge.className}`}>
+          {plan.tier === 'pro' && <FaCrown className="mr-1" />}
+          {plan.tier === 'premium' && <FaChartLine className="mr-1" />}
+          {planBadge.text}
+        </div>
+      )}
 
       {/* Usage Status */}
       {!posts.unlimited && (
@@ -59,10 +60,10 @@ const UserPlanStatus = () => {
       )}
 
       {/* Upgrade Button */}
-      {upgradeButton && upgradeButton.show && (
+      {upgradeButton && (
         <Link
           to="/dashboard/plan-management"
-          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white ${upgradeButton.className} hover:opacity-90 transition-opacity`}
         >
           {upgradeButton.text}
         </Link>
