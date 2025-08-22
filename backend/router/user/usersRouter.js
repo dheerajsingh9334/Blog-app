@@ -75,6 +75,9 @@ usersRouter.get("/profile/:userId", userController.getUserProfileById);
 // Get user's current plan and usage
 usersRouter.get("/plan-usage", isAuthenticated, userController.getUserPlanAndUsage);
 
+// Get user's plan change history
+usersRouter.get("/plan-history", isAuthenticated, userController.getUserPlanHistory);
+
 // Save post routes
 usersRouter.put("/save-post/:postId", isAuthenticated, userController.savePost);
 usersRouter.put("/unsave-post/:postId", isAuthenticated, userController.unsavePost);

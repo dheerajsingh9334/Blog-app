@@ -160,3 +160,19 @@ export const searchAllAPI = async (params = {}) => {
   });
   return response.data;
 };
+
+//!Track post view api
+export const trackPostViewAPI = async (postId) => {
+  const response = await axios.post(`${BASE_URL}/track-view/${postId}`, {}, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+//!Get post analytics api (author only)
+export const getPostAnalyticsAPI = async (postId) => {
+  const response = await axios.get(`${BASE_URL}/analytics/${postId}`, {
+    withCredentials: true,
+  });
+  return response.data;
+};

@@ -8,7 +8,9 @@ const sendNotificatiomMsg = require("../../utils/sendNotificatiomMsg");
 const postController = {
 createPost: asyncHandler(async (req, res) => {
   try {
-    const { title, description, content, category, tags, status, scheduledFor } = req.body;
+  const { title, description, content, category, tags, status, scheduledFor, slug, excerpt } = req.body;
+  // Optional nested fields (may arrive as JSON strings in multipart requests)
+  let { options, seo } = req.body;
     const image = req.file;
     
     // Validate required fields
@@ -38,8 +40,59 @@ createPost: asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Plan checking is now handled by middleware (checkUserPlan and checkPostLimit)
-    // The middleware ensures user has a plan and hasn't exceeded post limits
+    // Plan checking is handled by middleware. Here we enforce per-plan character limits.
+    const planTier = (userFound.plan?.tier || userFound.plan?.planName || 'free').toString().toLowerCase();
+    const limitsByPlan = {
+      free: 1500,
+      premium: 5000,
+      pro: 10000
+    };
+    const charLimit = limitsByPlan[planTier] ?? 1500;
+    const bodyText = (content && content.trim().length > 0 ? content : description) || '';
+    if (bodyText.length > charLimit) {
+      return res.status(400).json({
+        message: `Content exceeds plan limit. Max ${charLimit} characters for your plan (${userFound.plan?.planName || planTier}).`,
+        limit: charLimit,
+        provided: bodyText.length
+      });
+    }
+
+    // Parse options/seo if provided as JSON strings
+    try { if (typeof options === 'string') options = JSON.parse(options); } catch { /* ignore parse errors */ }
+    try { if (typeof seo === 'string') seo = JSON.parse(seo); } catch { /* ignore parse errors */ }
+
+    // Coerce boolean-like values in options
+    const coerceBool = (v, def = undefined) => (typeof v === 'string' ? v === 'true' : typeof v === 'boolean' ? v : def);
+    const normalizedOptions = {
+      commentsEnabled: coerceBool(options?.commentsEnabled, true),
+      reactionsEnabled: coerceBool(options?.reactionsEnabled, true),
+      allowSharing: coerceBool(options?.allowSharing, true),
+      pinToProfile: coerceBool(options?.pinToProfile, false),
+      featured: coerceBool(options?.featured, false),
+      nsfw: coerceBool(options?.nsfw, false),
+      visibility: ['public', 'unlisted', 'private'].includes(options?.visibility) ? options.visibility : 'public'
+    };
+
+    // Basic SEO normalization
+    const normalizedSeo = {
+      metaTitle: seo?.metaTitle?.toString().trim()?.slice(0, 120) || undefined,
+      metaDescription: seo?.metaDescription?.toString().trim()?.slice(0, 200) || undefined,
+      canonicalUrl: seo?.canonicalUrl?.toString().trim() || undefined
+    };
+
+    // Generate slug from title if not provided
+    const slugify = (str) => str
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+    const finalSlug = (slug && slug.toString().trim().length > 0) ? slugify(slug) : slugify(title);
+
+    // Compute reading time (approx. 200 wpm)
+    const words = bodyText.trim().split(/\s+/).filter(Boolean).length;
+    const readingTimeMinutes = Math.max(1, Math.ceil(words / 200));
 
     // Process tags - convert to lowercase and remove duplicates
     let processedTags = [];
@@ -50,9 +103,10 @@ createPost: asyncHandler(async (req, res) => {
     }
 
     // Determine post status and publishing - simplify this logic
-    let postStatus = status || 'published'; // Default to published
-    let publishedAt = new Date(); // Always set publishedAt
-    let isPublic = true; // Always make posts public by default
+  let postStatus = status || 'published'; // Default to published
+  let publishedAt = new Date(); // Always set publishedAt
+  // visibility from options takes precedence over isPublic default
+  let isPublic = (normalizedOptions.visibility === 'public');
 
     console.log("🔍 Post Creation Debug:");
     console.log("Requested status:", status);
@@ -80,14 +134,21 @@ createPost: asyncHandler(async (req, res) => {
       title,
       description,
       content: content || description, // Use description as content if content is not provided
+      slug: finalSlug,
       image: imageUrl,
       author: req.user,
       category,
       tags: processedTags,
+      excerpt: (excerpt && excerpt.toString().trim().length > 0)
+        ? excerpt.toString().trim().slice(0, 500)
+        : (description ? description.toString().trim().slice(0, 200) : undefined),
+      options: normalizedOptions,
       status: postStatus,
       publishedAt,
       scheduledFor: scheduledFor || null,
       isPublic,
+      seo: normalizedSeo,
+      readingTimeMinutes,
     });
 
     // Push post to category and user
@@ -153,11 +214,43 @@ createPost: asyncHandler(async (req, res) => {
       }
     }
 
-    res.status(201).json({
-      status: "success",
-      message: `Post ${postStatus === 'draft' ? 'saved as draft' : postStatus === 'scheduled' ? 'scheduled for publishing' : 'published'} successfully`,
-      postCreated,
-    });
+    // Compute today's usage for response
+    try {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+      const postsToday = await Post.countDocuments({
+        author: req.user,
+        createdAt: { $gte: startOfDay, $lte: endOfDay },
+      });
+      const tierDefaults = { free: 20, premium: 50, pro: 200 };
+      const planTierResp = (userFound.plan?.tier || userFound.plan?.planName || 'free').toString().toLowerCase();
+      const effectiveDailyLimit = (typeof userFound.plan?.postLimit === 'number')
+        ? userFound.plan.postLimit
+        : (tierDefaults[planTierResp] ?? 20);
+      res.status(201).json({
+        status: "success",
+        message: `Post ${postStatus === 'draft' ? 'saved as draft' : postStatus === 'scheduled' ? 'scheduled for publishing' : 'published'} successfully`,
+        postCreated,
+        planUsage: {
+          plan: userFound.plan?.planName || planTierResp,
+          charLimit,
+          today: {
+            count: postsToday,
+            limit: effectiveDailyLimit,
+            remaining: Math.max(0, effectiveDailyLimit - postsToday)
+          }
+        }
+      });
+    } catch (_) {
+      // Fallback response if usage calculation fails
+      res.status(201).json({
+        status: "success",
+        message: `Post ${postStatus === 'draft' ? 'saved as draft' : postStatus === 'scheduled' ? 'scheduled for publishing' : 'published'} successfully`,
+        postCreated,
+      });
+    }
 
   } catch (error) {
     console.error("🔥 Create Post Error:", error.message);
@@ -324,7 +417,7 @@ fetchAllPosts: asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Category not found" });
     }
     
-    // Prepare update data
+  // Prepare update data
     const updateData = {};
     
     if (req.body.title) {
@@ -338,6 +431,22 @@ fetchAllPosts: asyncHandler(async (req, res) => {
     if (req.body.category) {
       updateData.category = req.body.category;
     }
+
+    // Optional fields updates
+    if (req.body.slug) {
+      const slugify = (str) => str
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+      updateData.slug = slugify(req.body.slug);
+    }
+
+    if (req.body.excerpt) {
+      updateData.excerpt = req.body.excerpt.toString().trim().slice(0, 500);
+    }
     
     if (req.file) {
       const imageUrl = req.file.path?.startsWith("http")
@@ -350,6 +459,30 @@ fetchAllPosts: asyncHandler(async (req, res) => {
     if (req.body.tags) {
       const processedTags = [...new Set(req.body.tags.split(',').map(tag => tag.toLowerCase().trim()))];
       updateData.tags = processedTags;
+    }
+
+    // Options and SEO may arrive as JSON strings
+    let { options, seo } = req.body;
+    try { if (typeof options === 'string') options = JSON.parse(options); } catch {}
+    try { if (typeof seo === 'string') seo = JSON.parse(seo); } catch {}
+    if (options) {
+      const coerceBool = (v, def = undefined) => (typeof v === 'string' ? v === 'true' : typeof v === 'boolean' ? v : def);
+      updateData.options = {
+        commentsEnabled: coerceBool(options.commentsEnabled, postFound.options?.commentsEnabled ?? true),
+        reactionsEnabled: coerceBool(options.reactionsEnabled, postFound.options?.reactionsEnabled ?? true),
+        allowSharing: coerceBool(options.allowSharing, postFound.options?.allowSharing ?? true),
+        pinToProfile: coerceBool(options.pinToProfile, postFound.options?.pinToProfile ?? false),
+        featured: coerceBool(options.featured, postFound.options?.featured ?? false),
+        nsfw: coerceBool(options.nsfw, postFound.options?.nsfw ?? false),
+        visibility: ['public', 'unlisted', 'private'].includes(options.visibility) ? options.visibility : (postFound.options?.visibility ?? 'public')
+      };
+    }
+    if (seo) {
+      updateData.seo = {
+        metaTitle: seo.metaTitle?.toString().trim().slice(0, 120),
+        metaDescription: seo.metaDescription?.toString().trim().slice(0, 200),
+        canonicalUrl: seo.canonicalUrl?.toString().trim()
+      };
     }
 
     // Handle status changes
@@ -392,7 +525,36 @@ fetchAllPosts: asyncHandler(async (req, res) => {
       updateData.scheduledFor = scheduledDate;
     }
     
+    // If content/description are being updated, enforce plan character limit
+    let bodyChanged = false;
+    if (req.body.description || req.body.content) {
+      const author = postFound.author;
+      const authorWithPlan = await User.findById(author).populate('plan');
+      const planTier = (authorWithPlan.plan?.tier || authorWithPlan.plan?.planName || 'free').toString().toLowerCase();
+      const limitsByPlan = { free: 1500, premium: 5000, pro: 10000 };
+      const charLimit = limitsByPlan[planTier] ?? 1500;
+      const newBody = (req.body.content && req.body.content.trim().length > 0 ? req.body.content : (req.body.description || postFound.description)) || '';
+      if (newBody.length > charLimit) {
+        return res.status(400).json({
+          message: `Content exceeds plan limit. Max ${charLimit} characters for your plan (${authorWithPlan.plan?.planName || planTier}).`,
+          limit: charLimit,
+          provided: newBody.length
+        });
+      }
+      bodyChanged = true;
+      // If description provided, update it; same for content
+      if (req.body.description) updateData.description = req.body.description;
+      if (req.body.content) updateData.content = req.body.content;
+    }
+
     //update
+    // Recompute reading time if body changed
+    if (bodyChanged) {
+      const text = (updateData.content || updateData.description || postFound.content || postFound.description || '').toString();
+      const words = text.trim().split(/\s+/).filter(Boolean).length;
+      updateData.readingTimeMinutes = Math.max(1, Math.ceil(words / 200));
+    }
+
     const postUpdated = await Post.findByIdAndUpdate(
       postId,
       updateData,
@@ -498,9 +660,10 @@ fetchAllPosts: asyncHandler(async (req, res) => {
     console.log("Page:", page, "Limit:", limit);
 
     // More flexible filter - show posts that are published or don't have status field
-    // Also handle ObjectId comparison properly
+    // Also handle ObjectId comparison properly and exclude admin-managed posts
     const filter = { 
-      author: userId, 
+      author: userId,
+      adminManaged: { $ne: true }, // Exclude admin-managed posts
       $or: [
         { status: 'published' },
         { status: { $exists: false } },
@@ -513,6 +676,15 @@ fetchAllPosts: asyncHandler(async (req, res) => {
 
     const publishedPosts = await Post.find(filter)
     .populate("category", "categoryName")
+    .populate("likes", "username profilePicture")
+    .populate("viewers", "username profilePicture")
+    .populate({
+      path: "comments",
+      populate: {
+        path: "author",
+        select: "username profilePicture"
+      }
+    })
     .sort({ publishedAt: -1, createdAt: -1 })
     .skip(skip)
     .limit(parseInt(limit));
@@ -931,6 +1103,93 @@ fetchAllPosts: asyncHandler(async (req, res) => {
         status: "error",
         message: "Search failed",
         error: error.message,
+      });
+    }
+  }),
+
+  //! Track post view (add user to viewers array)
+  trackPostView: asyncHandler(async (req, res) => {
+    const { postId } = req.params;
+    const userId = req.user;
+
+    try {
+      // Find post and check if user already viewed
+      const post = await Post.findById(postId);
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      // Add user to viewers if not already present
+      if (!post.viewers.includes(userId)) {
+        post.viewers.push(userId);
+        post.viewsCount = (post.viewsCount || 0) + 1;
+        await post.save();
+      }
+
+      res.json({
+        status: "success",
+        message: "View tracked successfully",
+        viewsCount: post.viewsCount
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        message: "Failed to track view",
+        error: error.message
+      });
+    }
+  }),
+
+  //! Get post analytics for author
+  getPostAnalytics: asyncHandler(async (req, res) => {
+    const { postId } = req.params;
+    const userId = req.user;
+
+    try {
+      const post = await Post.findById(postId)
+        .populate("likes", "username profilePicture createdAt")
+        .populate("viewers", "username profilePicture")
+        .populate({
+          path: "comments",
+          populate: {
+            path: "author",
+            select: "username profilePicture"
+          }
+        });
+
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      // Check if user is the author
+      if (post.author.toString() !== userId.toString()) {
+        return res.status(403).json({ message: "Only post author can view analytics" });
+      }
+
+      // Check if post is admin-managed
+      if (post.adminManaged) {
+        return res.status(403).json({ message: "Analytics not available for admin-managed posts" });
+      }
+
+      const analytics = {
+        totalViews: post.viewsCount || 0,
+        totalLikes: post.likes?.length || 0,
+        totalComments: post.comments?.length || 0,
+        viewers: post.viewers || [],
+        likers: post.likes || [],
+        comments: post.comments || []
+      };
+
+      res.json({
+        status: "success",
+        message: "Analytics fetched successfully",
+        analytics
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        message: "Failed to fetch analytics",
+        error: error.message
       });
     }
   }),

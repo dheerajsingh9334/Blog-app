@@ -1,70 +1,121 @@
-// Static plans definition (immutable)
-// _id values are stable string identifiers equal to the tier for convenience
+// Static plans configuration as fallback when no DB plans exist
 
 const STATIC_PLANS = [
   {
-    _id: 'free',
-    planName: 'Free',
-    description: 'Perfect for getting started. Basic features to help you begin your journey.',
+    _id: "free_plan_static",
+    planName: "Free",
+    description: "Perfect for getting started with blogging",
     features: [
-      'Up to 10 posts',
-      'Basic analytics',
-      'Community access',
-      'Standard support',
+  "Up to 20 posts per day",
+  "1,500 characters per post",
+      "1 category",
+      "Basic post creation",
+      "View posts"
     ],
     price: 0,
-    postLimit: 10,
-    tier: 'free',
+  postLimit: 20, // per day
+    tier: "free",
     isActive: true,
+  characterLimit: 1500,
+    categoryLimit: 1,
+    analytics: false,
+    advancedEditor: false,
+    scheduledPosts: false,
+    multipleCategories: false,
+    commentAndLike: false,
+    readerAnalytics: false
   },
   {
-    _id: 'premium',
-    planName: 'Premium',
-    description: 'For serious creators who want to grow their audience and monetize their content.',
+    _id: "premium_plan_static",
+    planName: "Premium", 
+    description: "Enhanced features for serious bloggers",
     features: [
-      'Unlimited posts',
-      'Priority support',
-      'Advanced analytics',
-      'Custom branding',
+  "Up to 50 posts per day",
+  "5,000 characters per post",
+      "Multiple categories",
+      "Advanced editor",
+      "Scheduled posts",
+      "Analytics",
+      "Comments and likes"
     ],
-    price: 29,
-    postLimit: null,
-    tier: 'premium',
+    price: 9.99,
+  postLimit: 50, // per day
+    tier: "premium",
     isActive: true,
+    characterLimit: 5000,
+    categoryLimit: null,
+    analytics: true,
+    advancedEditor: true,
+    scheduledPosts: true,
+    multipleCategories: true,
+    commentAndLike: true,
+    readerAnalytics: false
   },
   {
-    _id: 'pro',
-    planName: 'Pro',
-    description: 'For businesses and power users who need advanced features and dedicated support.',
+    _id: "pro_plan_static",
+    planName: "Pro",
+    description: "Complete blogging solution for professionals",
     features: [
-      'Everything in Premium',
-      'API access',
-      'White-label solution',
-      'Dedicated support',
+  "Everything in Premium",
+  "10,000 characters per post", 
+      "Advanced analytics",
+      "Reader analytics",
+      "Priority support",
+      "All features unlocked"
     ],
-    price: 99,
-    postLimit: null,
-    tier: 'pro',
+    price: 19.99,
+  postLimit: 200, // per day
+    tier: "pro", 
     isActive: true,
-  },
+    characterLimit: 10000,
+    categoryLimit: null,
+    analytics: true,
+    advancedEditor: true,
+    scheduledPosts: true,
+    multipleCategories: true,
+    commentAndLike: true,
+    readerAnalytics: true,
+    prioritySupport: true
+  }
 ];
 
-function getStaticPlans() {
-  return STATIC_PLANS;
-}
+// Get all static plans
+const getStaticPlans = () => {
+  return STATIC_PLANS.filter(plan => plan.isActive);
+};
 
-function resolveStaticPlanByIdOrName(identifier) {
+// Find a static plan by ID, tier, or planName
+const resolveStaticPlanByIdOrName = (identifier) => {
   if (!identifier) return null;
-  const id = String(identifier).toLowerCase();
-  return STATIC_PLANS.find(
-    (p) =>
-      p._id === id ||
-      p.tier === id ||
-      (p.planName && p.planName.toLowerCase() === id)
-  ) || null;
-}
+  
+  const searchTerm = identifier.toString().toLowerCase();
+  
+  return STATIC_PLANS.find(plan => {
+    return (
+      plan._id === identifier ||
+      plan.tier.toLowerCase() === searchTerm ||
+      plan.planName.toLowerCase() === searchTerm ||
+      plan._id.toLowerCase() === searchTerm
+    );
+  });
+};
 
-module.exports = { getStaticPlans, resolveStaticPlanByIdOrName };
+// Get plan by tier specifically
+const getStaticPlanByTier = (tier) => {
+  if (!tier) return null;
+  return STATIC_PLANS.find(plan => plan.tier.toLowerCase() === tier.toLowerCase());
+};
 
+// Get plan features for a given tier
+const getStaticPlanFeatures = (tier) => {
+  const plan = getStaticPlanByTier(tier);
+  return plan ? plan.features : [];
+};
 
-
+module.exports = {
+  getStaticPlans,
+  resolveStaticPlanByIdOrName,
+  getStaticPlanByTier,
+  getStaticPlanFeatures,
+  STATIC_PLANS
+};

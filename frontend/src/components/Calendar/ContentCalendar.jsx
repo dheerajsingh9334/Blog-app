@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { userProfileAPI } from '../../APIServices/users/usersAPI';
 import { getUserPublishedPostsAPI, getUserDraftsAPI, getUserScheduledPostsAPI } from '../../APIServices/posts/postsAPI';
 import { usePlanAccess } from '../../hooks/usePlanAccess';
-import PlanUpgradePrompt from '../Plans/PlanUpgradePrompt';
+// import PlanUpgradePrompt from '../Plans/PlanUpgradePrompt';
 import { Link } from 'react-router-dom';
 import { 
   FaCalendarAlt, 
@@ -42,25 +42,10 @@ const ContentCalendar = () => {
     queryFn: () => getUserScheduledPostsAPI(1, 100),
   });
 
-  const { canAccessFeature, userPlan } = usePlanAccess();
+  // const {  userPlan } = usePlanAccess();
 
   // Check if user can access content calendar
-  const canAccess = canAccessFeature("content_calendar");
-
-  if (!canAccess) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <PlanUpgradePrompt 
-            feature="Content Calendar"
-            currentPlan={userPlan}
-            requiredPlan="Premium"
-            variant="default"
-          />
-        </div>
-      </div>
-    );
-  }
+  // const canAccess = canAccessFeature("content_calendar");
 
   // Transform real data into calendar events
   const transformPostsToEvents = () => {

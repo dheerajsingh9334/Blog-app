@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaUserCircle, FaEnvelope, FaKey, FaCheckCircle, FaShieldAlt, FaCog, FaBell, FaPalette } from "react-icons/fa";
+import { FaUserCircle, FaEnvelope, FaKey, FaCheckCircle, FaCog, FaPalette } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from 'react-router-dom';
@@ -181,28 +181,6 @@ const Settings = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-600">
                   <div className="flex items-center gap-4">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                      <FaBell className="text-blue-600 dark:text-blue-400 text-lg" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900 dark:text-white">
-                        Email Notifications
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Manage your notification preferences
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-600">
-                  <div className="flex items-center gap-4">
                     <div className="p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
                       <FaPalette className="text-yellow-600 dark:text-yellow-400 text-lg" />
                     </div>
@@ -233,40 +211,6 @@ const Settings = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Security Tips */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                  <FaShieldAlt className="text-red-600 dark:text-red-400 text-lg" />
-                </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Security Tips
-                </h3>
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 space-y-3">
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Use a strong password with at least 8 characters</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Include a mix of letters, numbers, and symbols</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Never share your password with anyone</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Change your password regularly</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Enable two-factor authentication if available</p>
-                </div>
-              </div>
-            </div>
-
             {/* Account Status */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-4">

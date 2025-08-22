@@ -15,7 +15,7 @@ passport.use(
     },
     async (username, password, done) => {
       try {
-        const user = await User.findOne({ username });
+        const user = await User.findOne({ username }).populate('plan');
         if (!user) {
           return done(null, false, { message: "Invalid login details" });
         }
@@ -56,7 +56,7 @@ passport.use(
         return done(null, false);
       }
       
-      const user = await User.findById(userId);
+      const user = await User.findById(userId).populate('plan');
       if (user) {
         return done(null, user);
       } else {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { FaEdit, FaEye, FaTrash, FaCalendar, FaClock, FaCheck, FaTimes, FaPlus, FaFilter } from "react-icons/fa";
@@ -72,9 +72,34 @@ const DashboardPosts = () => {
     retry: 1,
   });
 
-  // Extract available tags from posts
+  // Function to get current data based on active tab
+  const getCurrentData = useCallback(() => {
+    switch (activeTab) {
+      case "published":
+        return {
+          posts: publishedPosts?.posts || [],
+          totalPosts: publishedPosts?.totalPosts || 0,
+          isLoading: publishedLoading,
+        };
+      case "drafts":
+        return {
+          posts: draftsData?.drafts || [],
+          totalPosts: draftsData?.totalDrafts || 0,
+          isLoading: draftsLoading,
+        };
+      case "scheduled":
+        return {
+          posts: scheduledData?.scheduledPosts || [],
+          totalPosts: scheduledData?.totalScheduled || 0,
+          isLoading: scheduledLoading,
+        };
+      default:
+        return { posts: [], totalPosts: 0, isLoading: false };
+    }
+  }, [activeTab, publishedPosts, draftsData, scheduledData, publishedLoading, draftsLoading, scheduledLoading]);
+
+  // Extract tags from posts for filtering
   const extractTags = (posts) => {
-    if (!posts) return [];
     const allTags = [];
     posts.forEach(post => {
       if (post.tags && Array.isArray(post.tags)) {
@@ -89,9 +114,7 @@ const DashboardPosts = () => {
     const currentPosts = getCurrentData().posts;
     const tags = extractTags(currentPosts);
     setAvailableTags(tags);
-  }, [publishedPosts, draftsData, scheduledData]);
-
-  // Debug logging
+  }, [getCurrentData]);  // Debug logging
   console.log("Dashboard Posts Debug:");
   console.log("Published posts:", publishedPosts);
   console.log("Published error:", publishedError);
@@ -154,31 +177,6 @@ const DashboardPosts = () => {
     }
   };
 
-  const getCurrentData = () => {
-    switch (activeTab) {
-      case "published":
-        return {
-          posts: publishedPosts?.posts || [],
-          totalPosts: publishedPosts?.totalPosts || 0,
-          isLoading: publishedLoading,
-        };
-      case "drafts":
-        return {
-          posts: draftsData?.drafts || [],
-          totalPosts: draftsData?.totalDrafts || 0,
-          isLoading: draftsLoading,
-        };
-      case "scheduled":
-        return {
-          posts: scheduledData?.scheduledPosts || [],
-          totalPosts: scheduledData?.totalScheduled || 0,
-          isLoading: scheduledLoading,
-        };
-      default:
-        return { posts: [], totalPosts: 0, isLoading: false };
-    }
-  };
-
   const { posts, totalPosts, isLoading } = getCurrentData();
 
   // Filter posts by selected tags
@@ -227,23 +225,23 @@ const DashboardPosts = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
+      {/* Header - Responsive layout */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-8 flex items-center justify-between">
+        <div className="max-w-none mx-auto px-3 sm:px-4 md:px-6 lg:px-4 xl:px-6 py-6 sm:py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Posts</h1>
-            <p className="text-gray-600 dark:text-gray-300">Manage your published posts, drafts, and scheduled content</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">My Posts</h1>
+            <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base">Manage your published posts, drafts, and scheduled content</p>
           </div>
           <Link
             to="/dashboard/create-post"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base shrink-0"
           >
-            <FaPlus /> New Post
+            <FaPlus className="w-4 h-4" /> New Post
           </Link>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-none mx-auto px-3 sm:px-4 md:px-6 lg:px-4 xl:px-6 py-6 sm:py-8">
         {/* Status Messages */}
         {updateStatusMutation.isSuccess && (
           <AlertMessage type="success" message="Post status updated successfully!" />
@@ -278,29 +276,33 @@ const DashboardPosts = () => {
           />
         )}
 
-        {/* Tabs */}
-        <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 mb-6">
-          {[
-            { id: "published", label: "Published", count: publishedPosts?.totalPosts || 0 },
-            { id: "drafts", label: "Drafts", count: draftsData?.totalDrafts || 0 },
-            { id: "scheduled", label: "Scheduled", count: scheduledData?.totalScheduled || 0 },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                setPage(1);
-                setSelectedTags([]); // Clear tag filter when switching tabs
-              }}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
-                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              }`}
-            >
-              {tab.label} ({tab.count})
-            </button>
-          ))}
+        {/* Tabs - Responsive design */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 flex-1">
+            {[
+              { id: "published", label: "Published", count: publishedPosts?.totalPosts || 0 },
+              { id: "drafts", label: "Drafts", count: draftsData?.totalDrafts || 0 },
+              { id: "scheduled", label: "Scheduled", count: scheduledData?.totalScheduled || 0 },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setPage(1);
+                  setSelectedTags([]); // Clear tag filter when switching tabs
+                }}
+                className={`flex-1 py-2 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.label.charAt(0)}</span>
+                <span className="ml-1">({tab.count})</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Tag Filter */}
@@ -386,11 +388,11 @@ const DashboardPosts = () => {
             )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {filteredPosts.map((post) => (
               <div
                 key={post._id}
-                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -460,7 +462,9 @@ const DashboardPosts = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 ml-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 ml-2 sm:ml-4">
+                    {/* Action buttons - responsive layout */}
+                    <div className="flex items-center gap-1 sm:gap-2">
                     {/* View Post */}
                     <Link
                       to={`/posts/${post._id}`}
@@ -519,6 +523,7 @@ const DashboardPosts = () => {
                     >
                       <FaTrash className="w-4 h-4" />
                     </button>
+                    </div>
                   </div>
                 </div>
               </div>

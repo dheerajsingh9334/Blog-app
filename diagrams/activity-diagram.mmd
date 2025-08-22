@@ -1,0 +1,102 @@
+flowchart LR
+	%% Activity Diagram for MERN Blog (Visitor/User, Author, Admin in one image)
+
+	%% Start/End
+	Start([Start])
+	End([End])
+
+	%% ---------------- Visitor / User lane ----------------
+	subgraph L1[Visitor / User]
+		direction TB
+		V_Home(Open Home)
+		V_Browse((Browse posts))
+		V_View((View post))
+		V_LoginQ{Logged in?}
+		V_Auth((Sign up / Log in))
+		V_VerifiedQ{Email verified?}
+
+		U_Dashboard((User dashboard))
+		U_Profile((Manage profile))
+		U_Comment((Comment / Edit / Delete comment))
+		U_PlanQ{Active plan?}
+		U_Subscribe((Subscribe))
+		U_Checkout((Checkout))
+		U_PayQ{Payment success?}
+		U_Activate((Activate plan))
+		U_Notif((Receive notifications))
+	end
+
+	%% ---------------- Author lane ----------------
+	subgraph L2[Author]
+		direction TB
+		A_Create((Create post))
+		A_Edit((Edit / Delete post))
+		A_Upload((Upload images))
+		A_Submit((Submit for approval))
+		A_Revise((Revise post))
+		A_Analytics((View analytics))
+		A_Moderate((Moderate comments))
+	end
+
+	%% ---------------- Admin lane ----------------
+	subgraph L3[Admin]
+		direction TB
+		Adm_ApproveQ{Approve post?}
+		Adm_Posts((Manage posts: approve/remove))
+		Adm_Users((Manage users: ban/unban/verify))
+		Adm_Categories((Manage categories))
+		Adm_Plans((Manage plans))
+		Adm_Earnings((View earnings))
+		Adm_SendNotifs((Send notifications))
+		Adm_Maintenance((Toggle maintenance mode))
+	end
+
+	%% Shared publish/visibility
+	P_Published((Post published & visible))
+	P_NotifySubs((Notify subscribers))
+
+	%% -------- Flows --------
+	%% Visitor/User
+	Start --> V_Home --> V_Browse --> V_View --> V_LoginQ
+	V_LoginQ -- No --> V_Auth --> V_VerifiedQ
+	V_VerifiedQ -- No --> V_Auth
+	V_VerifiedQ -- Yes --> U_Dashboard
+	V_LoginQ -- Yes --> U_Dashboard
+
+	U_Dashboard --> U_Profile
+	U_Dashboard --> U_Comment
+	U_Dashboard --> U_PlanQ
+	U_PlanQ -- Yes --> U_Notif
+	U_PlanQ -- No --> U_Subscribe --> U_Checkout --> U_PayQ
+	U_PayQ -- Yes --> U_Activate --> U_Notif
+	U_PayQ -- No --> U_Subscribe
+
+	%% Author
+	U_Dashboard --> A_Create
+	A_Create --> A_Upload --> A_Submit
+	A_Edit --> A_Submit
+	A_Create -. optional .-> A_Analytics
+	A_Edit -. optional .-> A_Analytics
+	A_Moderate
+
+	%% Admin review
+	A_Submit --> Adm_ApproveQ
+	Adm_ApproveQ -- Yes --> P_Published --> P_NotifySubs --> U_Notif
+	Adm_ApproveQ -- No --> A_Revise --> A_Submit
+
+	%% Admin independent operations
+	Adm_Posts
+	Adm_Users
+	Adm_Categories
+	Adm_Plans
+	Adm_Earnings --> Adm_SendNotifs
+	Adm_Maintenance
+
+	%% Visibility loop back to visitors
+	P_Published --> V_Browse
+
+	%% End
+	U_Notif --> End
+
+	%% -------- Styling (optional) --------
+	classDef note fill:#fff,stroke:#9ca3af,stroke-width:1px,color:#111;

@@ -142,36 +142,36 @@ const CreatorsRanking = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Hero Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-6 shadow-lg">
-            <FaCrown className="text-white text-3xl" />
+      <div className="max-w-none mx-auto px-3 sm:px-4 md:px-6 lg:px-4 xl:px-6 py-6 sm:py-8">
+        {/* Hero Header - Responsive */}
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-4 sm:mb-6 shadow-lg">
+            <FaCrown className="text-white text-2xl sm:text-3xl" />
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3 sm:mb-4">
             Creators & Content Rankings
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-6">
-            Discover the top creators and trending content that's shaping our community
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-4 sm:mb-6 px-4">
+            Discover the top creators and trending content that&apos;s shaping our community
           </p>
           
-          {/* Enhanced Ranking Statistics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-gray-700/50">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <FaUsers className="text-blue-500 text-lg" />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Top Creators</span>
+          {/* Enhanced Ranking Statistics - Responsive grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 dark:border-gray-700/50">
+              <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                <FaUsers className="text-blue-500 text-sm sm:text-lg" />
+                <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Top Creators</span>
               </div>
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{rankingStats.totalCreators}</div>
+              <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{rankingStats.totalCreators}</div>
               <div className="text-xs text-gray-500 dark:text-gray-400">by followers</div>
             </div>
             
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-gray-700/50">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <FaHeart className="text-red-500 text-lg" />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Top Posts</span>
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 dark:border-gray-700/50">
+              <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                <FaHeart className="text-red-500 text-sm sm:text-lg" />
+                <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Top Posts</span>
               </div>
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{rankingStats.totalPosts}</div>
+              <div className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400">{rankingStats.totalPosts}</div>
               <div className="text-xs text-gray-500 dark:text-gray-400">by engagement</div>
             </div>
             

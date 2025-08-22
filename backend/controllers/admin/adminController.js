@@ -491,9 +491,24 @@ const adminController = {
   
   // Get all plans
   getAllPlans: asyncHandler(async (req, res) => {
+    const tierDefaults = { free: 20, premium: 50, pro: 200 };
     const plans = await Plan.find().sort({ price: 1 });
+    const enriched = plans.map(p => {
+      const obj = p.toObject();
+      const tier = (obj.tier || obj.planName || '').toString().toLowerCase();
+      obj.effectivePostLimit = (typeof obj.postLimit === 'number') ? obj.postLimit : (tierDefaults[tier] ?? null);
+      obj.limitPeriod = 'per_day';
+      // Remove deprecated/undesired feature label if present in features
+      if (Array.isArray(obj.features)) {
+        obj.features = obj.features.filter(f => {
+          const s = (f || '').toString().toLowerCase();
+          return s !== 'image optimization' && s !== 'image optimisation';
+        });
+      }
+      return obj;
+    });
     
-    res.json({ plans });
+    res.json({ plans: enriched });
   }),
 
   // Create new plan
@@ -506,13 +521,22 @@ const adminController = {
       features,
       isActive
     } = req.body;
-    
+    const tierDefaults = { free: 20, premium: 50, pro: 200 };
+    const normalizedTier = (tier || planName || 'free').toString().toLowerCase();
+    const finalPostLimit = (typeof postLimit === 'number') ? postLimit : (tierDefaults[normalizedTier] ?? null);
+    const cleanedFeatures = Array.isArray(features)
+      ? features.filter(f => {
+          const s = (f || '').toString().toLowerCase();
+          return s !== 'image optimization' && s !== 'image optimisation';
+        })
+      : features;
+
     const plan = await Plan.create({
       planName,
-      tier,
+      tier: tier || normalizedTier,
       price,
-      postLimit,
-      features,
+      postLimit: finalPostLimit,
+      features: cleanedFeatures,
       isActive: isActive !== undefined ? isActive : true
     });
     
@@ -532,17 +556,27 @@ const adminController = {
   // Update plan
   updatePlan: asyncHandler(async (req, res) => {
     const { planId } = req.params;
-    const updateData = req.body;
-    
-    const plan = await Plan.findByIdAndUpdate(
-      planId,
-      updateData,
-      { new: true }
-    );
-    
-    if (!plan) {
+    const tierDefaults = { free: 20, premium: 50, pro: 200 };
+    const existing = await Plan.findById(planId);
+    if (!existing) {
       return res.status(404).json({ message: "Plan not found" });
     }
+
+    const updateData = { ...req.body };
+    // Clean features list
+    if (Array.isArray(updateData.features)) {
+      updateData.features = updateData.features.filter(f => {
+        const s = (f || '').toString().toLowerCase();
+        return s !== 'image optimization' && s !== 'image optimisation';
+      });
+    }
+    // Normalize tier and default post limit if not provided
+    const normalizedTier = (updateData.tier || existing.tier || existing.planName || 'free').toString().toLowerCase();
+    if (updateData.postLimit === null || updateData.postLimit === undefined) {
+      updateData.postLimit = tierDefaults[normalizedTier] ?? existing.postLimit;
+    }
+
+    const plan = await Plan.findByIdAndUpdate(planId, updateData, { new: true });
     
     // Notify all admins about plan update
     try {

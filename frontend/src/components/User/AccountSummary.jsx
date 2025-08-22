@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import React from "react";
 import {
   FaEye,
-  FaDollarSign,
   FaUsers,
   FaThumbsUp,
   FaThumbsDown,
@@ -13,32 +11,39 @@ import {
   FaLock,
   FaUnlock,
   FaBookmark,
-  FaStar,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { userProfileAPI } from "../../APIServices/users/usersAPI";
-import AlertMessage from "../Alert/AlertMessage";
+import { userProfileAPI, getUserPlanAndUsageAPI, getUserPlanHistoryAPI } from "../../APIServices/users/usersAPI";
 import { r } from "../../utils/unifiedResponsive";
 // Earnings functionality removed
 import { 
   getPlanTier, 
   getPlanInfo, 
   canCreatePost, 
-  getUpgradePrompt, 
   getUpgradeButton,
-  PLAN_TIERS, 
-  getPlanBadge
+  PLAN_TIERS
 } from "../../utils/planUtils";
 
 const AccountSummaryDashboard = () => {
-  const { userAuth } = useSelector((state) => state.auth);
-  const { data, isLoading, isError, error } = useQuery({
+  const { data } = useQuery({
     queryKey: ["profile"],
     queryFn: userProfileAPI,
   });
 
-  const hasEmail = data?.user?.email;
+  // Backend plan usage: posts per day and effective char limit
+  const { data: planUsageData } = useQuery({
+    queryKey: ["plan-usage"],
+    queryFn: getUserPlanAndUsageAPI,
+    staleTime: 60 * 1000,
+  });
+
+  // Plan change and billing history
+  const { data: planHistoryData } = useQuery({
+    queryKey: ["plan-history"],
+    queryFn: getUserPlanHistoryAPI,
+    staleTime: 2 * 60 * 1000,
+  });
+
   const hasPlan = data?.user?.hasSelectedPlan;
   const userPlan = data?.user?.plan;
 
@@ -60,7 +65,7 @@ const AccountSummaryDashboard = () => {
   });
 
   // Earnings functionality removed
-  const totalEarnings = 0;
+  // const totalEarnings = 0;
 
   // Get plan information
   const planTier = getPlanTier(userPlan);
@@ -69,10 +74,11 @@ const AccountSummaryDashboard = () => {
   const upgradeButton = getUpgradeButton(userPlan);
 
   // Calculate plan usage
-  const postLimit = planInfo?.postLimit;
-  const postsUsed = userPosts;
-  const postsRemaining = postLimit ? postLimit - postsUsed : null;
-  const usagePercentage = postLimit ? (postsUsed / postLimit) * 100 : 0;
+  // Prefer backend usage (per-day) when available
+  const backendPostsLimit = planUsageData?.usage?.posts?.limit ?? planInfo?.postLimit;
+  const backendPostsUsed = planUsageData?.usage?.posts?.current ?? userPosts;
+  const postsRemaining = backendPostsLimit != null ? Math.max(backendPostsLimit - backendPostsUsed, 0) : null;
+  const usagePercentage = backendPostsLimit ? (backendPostsUsed / backendPostsLimit) * 100 : 0;
 
   // Quick action cards based on plan
   const quickActions = [
@@ -124,14 +130,14 @@ const AccountSummaryDashboard = () => {
         <h1 className={`${r.text.h1} font-bold text-gray-900 dark:text-white`}>
           Welcome back, {data?.user?.username}! 👋
         </h1>
-        {userPlan && (
+    {userPlan && (
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
             {planTier === PLAN_TIERS.PREMIUM && (
               <FaCrown className="text-yellow-500 text-xl" />
             )}
             {planTier === PLAN_TIERS.PRO && (
               <FaInfinity className="text-indigo-500 text-xl" />
-            )}
+      )}
             <span className={`px-3 py-1 rounded-full ${r.text.bodySmall} font-semibold ${
               planTier === PLAN_TIERS.FREE 
                 ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
@@ -177,7 +183,7 @@ const AccountSummaryDashboard = () => {
         </div>
       )}
 
-      {!hasEmail && (
+      {/* {!hasEmail && (
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
           <div className="flex">
             <div className="flex-shrink-0">
@@ -202,17 +208,17 @@ const AccountSummaryDashboard = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Plan Usage Section */}
-      {userPlan && postLimit && (
+      {userPlan && backendPostsLimit && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-4 md:p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-2">
             <h3 className={`${r.text.h4} font-semibold text-gray-900 dark:text-white`}>
               Plan Usage
             </h3>
             <span className={`${r.text.bodySmall} text-gray-500 dark:text-gray-400`}>
-              {postsUsed} / {postLimit} posts used
+              {backendPostsUsed} / {backendPostsLimit} posts today
             </span>
           </div>
           <div className="mb-2">
@@ -235,14 +241,23 @@ const AccountSummaryDashboard = () => {
           </div>
           {postsRemaining !== null && postsRemaining <= 3 && postsRemaining > 0 && (
             <div className="mt-2 text-sm text-yellow-600 dark:text-yellow-400">
-              ⚠️ Only {postsRemaining} posts remaining. Consider upgrading your plan.
+              ⚠️ Only {postsRemaining} posts remaining today. Consider upgrading your plan.
             </div>
           )}
           {postsRemaining === 0 && (
             <div className="mt-2 text-sm text-red-600 dark:text-red-400">
-              🚫 Post limit reached. Please upgrade your plan to continue posting.
+              🚫 Daily post limit reached. Please upgrade your plan to continue posting.
             </div>
           )}
+          {/* Character cap info */}
+          {(() => {
+            const charCap = planTier === PLAN_TIERS.FREE ? 1500 : planTier === PLAN_TIERS.PREMIUM ? 5000 : 10000;
+            return (
+              <div className="mt-3 text-xs text-gray-600 dark:text-gray-400">
+                Character limit per post: <b>{charCap.toLocaleString()}</b>
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -311,6 +326,76 @@ const AccountSummaryDashboard = () => {
           </div>
         ))}
       </div>
+
+      {/* Plan Features and History */}
+      {userPlan && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Features */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700">
+            <h3 className={`${r.text.h4} font-semibold text-gray-900 dark:text-white mb-2`}>
+              Your Plan Features
+            </h3>
+            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 dark:text-gray-300">
+              {(userPlan?.features || []).filter(f => typeof f === 'string' && !/image\s*(customization|optimization)/i.test(f)).map((feat, i) => (
+                <li key={i}>{feat}</li>
+              ))}
+              {(!userPlan?.features || userPlan.features.length === 0) && (
+                <li>Standard access based on {planTier} plan.</li>
+              )}
+            </ul>
+          </div>
+
+          {/* History */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700">
+            <h3 className={`${r.text.h4} font-semibold text-gray-900 dark:text-white mb-2`}>
+              Recent Plan & Billing Activity
+            </h3>
+            <div className="space-y-3">
+              {/* Plan changes */}
+              <div>
+                <h4 className={`${r.text.bodySmall} font-semibold text-gray-800 dark:text-gray-200 mb-1`}>Plan Changes</h4>
+                <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300 max-h-48 overflow-auto">
+                  {(planHistoryData?.history || []).slice(0,5).map((h) => (
+                    <li key={h._id} className="flex items-center justify-between">
+                      <span>
+                        {new Date(h.createdAt).toLocaleDateString()} • {h.action} {h.fromPlan?.planName || h.fromPlan?.tier} → {h.toPlan?.planName || h.toPlan?.tier}
+                      </span>
+                      {h.discountApplied ? (
+                        <span className="text-green-600 dark:text-green-400">- Discount</span>
+                      ) : h.refundProcessed ? (
+                        <span className="text-yellow-600 dark:text-yellow-400">Refunded</span>
+                      ) : null}
+                    </li>
+                  ))}
+                  {(!planHistoryData?.history || planHistoryData.history.length === 0) && (
+                    <li>No plan changes yet.</li>
+                  )}
+                </ul>
+              </div>
+
+              {/* Billing */}
+              <div>
+                <h4 className={`${r.text.bodySmall} font-semibold text-gray-800 dark:text-gray-200 mb-1`}>Billing</h4>
+                <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300 max-h-48 overflow-auto">
+                  {(planHistoryData?.billing || []).slice(0,5).map((b) => (
+                    <li key={b.id} className="flex items-center justify-between">
+                      <span>
+                        {new Date(b.createdAt).toLocaleDateString()} • {b.plan?.planName || b.plan?.tier} • {(b.amount/100).toLocaleString(undefined,{style:'currency',currency:b.currency?.toUpperCase()||'USD'})}
+                      </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${b.status === 'succeeded' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                        {b.status}
+                      </span>
+                    </li>
+                  ))}
+                  {(!planHistoryData?.billing || planHistoryData.billing.length === 0) && (
+                    <li>No billing records yet.</li>
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

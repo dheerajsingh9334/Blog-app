@@ -4,7 +4,7 @@ import {
   getPlanTier, 
   getPlanInfo, 
   canCreatePost, 
-  hasFeature,
+  hasFeatureAccess,
   PLAN_TIERS 
 } from "../utils/planUtils";
 
@@ -26,7 +26,7 @@ export const usePlanAccess = () => {
 
   // Check if user can access specific features
   const canAccessFeature = (feature) => {
-    return hasFeature(userPlan, feature);
+    return hasFeatureAccess(userPlan, feature);
   };
 
   // Check if user can create posts
@@ -68,6 +68,10 @@ export const usePlanAccess = () => {
     }
     
     if (feature === "advanced_analytics" || feature === "seo_tools" || feature === "content_calendar") {
+      // Pro users already have access to analytics
+      if (planTier === PLAN_TIERS.PRO) {
+        return null;
+      }
       return "Premium";
     }
 

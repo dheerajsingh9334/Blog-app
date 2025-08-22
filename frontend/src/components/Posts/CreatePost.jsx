@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import ReactQuill from "react-quill";
@@ -10,9 +11,18 @@ import { createPostAPI } from "../../APIServices/posts/postsAPI";
 import AlertMessage from "../Alert/AlertMessage";
 import { fetchCategoriesAPI } from "../../APIServices/category/categoryAPI";
 import PlanAccessGuard from "../Plans/PlanAccessGuard";
+import AdvancedEditorLock from "../PlanLocks/AdvancedEditorLock";
+import CharacterLimitIndicator from "../PlanLocks/CharacterLimitIndicator";
+// import ScheduledPostsFeature from "../PlanLocks/ScheduledPostsFeature";
+import { useSelector } from "react-redux";
 import { userProfileAPI } from "../../APIServices/users/usersAPI";
-
-// Custom CSS for ReactQuill dark mode
+import { 
+  hasAdvancedEditor, 
+  hasScheduledPosts, 
+  canSelectMultipleCategories,
+  isWithinCharacterLimit,
+  getCharacterLimit 
+} from "../../utils/planUtils";
 const customQuillStyles = `
   .ql-editor {
     background-color: transparent !important;
@@ -59,6 +69,8 @@ const CreatePost = () => {
   const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
 
+  const { userAuth } = useSelector((state) => state.auth);
+
   // Check if user is banned
   const { data: userProfile } = useQuery({
     queryKey: ["profile"],
@@ -66,6 +78,21 @@ const CreatePost = () => {
   });
 
   const isBanned = userProfile?.user?.isBanned;
+  
+  // Extract plan name properly - handle both string and object formats
+  const getPlanName = (plan) => {
+    if (typeof plan === 'string') return plan;
+    if (typeof plan === 'object' && plan?.planName) return plan.planName;
+    if (typeof plan === 'object' && plan?.name) return plan.name;
+    return 'Free';
+  };
+  
+  const userPlan = getPlanName(
+    userAuth?.plan || userAuth?.accountType || userProfile?.user?.accountType
+  );
+
+  console.log('CreatePost - User Plan Name:', userPlan);
+  console.log('CreatePost - Raw Plan Object:', userAuth?.plan);
 
   const postMutation = useMutation({
     mutationKey: ["create-post"],
@@ -104,7 +131,8 @@ const CreatePost = () => {
       title: "",
       description: "",
       image: null,
-      category: "",
+      // If multiple categories are allowed, start with an empty array; otherwise a string
+      category: canSelectMultipleCategories(userPlan) ? [] : "",
       tags: [],
       status: "draft",
       scheduledFor: null,
@@ -112,9 +140,17 @@ const CreatePost = () => {
     },
     validationSchema: Yup.object({
       title: Yup.string().required("Title is required"),
-      description: Yup.string().required("Description is required"),
+      description: Yup.string()
+        .required("Description is required")
+        .test('character-limit', 'Content exceeds character limit for your plan', function(value) {
+          if (!value) return true;
+          return isWithinCharacterLimit(userPlan, value);
+        }),
       image: Yup.mixed().required("Featured image is required"),
-      category: Yup.string().required("Category is required"),
+      // Accept array (multi-select) or string (single-select) based on plan
+      category: canSelectMultipleCategories(userPlan)
+        ? Yup.array().of(Yup.string().required()).min(1, "Category is required")
+        : Yup.string().required("Category is required"),
       tags: Yup.array().of(Yup.string().max(20, "Tag too long")),
       status: Yup.string().oneOf(["draft", "published", "scheduled"]),
       scheduledFor: Yup.date().when("status", {
@@ -130,7 +166,9 @@ const CreatePost = () => {
       formData.append("title", values.title);
       formData.append("description", values.description);
       formData.append("image", values.image);
-      formData.append("category", values.category);
+      // Backend expects a single category ID string. If multiple selected, send the first.
+      const categoryValue = Array.isArray(values.category) ? values.category[0] : values.category;
+      formData.append("category", categoryValue);
       formData.append("status", values.status);
       
       // Add tags as comma-separated string
@@ -221,7 +259,7 @@ const CreatePost = () => {
       formik.resetForm();
       setImagePreview(null);
     }
-  }, [isSuccess]);
+  }, [isSuccess, formik]);
 
   return (
     <PlanAccessGuard feature="create_post">
@@ -230,6 +268,48 @@ const CreatePost = () => {
           <h1 className="text-3xl font-serif font-bold mb-8 text-center">
             Write your story
           </h1>
+
+        {/* Plan Status Banner */}
+        <div className={`mb-6 p-4 rounded-lg border ${
+          userPlan === 'Free' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' :
+          userPlan === 'Premium' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' :
+          'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className={`font-semibold ${
+                userPlan === 'Free' ? 'text-blue-800 dark:text-blue-200' :
+                userPlan === 'Premium' ? 'text-green-800 dark:text-green-200' :
+                'text-purple-800 dark:text-purple-200'
+              }`}>
+                {userPlan} Plan Features
+              </h3>
+              <div className={`text-sm mt-1 ${
+                userPlan === 'Free' ? 'text-blue-700 dark:text-blue-300' :
+                userPlan === 'Premium' ? 'text-green-700 dark:text-green-300' :
+                'text-purple-700 dark:text-purple-300'
+              }`}>
+                {userPlan === 'Free' && (
+                  <>📝 Up to 10 posts • 1,000 characters • Single category • Basic editor</>
+                )}
+                {userPlan === 'Premium' && (
+                  <>🚀 Up to 50 posts • 5,000 characters • Multiple categories • Advanced editor • Scheduled posts</>
+                )}
+                {userPlan === 'Pro' && (
+                  <>👑 Up to 100 posts • 10,000 characters • Advanced analytics • Image customization • All features</>
+                )}
+              </div>
+            </div>
+            {userPlan === 'Free' && (
+              <Link
+                to="/dashboard/billing"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Upgrade
+              </Link>
+            )}
+          </div>
+        </div>
 
         {isLoading && (
           <AlertMessage type="loading" message="Publishing your story..." />
@@ -354,23 +434,53 @@ const CreatePost = () => {
           {/* Category */}
           <div className=""> 
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Category
+              Category {canSelectMultipleCategories(userPlan) ? '(Multiple Selection Available)' : '(Single Selection)'}
             </label>
+            
+            {!canSelectMultipleCategories(userPlan) && (
+              <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  📝 <strong>Free Plan:</strong> You can select one category per post. 
+                  <span className="block mt-1">
+                    Upgrade to Premium to select multiple categories and organize your content better.
+                  </span>
+                </p>
+              </div>
+            )}
+            
             <Select
               name="category"
               isDisabled={isBanned}
+              isMulti={canSelectMultipleCategories(userPlan)}
               options={data?.categories?.map((category) => ({
                 value: category._id,
                 label: category.categoryName,
               }))}
-              onChange={(option) =>
-                formik.setFieldValue("category", option.value)
-              }
+              // Reflect current selection in the control
+              value={(() => {
+                const options = (data?.categories || []).map((c) => ({ value: c._id, label: c.categoryName }));
+                if (canSelectMultipleCategories(userPlan)) {
+                  const arr = Array.isArray(formik.values.category) ? formik.values.category : [];
+                  return options.filter(opt => arr.includes(opt.value));
+                }
+                const selected = (typeof formik.values.category === 'string') ? formik.values.category : '';
+                return options.find(opt => opt.value === selected) || null;
+              })()}
+              onChange={(option) => {
+                if (canSelectMultipleCategories(userPlan)) {
+                  // Multiple selection - store as array of IDs
+                  const selectedCategories = option ? option.map(opt => opt.value) : [];
+                  formik.setFieldValue("category", selectedCategories);
+                } else {
+                  // Single selection - store as single ID
+                  formik.setFieldValue("category", option ? option.value : "");
+                }
+              }}
               className="basic-single"
               classNamePrefix="select"
-              placeholder="Select a category..."
+              placeholder={canSelectMultipleCategories(userPlan) ? "Select categories..." : "Select a category..."}
               styles={{
-                control: (provided, state) => ({
+                control: (provided) => ({
                   ...provided,
                   backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : '#ffffff',
                   borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
@@ -394,6 +504,14 @@ const CreatePost = () => {
                   }
                 }),
                 singleValue: (provided) => ({
+                  ...provided,
+                  color: document.documentElement.classList.contains('dark') ? '#f9fafb' : '#111827'
+                }),
+                multiValue: (provided) => ({
+                  ...provided,
+                  backgroundColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#e5e7eb'
+                }),
+                multiValueLabel: (provided) => ({
                   ...provided,
                   color: document.documentElement.classList.contains('dark') ? '#f9fafb' : '#111827'
                 }),
@@ -523,22 +641,48 @@ const CreatePost = () => {
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-300">Publish Now</span>
                 </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="status"
-                    value="scheduled"
-                    checked={formik.values.status === "scheduled"}
-                    onChange={(e) => handleStatusChange(e.target.value)}
-                    disabled={isBanned}
-                    className="mr-2 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Schedule for Later</span>
-                </label>
+                
+                {/* Scheduled Posts Feature - Premium/Pro Feature */}
+                {hasScheduledPosts(userPlan) ? (
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="status"
+                      value="scheduled"
+                      checked={formik.values.status === "scheduled"}
+                      onChange={(e) => handleStatusChange(e.target.value)}
+                      disabled={isBanned}
+                      className="mr-2 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Schedule for Later ⏰
+                    </span>
+                  </label>
+                ) : (
+                  <div className="relative">
+                    <label className="flex items-center opacity-50 cursor-not-allowed">
+                      <input
+                        type="radio"
+                        name="status"
+                        value="scheduled"
+                        disabled
+                        className="mr-2 text-gray-400"
+                      />
+                      <span className="text-sm text-gray-400">
+                        Schedule for Later 🔒
+                      </span>
+                    </label>
+                    <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-700">
+                      <p className="text-xs text-blue-700 dark:text-blue-300">
+                        Upgrade to Premium to schedule posts for later publication
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* Scheduled Date Picker */}
-              {formik.values.status === "scheduled" && (
+              {formik.values.status === "scheduled" && hasScheduledPosts(userPlan) && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Schedule Date & Time
@@ -564,17 +708,49 @@ const CreatePost = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Your Story
             </label>
+            
+            {/* Character Limit Indicator */}
+            <CharacterLimitIndicator 
+              userPlan={userPlan} 
+              content={formik.values.description} 
+              className="mb-3"
+            />
+            
             <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-              <ReactQuill
-                theme="snow"
-                value={formik.values.description}
-                onChange={handleDescriptionChange}
-                modules={quillModules}
-                formats={quillFormats}
-                readOnly={isBanned}
-                className={`h-64 ${isBanned ? 'opacity-50' : ''}`}
-                placeholder="Tell your story..."
-              />
+              {hasAdvancedEditor(userPlan) ? (
+                <AdvancedEditorLock userPlan={userPlan} isActive={true}>
+                  <ReactQuill
+                    theme="snow"
+                    value={formik.values.description}
+                    onChange={handleDescriptionChange}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    readOnly={isBanned}
+                    className={`h-64 ${isBanned ? 'opacity-50' : ''}`}
+                    placeholder="Tell your story..."
+                  />
+                </AdvancedEditorLock>
+              ) : (
+                <div className="relative">
+                  <textarea
+                    name="description"
+                    value={formik.values.description}
+                    onChange={(e) => {
+                      const content = e.target.value;
+                      if (isWithinCharacterLimit(userPlan, content)) {
+                        formik.setFieldValue('description', content);
+                      }
+                    }}
+                    onBlur={formik.handleBlur}
+                    disabled={isBanned}
+                    className={`w-full h-64 p-4 border-0 focus:ring-0 resize-none text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${isBanned ? 'opacity-50' : ''}`}
+                    placeholder="Write your story... (Simple text editor for Free plan)"
+                  />
+                  <div className="absolute bottom-2 right-2 text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                    Free Plan - Basic Editor
+                  </div>
+                </div>
+              )}
             </div>
             {formik.touched.description && formik.errors.description && (
               <p className="text-sm text-red-600 dark:text-red-400">{formik.errors.description}</p>
@@ -582,19 +758,38 @@ const CreatePost = () => {
           </div>
 
           {/* Submit */}
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={isBanned || postMutation.isPending}
-              className={`px-8 py-3 bg-green-600 text-white font-medium rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isBanned ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              {isBanned ? 'Account Banned' : 
-               postMutation.isPending ? 'Creating...' :
-               formik.values.status === 'draft' ? 'Save Draft' :
-               formik.values.status === 'scheduled' ? 'Schedule Post' :
-               'Publish Now'
-              }
-            </button>
+          <div className="flex flex-col space-y-3">
+            {/* Character limit warning */}
+            {!isWithinCharacterLimit(userPlan, formik.values.description) && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                <p className="text-sm text-red-800 dark:text-red-200">
+                  ⚠️ Your content exceeds the {getCharacterLimit(userPlan)} character limit for the {userPlan} plan.
+                  Please reduce your content or upgrade your plan to publish this post.
+                </p>
+              </div>
+            )}
+            
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={
+                  isBanned || 
+                  postMutation.isPending || 
+                  !isWithinCharacterLimit(userPlan, formik.values.description) ||
+                  (formik.values.status === 'scheduled' && !hasScheduledPosts(userPlan))
+                }
+                className={`px-8 py-3 bg-green-600 text-white font-medium rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isBanned ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isBanned ? 'Account Banned' : 
+                 !isWithinCharacterLimit(userPlan, formik.values.description) ? 'Content Too Long' :
+                 (formik.values.status === 'scheduled' && !hasScheduledPosts(userPlan)) ? 'Upgrade for Scheduling' :
+                 postMutation.isPending ? 'Creating...' :
+                 formik.values.status === 'draft' ? 'Save Draft' :
+                 formik.values.status === 'scheduled' ? 'Schedule Post' :
+                 'Publish Now'
+                }
+              </button>
+            </div>
           </div>
         </form>
       </div>

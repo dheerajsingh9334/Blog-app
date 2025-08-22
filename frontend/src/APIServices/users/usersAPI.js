@@ -235,6 +235,18 @@ export const getUserPlanAndUsageAPI = async () => {
   }
 };
 
+// ! Get user's plan and billing history
+export const getUserPlanHistoryAPI = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/users/plan-history`, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message || "Failed to fetch plan history");
+  }
+};
+
 // ! Save post
 export const savePostAPI = async (postId) => {
   const response = await axios.put(

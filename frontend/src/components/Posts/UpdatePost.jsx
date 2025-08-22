@@ -11,7 +11,6 @@ import { fetchCategoriesAPI } from "../../APIServices/category/categoryAPI";
 import AlertMessage from "../Alert/AlertMessage";
 import { useParams } from "react-router-dom";
 
-// Custom CSS for ReactQuill dark mode
 const customQuillStyles = `
   .ql-editor {
     background-color: transparent !important;

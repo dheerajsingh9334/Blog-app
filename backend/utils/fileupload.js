@@ -14,7 +14,8 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "masyntech-mern-blog",
-    allowed_formats: ["jpg", "png", "jpeg"],
+  // Allow common image formats including WebP
+  allowed_formats: ["jpg", "jpeg", "png", "webp"],
     transformation: [{ width: 500, height: 500, crop: "limit" }],
     public_id: (req, file) => Date.now() + "-" + file.originalname,
   },

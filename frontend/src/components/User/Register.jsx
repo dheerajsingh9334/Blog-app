@@ -125,13 +125,13 @@ const Register = () => {
           >
             {userMutation.isPending ? "Creating..." : "Sign Up"}
           </button>
-
+{/* 
           <a
-            href={`${BASE_URL}/users/auth/google`}
-            className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+       //     href={`${BASE_URL}/users/auth/google`}
+         //   className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <FaGoogle /> Sign up with Google
-          </a>
+          </a> */}
 
           <div className="text-sm text-center">
             <span className="text-gray-600 dark:text-gray-300">Already have an account?</span>{" "}

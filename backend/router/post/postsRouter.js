@@ -72,6 +72,12 @@ postRouter.put("/likes/:postId", isAuthenticated, checkUserBan, commentRateLimit
 //---dislike post----
 postRouter.put("/dislikes/:postId", isAuthenticated, checkUserBan, commentRateLimiter, postController.dislike);
 
+//---track post view---
+postRouter.post("/track-view/:postId", isAuthenticated, postController.trackPostView);
+
+//---get post analytics (author only)---
+postRouter.get("/analytics/:postId", isAuthenticated, postController.getPostAnalytics);
+
 // Update post status (draft to published, schedule, etc.)
 postRouter.patch("/:postId/status", isAuthenticated, checkUserBan, postController.updatePostStatus);
 

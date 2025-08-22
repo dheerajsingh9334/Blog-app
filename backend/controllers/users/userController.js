@@ -138,6 +138,8 @@ const userController = {
         _id: user?._id,
         role: user?.role,
         isEmailVerified: user?.isEmailVerified,
+        plan: user?.plan?.planName || user?.plan?.name || 'Free', // Extract plan name correctly
+        accountType: user?.plan?.planName || user?.plan?.name || 'Free', // For backward compatibility
       });
     })(req, res, next);
   }),
@@ -181,8 +183,8 @@ const userController = {
     }
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      //find the user
-      const user = await User.findById(decoded.id);
+      //find the user and populate plan
+      const user = await User.findById(decoded.id).populate('plan');
       if (!user) {
         return res.status(401).json({ isAuthenticated: false });
       } else {
@@ -194,6 +196,7 @@ const userController = {
           profilePicture: user?.profilePicture,
           role: user?.role,
           isEmailVerified: user?.isEmailVerified,
+          plan: user?.plan, // Include the populated plan data
         });
       }
     } catch (error) {
@@ -573,20 +576,56 @@ getUserProfileById: asyncHandler(async (req, res) => {
     }
 
     const currentPostCount = user.posts?.length || 0;
-    const userPlan = user.plan;
+  const userPlan = user.plan;
+  const tier = (userPlan?.tier || userPlan?.planName || 'free').toString().toLowerCase();
+  const tierDefaults = { free: 20, premium: 50, pro: 200 };
+  const effectiveLimit = (typeof userPlan?.postLimit === 'number') ? userPlan.postLimit : tierDefaults[tier] ?? 20;
     
     // Calculate usage and limits
     const usage = {
       posts: {
         current: currentPostCount,
-        limit: userPlan?.postLimit || 10, // Default to 10 for free plan
-        unlimited: !userPlan?.postLimit
+  limit: effectiveLimit, // per day
+  unlimited: false
       },
-      plan: userPlan || { tier: "free", planName: "Free", postLimit: 10 },
+  plan: userPlan || { tier: "free", planName: "Free", postLimit: 20 },
               // Earnings functionality removed
     };
 
     res.json({ usage });
+  }),
+
+  //! Get user's plan change history
+  getUserPlanHistory: asyncHandler(async (req, res) => {
+    const PlanHistory = require("../../models/Payment/PlanHistory");
+    const Payment = require("../../models/Payment/Payment");
+    try {
+      const history = await PlanHistory.find({ user: req.user })
+        .populate('fromPlan', 'planName tier price')
+        .populate('toPlan', 'planName tier price')
+        .sort({ createdAt: -1 })
+        .limit(100);
+      // Real billing history (no invoices)
+      const billing = await Payment.find({ user: req.user })
+        .populate('subscriptionPlan', 'planName tier price')
+        .sort({ createdAt: -1 })
+        .limit(100)
+        .lean();
+      // Normalize billing records to a clean payload without invoice links
+      const billingHistory = billing.map(p => ({
+        id: p._id,
+        reference: p.reference, // Stripe paymentIntent id
+        status: p.status,
+        amount: p.amount,
+        currency: p.currency,
+        plan: p.subscriptionPlan,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt
+      }));
+      res.json({ status: 'success', history, billing: billingHistory });
+    } catch (error) {
+      res.status(500).json({ status: 'error', message: 'Failed to fetch plan history', error: error.message });
+    }
   }),
 
   //! Save post

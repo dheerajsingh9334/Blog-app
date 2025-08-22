@@ -28,14 +28,14 @@ const Analytics = () => {
   const { canAccessFeature, userPlan } = usePlanAccess();
 
   // Check if user can access analytics
-  const canAccess = canAccessFeature("Advanced analytics");
+  const canAccess = canAccessFeature("advancedAnalytics");
 
   if (!canAccess) {
     return (
       <div className="bg-gray-50 dark:bg-gray-900 py-12">
         <div className="container mx-auto px-4 max-w-4xl">
           <PlanUpgradePrompt 
-            feature="Advanced Analytics"
+            feature="Analytics"
             currentPlan={userPlan}
             requiredPlan="Premium"
             variant="default"

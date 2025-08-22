@@ -22,7 +22,8 @@ const seedPlans = async () => {
         planName: "Free",
         description: "Perfect for getting started. Basic features to help you begin your journey.",
         features: [
-          "Up to 10 posts",
+          "Up to 20 posts per day",
+          "1,500 characters per post",
           "Basic analytics",
           "Community access", 
           "Standard support",
@@ -68,7 +69,7 @@ const seedPlans = async () => {
           "Basic multi-site management"
         ],
         price: 0,
-        postLimit: 10,
+  postLimit: 20,
         tier: "free",
         isActive: true,
         user: "000000000000000000000000"
@@ -77,7 +78,8 @@ const seedPlans = async () => {
         planName: "Premium", 
         description: "For serious creators who want to grow their audience and monetize their content.",
         features: [
-          "Unlimited posts",
+          "Up to 50 posts per day",
+          "5,000 characters per post",
           "Priority support",
           "Advanced analytics",
           "Custom branding",
@@ -89,7 +91,6 @@ const seedPlans = async () => {
           "Scheduled posts",
           "Draft saving",
           "Rich text editor",
-          "Image optimization",
           "Social media integration",
           "Newsletter integration",
           "Comment moderation",
@@ -141,7 +142,7 @@ const seedPlans = async () => {
           "Multi-site management"
         ],
         price: 29,
-        postLimit: null,
+  postLimit: 50,
         tier: "premium",
         isActive: true,
         user: "000000000000000000000000"
@@ -151,6 +152,7 @@ const seedPlans = async () => {
         description: "For businesses and power users who need advanced features and dedicated support.",
         features: [
           "Everything in Premium",
+          "10,000 characters per post",
           "API access",
           "White-label solution",
           "Dedicated support",
@@ -204,7 +206,7 @@ const seedPlans = async () => {
           "Multi-site management"
         ],
         price: 99,
-        postLimit: null,
+  postLimit: 200,
         tier: "pro",
         isActive: true,
         user: "000000000000000000000000"

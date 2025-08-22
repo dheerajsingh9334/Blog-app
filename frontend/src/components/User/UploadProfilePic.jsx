@@ -1,14 +1,17 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback,useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { isAuthenticated } from "../../redux/slices/authSlices";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { FaCloudUploadAlt, FaCamera, FaImage, FaTrash } from "react-icons/fa";
+import { FaCloudUploadAlt, FaImage, FaTrash } from "react-icons/fa";
 import { useMutation } from "@tanstack/react-query";
 import { uplaodProfilePicAPI } from "../../APIServices/users/usersAPI";
 import AlertMessage from "../Alert/AlertMessage";
+import { useNavigate } from "react-router-dom";
+
 
 const UploadProfilePic = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const [imageError, setImageErr] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
@@ -124,14 +127,20 @@ const UploadProfilePic = () => {
     fileInputRef.current?.click();
   };
 
-  const openCamera = () => {
-    cameraInputRef.current?.click();
-  };
+    useEffect(() => {
+    if (mutation.isSuccess) {
+      const timer = setTimeout(() => {
+        navigate("/profile");
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [mutation.isSuccess, navigate]);
 
   const isLoading = mutation.isPending;
   const isSuccess = mutation.isSuccess;
   const isError = mutation.isError;
   const errorMsg = mutation?.error?.response?.data?.message;
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4">
@@ -208,14 +217,14 @@ const UploadProfilePic = () => {
                     <FaImage className="h-4 w-4" />
                     Choose File
                   </button>
-                  <button
+                  {/* <button
                     type="button"
                     onClick={openCamera}
                     className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
                   >
                     <FaCamera className="h-4 w-4" />
                     Take Photo
-                  </button>
+                  </button> */}
                 </div>
                 
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">

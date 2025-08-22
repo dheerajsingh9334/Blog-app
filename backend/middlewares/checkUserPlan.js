@@ -1,4 +1,5 @@
 const User = require("../models/User/User");
+const Post = require("../models/Post/Post");
 const asyncHandler = require("express-async-handler");
 
 const checkUserPlan = asyncHandler(async (req, res, next) => {
@@ -123,7 +124,7 @@ const checkPlanFeature = (requiredFeature) => {
   });
 };
 
-// Middleware to check post limits
+// Middleware to check daily post limits based on user's plan
 const checkPostLimit = asyncHandler(async (req, res, next) => {
   try {
     const user = await User.findById(req.user).populate('plan');
@@ -134,20 +135,29 @@ const checkPostLimit = asyncHandler(async (req, res, next) => {
       });
     }
 
-    const currentPostCount = user.posts?.length || 0;
-    const postLimit = user.plan.postLimit;
+  const tier = (user.plan.tier || user.plan.planName || 'free').toString().toLowerCase();
+  const tierDefaults = { free: 20, premium: 50, pro: 200 };
+  const configuredLimit = user.plan.postLimit;
+  const postLimit = (typeof configuredLimit === 'number') ? configuredLimit : tierDefaults[tier] ?? 20; // per-day limit
 
-    // If postLimit is null, it means unlimited posts
-    if (postLimit === null) {
-      return next();
-    }
+    // Count posts created today by the user
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
 
-    if (currentPostCount >= postLimit) {
+    const todayCount = await Post.countDocuments({
+      author: req.user,
+      createdAt: { $gte: startOfDay, $lte: endOfDay },
+    });
+
+  if (todayCount >= postLimit) {
       return res.status(403).json({
-        message: `Post limit reached for your plan. Limit: ${postLimit}`,
-        currentCount: currentPostCount,
+    message: `Daily post limit reached for your plan. Limit per day: ${postLimit}`,
+        currentCount: todayCount,
         limit: postLimit,
-        plan: user.plan.planName
+        plan: user.plan.planName,
+        period: 'day'
       });
     }
 

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useSelector } from 'react-redux';
 import { FaSearch, FaEye, FaHeart, FaComment, FaRegBookmark, FaTimes, FaFilter, FaSort, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { fetchAllPosts } from '../../APIServices/posts/postsAPI';
 import { fetchCategoriesAPI } from '../../APIServices/category/categoryAPI';
 import { truncateText } from '../../utils/responsiveUtils';
 import { fetchTrendingPostsAPI } from '../../APIServices/posts/postsAPI';
+import AdvancedAnalyticsButton from '../Analytics/AdvancedAnalyticsButton';
 import './postCss.css';
 
 const PostsList = () => {
@@ -19,6 +21,11 @@ const PostsList = () => {
   const [savedPosts, setSavedPosts] = useState(new Set()); // Track saved posts
   const [trendingIndex, setTrendingIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(4); // 2 on mobile, 4 (two pairs) on larger
+
+  // Get current user from Redux
+  const { userAuth } = useSelector((state) => state.auth);
+  const currentUserId = userAuth?.userInfo?.data?.user?._id;
+  const userPlan = userAuth?.userInfo?.data?.user?.plan || 'Free';
 
   // Handle URL parameters for tag filtering
   useEffect(() => {
@@ -780,19 +787,30 @@ const PostsList = () => {
                     </div>
 
                     {/* Stats */}
-                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400 pt-2">
-                      <span className="flex items-center space-x-1">
-                        <FaEye className="h-3 w-3" />
-                        <span>{post.views || 0}</span>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <FaHeart className="h-3 w-3" />
-                        <span>{post.likes?.length || 0}</span>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <FaComment className="h-3 w-3" />
-                        <span>{post.comments?.length || 0}</span>
-                      </span>
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                        <span className="flex items-center space-x-1">
+                          <FaEye className="h-3 w-3" />
+                          <span>{post.views || 0}</span>
+                        </span>
+                        <span className="flex items-center space-x-1">
+                          <FaHeart className="h-3 w-3" />
+                          <span>{post.likes?.length || 0}</span>
+                        </span>
+                        <span className="flex items-center space-x-1">
+                          <FaComment className="h-3 w-3" />
+                          <span>{post.comments?.length || 0}</span>
+                        </span>
+                      </div>
+                      
+                      {/* Advanced Analytics Button for Authors */}
+                      {currentUserId && post.author?._id === currentUserId && (
+                        <AdvancedAnalyticsButton 
+                          post={post} 
+                          userPlan={userPlan} 
+                          isAuthor={true} 
+                        />
+                      )}
                     </div>
                   </div>
 

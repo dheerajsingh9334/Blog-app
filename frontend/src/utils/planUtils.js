@@ -1,531 +1,315 @@
-// Plan utilities for feature access control and plan management
+// Plan utilities for feature access control
 
 export const PLAN_TIERS = {
-  FREE: 'free',
-  PREMIUM: 'premium',
-  PRO: 'pro'
+  FREE: 'Free',
+  PREMIUM: 'Premium',
+  PRO: 'Pro'
 };
 
-// Canonical feature keys to drive gating
-export const FEATURE_KEYS = {
-  ANALYTICS: 'advanced_analytics',
-  SEO_TOOLS: 'seo_tools',
-  CONTENT_CALENDAR: 'content_calendar',
-  AUTOMATION: 'advanced_automation',
-  SECURITY: 'advanced_security',
-  TEAM_COLLABORATION: 'team_collaboration',
-  API_ACCESS: 'api_access',
-  WHITE_LABEL: 'white_label_solution',
-  CUSTOM_INTEGRATIONS: 'custom_integrations',
-};
-
-// Feature mapping for different plan tiers
-export const FEATURE_ACCESS = {
-  // Free plan features
-  'basic_analytics': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'community_access': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'standard_support': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_templates': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'public_profile': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'follow_users': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'comment_posts': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'like_share_posts': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'email_notifications': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'mobile_responsive': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_seo_tools': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'social_media_sharing': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_content_editor': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'image_uploads': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_search': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'community_engagement': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_reporting': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'email_support': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'mobile_app_access': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_content_scheduling': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'draft_saving': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_content_optimization': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'social_media_integration': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'newsletter_signup': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_user_analytics': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'content_backup': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_security': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_multilanguage': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_api_access': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_content_calendar': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_user_management': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_content_moderation': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_performance_insights': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_collaboration': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_automation': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_ab_testing': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_workflows': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_data_export': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_custom_reporting': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_monetization': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_webhooks': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_multi_site': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'create_post': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'view_posts': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'edit_profile': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'upload_images': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'basic_notifications': [PLAN_TIERS.FREE, PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  
-  // Premium plan features (includes all free features)
-  'unlimited_posts': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'priority_support': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'advanced_analytics': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'custom_branding': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'ad_free_experience': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'priority_listing': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'advanced_seo_tools': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'custom_domain': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'scheduled_posts': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'rich_text_editor': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'image_optimization': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'newsletter_integration': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'comment_moderation': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'user_engagement_insights': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'content_calendar': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'backup_restore': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'priority_customer_support': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'advanced_content_scheduling': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'ab_testing': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'advanced_user_management': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'custom_workflows': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'advanced_security': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'data_export_import': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'custom_reporting': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'advanced_monetization': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'priority_feature_requests': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'dedicated_account_manager': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'custom_training_sessions': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'advanced_automation': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'enterprise_security': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'uptime_guarantee': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'custom_branding_removal': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'multilanguage_support': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'revenue_sharing': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  'seo_tools': [PLAN_TIERS.PREMIUM, PLAN_TIERS.PRO],
-  
-  // Pro plan features (includes all premium and free features)
-  'api_access': [PLAN_TIERS.PRO],
-  'white_label_solution': [PLAN_TIERS.PRO],
-  'dedicated_support': [PLAN_TIERS.PRO],
-  'custom_integrations': [PLAN_TIERS.PRO],
-  'team_collaboration': [PLAN_TIERS.PRO],
-  'white_label': [PLAN_TIERS.PRO],
-  'custom_themes': [PLAN_TIERS.PRO],
-  'advanced_api_rate_limits': [PLAN_TIERS.PRO],
-  'enterprise_features': [PLAN_TIERS.PRO],
-  'multi_site_management': [PLAN_TIERS.PRO],
-  'webhook_integrations': [PLAN_TIERS.PRO],
-  'advanced_webhooks': [PLAN_TIERS.PRO],
-  'custom_webhooks': [PLAN_TIERS.PRO],
-  'advanced_data_export': [PLAN_TIERS.PRO],
-  'advanced_custom_reporting': [PLAN_TIERS.PRO],
-  'advanced_monetization_features': [PLAN_TIERS.PRO],
-  'advanced_automation_features': [PLAN_TIERS.PRO],
-  'advanced_ab_testing': [PLAN_TIERS.PRO],
-  'advanced_workflows': [PLAN_TIERS.PRO],
-  'advanced_security_features': [PLAN_TIERS.PRO],
-  'advanced_performance_insights': [PLAN_TIERS.PRO],
-  'advanced_user_management_features': [PLAN_TIERS.PRO],
-  'advanced_content_moderation': [PLAN_TIERS.PRO],
-  'advanced_content_optimization': [PLAN_TIERS.PRO],
-  'advanced_content_scheduling_features': [PLAN_TIERS.PRO],
-  'advanced_content_calendar': [PLAN_TIERS.PRO],
-  'advanced_collaboration': [PLAN_TIERS.PRO],
-  'advanced_analytics_dashboard': [PLAN_TIERS.PRO],
-  'advanced_user_analytics': [PLAN_TIERS.PRO],
-  'advanced_performance_analytics': [PLAN_TIERS.PRO],
-  'advanced_engagement_analytics': [PLAN_TIERS.PRO],
-  'advanced_revenue_analytics': [PLAN_TIERS.PRO],
-  'advanced_content_analytics': [PLAN_TIERS.PRO],
-  'advanced_audience_analytics': [PLAN_TIERS.PRO],
-  'advanced_traffic_analytics': [PLAN_TIERS.PRO],
-  'advanced_conversion_analytics': [PLAN_TIERS.PRO],
-  'advanced_roi_analytics': [PLAN_TIERS.PRO],
-  'advanced_campaign_analytics': [PLAN_TIERS.PRO],
-  'advanced_social_analytics': [PLAN_TIERS.PRO],
-  'advanced_email_analytics': [PLAN_TIERS.PRO],
-  'advanced_mobile_analytics': [PLAN_TIERS.PRO],
-  'advanced_seo_analytics': [PLAN_TIERS.PRO],
-  'advanced_competitor_analytics': [PLAN_TIERS.PRO],
-  'advanced_market_analytics': [PLAN_TIERS.PRO],
-  'advanced_trend_analytics': [PLAN_TIERS.PRO],
-  'advanced_predictive_analytics': [PLAN_TIERS.PRO],
-  'advanced_machine_learning': [PLAN_TIERS.PRO],
-  'advanced_ai_features': [PLAN_TIERS.PRO],
-  'advanced_chatbot': [PLAN_TIERS.PRO],
-  'advanced_automation_ai': [PLAN_TIERS.PRO],
-  'advanced_content_ai': [PLAN_TIERS.PRO],
-  'advanced_seo_ai': [PLAN_TIERS.PRO],
-  'advanced_analytics_ai': [PLAN_TIERS.PRO],
-  'advanced_personalization': [PLAN_TIERS.PRO],
-  'advanced_recommendations': [PLAN_TIERS.PRO],
-  'advanced_targeting': [PLAN_TIERS.PRO],
-  'advanced_segmentation': [PLAN_TIERS.PRO],
-  'advanced_optimization': [PLAN_TIERS.PRO],
-  'advanced_testing': [PLAN_TIERS.PRO],
-  'advanced_experimentation': [PLAN_TIERS.PRO],
-  'advanced_research': [PLAN_TIERS.PRO],
-  'advanced_insights': [PLAN_TIERS.PRO],
-  'advanced_intelligence': [PLAN_TIERS.PRO],
-  'advanced_automation_intelligence': [PLAN_TIERS.PRO],
-  'advanced_content_intelligence': [PLAN_TIERS.PRO],
-  'advanced_user_intelligence': [PLAN_TIERS.PRO],
-  'advanced_market_intelligence': [PLAN_TIERS.PRO],
-  'advanced_competitive_intelligence': [PLAN_TIERS.PRO],
-  'advanced_business_intelligence': [PLAN_TIERS.PRO],
-  'advanced_financial_intelligence': [PLAN_TIERS.PRO],
-  'advanced_operational_intelligence': [PLAN_TIERS.PRO],
-  'advanced_strategic_intelligence': [PLAN_TIERS.PRO],
-  'advanced_tactical_intelligence': [PLAN_TIERS.PRO]
-};
-
-export const PLAN_FEATURES = {
+export const PLAN_LIMITS = {
   [PLAN_TIERS.FREE]: {
-    name: 'Free',
-    price: 0,
-    postLimit: 10,
-    features: [
-      'Up to 10 posts',
-      'Basic analytics',
-      'Community access',
-      'Standard support',
-      'Basic templates',
-      'Public profile',
-      'Follow other users',
-      'Comment on posts',
-      'Like and share posts',
-      'Email notifications',
-      'Mobile responsive',
-      'Basic SEO tools',
-      'Social media sharing',
-      'Basic content editor',
-      'Image uploads (up to 5MB)',
-      'Basic search functionality',
-      'Community engagement',
-      'Basic reporting',
-      'Email support',
-      'Mobile app access',
-      'Basic content scheduling',
-      'Draft saving',
-      'Basic content optimization',
-      'Social media integration',
-      'Newsletter signup',
-      'Basic user analytics',
-      'Content backup',
-      'Basic security features',
-      'Multi-language support (basic)',
-      'Basic API access',
-      'Basic content calendar',
-      'Basic user management',
-      'Basic content moderation',
-      'Basic performance insights',
-      'Basic collaboration tools',
-      'Basic automation features',
-      'Basic A/B testing',
-      'Basic custom workflows',
-      'Basic data export',
-      'Basic custom reporting',
-      'Basic monetization tools',
-      'Basic webhook integrations',
-      'Basic content optimization',
-      'Basic multi-site management'
-    ]
+    posts: 10,
+    characters: 600,
+    categories: 1,
+    features: {
+      viewPosts: true,
+      createPosts: true,
+      advancedEditor: false,
+      scheduledPosts: false,
+      analytics: false,
+      imageCustomization: false,
+      multipleCategories: false,
+      commentAndLike: false,
+      readerAnalytics: false
+    }
   },
   [PLAN_TIERS.PREMIUM]: {
-    name: 'Premium',
-    price: 29,
-    postLimit: null, // Unlimited
-    features: [
-      'Unlimited posts',
-      'Priority support',
-      'Advanced analytics',
-      'Custom branding',
-      'Email notifications',
-      'Ad-free experience',
-      'Priority listing',
-      'Advanced SEO tools',
-      'Custom domain',
-      'Scheduled posts',
-      'Draft saving',
-      'Rich text editor',
-      'Image optimization',
-      'Social media integration',
-      'Newsletter integration',
-      'Comment moderation',
-      'User engagement insights',
-      'Content calendar',
-      'Backup and restore',
-      'Priority customer support',
-      'Advanced content scheduling',
-      'A/B testing',
-      'Advanced user management',
-      'Custom workflows',
-      'Advanced security features',
-      'Data export and import',
-      'Custom reporting',
-      'Advanced monetization tools',
-      'Priority feature requests',
-      'Dedicated account manager',
-      'Custom training sessions',
-      'Advanced automation',
-      'Enterprise-grade security',
-      '99.9% uptime guarantee',
-      'Custom branding removal',
-      'Advanced API rate limits',
-      'Webhook integrations',
-      'Advanced content optimization',
-      'Multi-site management',
-      'Advanced analytics dashboard',
-      'Custom themes and templates',
-      'Multi-language support',
-      'Team collaboration',
-      'Revenue sharing',
-      'Advanced content scheduling',
-      'Advanced user management',
-      'Custom workflows',
-      'Advanced security features',
-      'Data export and import',
-      'Custom reporting',
-      'Advanced monetization tools',
-      'Priority feature requests',
-      'Dedicated account manager',
-      'Custom training sessions',
-      'Advanced automation',
-      'Enterprise-grade security',
-      '99.9% uptime guarantee',
-      'Custom branding removal',
-      'Advanced API rate limits',
-      'Webhook integrations',
-      'Advanced content optimization',
-      'Multi-site management'
-    ]
+    posts: -1, // Unlimited
+    characters: 5000,
+    categories: -1, // Multiple/Unlimited
+    features: {
+      viewPosts: true,
+      createPosts: true,
+      advancedEditor: true,
+      scheduledPosts: true,
+      analytics: true, // Now available for Premium
+      imageCustomization: false,
+      multipleCategories: true,
+      commentAndLike: true,
+      readerAnalytics: false // Only Pro gets detailed reader analytics
+    }
   },
   [PLAN_TIERS.PRO]: {
-    name: 'Pro',
-    price: 99,
-    postLimit: null, // Unlimited
-    features: [
-      'Everything in Premium',
-      'API access',
-      'White-label solution',
-      'Dedicated support',
-      'Custom integrations',
-      'Team collaboration',
-      'Advanced SEO tools',
-      'Revenue sharing',
-      'Advanced analytics dashboard',
-      'Custom themes and templates',
-      'Multi-language support',
-      'Advanced content scheduling',
-      'A/B testing',
-      'Advanced user management',
-      'Custom workflows',
-      'Advanced security features',
-      'Data export and import',
-      'Custom reporting',
-      'Advanced monetization tools',
-      'Priority feature requests',
-      'Dedicated account manager',
-      'Custom training sessions',
-      'Advanced automation',
-      'Enterprise-grade security',
-      '99.9% uptime guarantee',
-      'Custom branding removal',
-      'Advanced API rate limits',
-      'Webhook integrations',
-      'Advanced content optimization',
-      'Multi-site management',
-      'Advanced analytics dashboard',
-      'Custom themes and templates',
-      'Multi-language support',
-      'Advanced content scheduling',
-      'A/B testing',
-      'Advanced user management',
-      'Custom workflows',
-      'Advanced security features',
-      'Data export and import',
-      'Custom reporting',
-      'Advanced monetization tools',
-      'Priority feature requests',
-      'Dedicated account manager',
-      'Custom training sessions',
-      'Advanced automation',
-      'Enterprise-grade security',
-      '99.9% uptime guarantee',
-      'Custom branding removal',
-      'Advanced API rate limits',
-      'Webhook integrations',
-      'Advanced content optimization',
-      'Multi-site management'
-    ]
-  }
-};
-
-// Helper functions for plan-based access control
-export const hasFeature = (userPlan, feature) => {
-  if (!userPlan) return false;
-  
-  // Handle different plan data structures
-  let planTier = null;
-  
-  if (userPlan.tier) {
-    planTier = userPlan.tier.toLowerCase();
-  } else if (userPlan.planName) {
-    // Map plan names to tiers
-    const planName = userPlan.planName.toLowerCase();
-    if (planName.includes('pro') || planName === 'pro') {
-      planTier = PLAN_TIERS.PRO;
-    } else if (planName.includes('premium') || planName === 'premium') {
-      planTier = PLAN_TIERS.PREMIUM;
-    } else if (planName.includes('free') || planName === 'free') {
-      planTier = PLAN_TIERS.FREE;
+    posts: -1, // Unlimited everything
+    characters: 10000,
+    categories: -1, // Unlimited
+    features: {
+      viewPosts: true,
+      createPosts: true,
+      advancedEditor: true,
+      scheduledPosts: true,
+      analytics: true,
+      imageCustomization: true,
+      multipleCategories: true,
+      commentAndLike: true,
+      readerAnalytics: true
     }
   }
-  
-  // If we still don't have a plan tier, default to free
-  if (!planTier) {
-    planTier = PLAN_TIERS.FREE;
-  }
-  
-  // Check if the feature exists in our access mapping
-  if (FEATURE_ACCESS[feature]) {
-    return FEATURE_ACCESS[feature].includes(planTier);
-  }
-  
-  // Fallback to tier-based access
-  switch (planTier) {
-    case PLAN_TIERS.PRO:
-      return true; // Pro has access to everything
-    case PLAN_TIERS.PREMIUM:
-      // Premium has access to Premium and Free features
-      return PLAN_FEATURES[PLAN_TIERS.PREMIUM]?.features?.includes(feature) ||
-             PLAN_FEATURES[PLAN_TIERS.FREE]?.features?.includes(feature);
-    case PLAN_TIERS.FREE:
-      // Free only has access to Free features
-      return PLAN_FEATURES[PLAN_TIERS.FREE]?.features?.includes(feature);
-    default:
-      return false;
-  }
 };
 
-export const canAccessFeature = (userPlan, feature) => {
-  return hasFeature(userPlan, feature);
+export const getPlanLimits = (plan) => {
+  return PLAN_LIMITS[plan] || PLAN_LIMITS[PLAN_TIERS.FREE];
 };
 
 export const getPlanTier = (userPlan) => {
   if (!userPlan) return PLAN_TIERS.FREE;
   
-  // Handle different plan data structures
-  let planTier = null;
-  
-  if (userPlan.tier) {
-    planTier = userPlan.tier.toLowerCase();
-  } else if (userPlan.planName) {
-    // Map plan names to tiers
-    const planName = userPlan.planName.toLowerCase();
-    if (planName.includes('pro') || planName === 'pro') {
-      planTier = PLAN_TIERS.PRO;
-    } else if (planName.includes('premium') || planName === 'premium') {
-      planTier = PLAN_TIERS.PREMIUM;
-    } else if (planName.includes('free') || planName === 'free') {
-      planTier = PLAN_TIERS.FREE;
-    }
+  // Handle plan object with planName property
+  if (typeof userPlan === 'object' && userPlan.planName) {
+    const planName = userPlan.planName.toString().toLowerCase();
+    if (planName === 'pro') return PLAN_TIERS.PRO;
+    if (planName === 'premium') return PLAN_TIERS.PREMIUM;
+    if (planName === 'free') return PLAN_TIERS.FREE;
+    return PLAN_TIERS.FREE;
   }
   
-  // If we still don't have a plan tier, default to free
-  if (!planTier) {
-    planTier = PLAN_TIERS.FREE;
+  // Handle plan object with tier property
+  if (typeof userPlan === 'object' && userPlan.tier) {
+    const tier = userPlan.tier.toString().toLowerCase();
+    if (tier === 'pro') return PLAN_TIERS.PRO;
+    if (tier === 'premium') return PLAN_TIERS.PREMIUM;
+    if (tier === 'free') return PLAN_TIERS.FREE;
+    return PLAN_TIERS.FREE;
   }
   
-  // Ensure we return the correct tier constant
-  if (planTier === PLAN_TIERS.PRO) return PLAN_TIERS.PRO;
-  if (planTier === PLAN_TIERS.PREMIUM) return PLAN_TIERS.PREMIUM;
+  // Handle string plan names
+  if (typeof userPlan === 'string') {
+    const planStr = userPlan.toLowerCase();
+    if (planStr === 'pro') return PLAN_TIERS.PRO;
+    if (planStr === 'premium') return PLAN_TIERS.PREMIUM;
+    if (planStr === 'free') return PLAN_TIERS.FREE;
+    return PLAN_TIERS.FREE;
+  }
+  
   return PLAN_TIERS.FREE;
 };
 
 export const getPlanInfo = (userPlan) => {
   const tier = getPlanTier(userPlan);
-  return PLAN_FEATURES[tier];
+  return getPlanLimits(tier);
 };
 
-export const canCreatePost = (userPlan, currentPostCount) => {
-  const planInfo = getPlanInfo(userPlan);
-  if (!planInfo.postLimit) return true; // Unlimited
-  return currentPostCount < planInfo.postLimit;
+export const hasAdvancedEditor = (userPlan) => {
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.features.advancedEditor;
+};
+
+export const hasScheduledPosts = (userPlan) => {
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.features.scheduledPosts;
+};
+
+export const canCreatePost = (userPlan, currentPostCount = 0) => {
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.posts === -1 || currentPostCount < limits.posts;
+};
+
+export const getCharacterLimit = (userPlan) => {
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.characters;
+};
+
+export const isWithinCharacterLimit = (userPlan, content) => {
+  const limit = getCharacterLimit(userPlan);
+  return content.length <= limit;
+};
+
+export const getPostLimit = (userPlan) => {
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.posts;
+};
+
+export const canSelectMultipleCategories = (userPlan) => {
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.features.multipleCategories;
 };
 
 export const getUpgradePrompt = (userPlan, feature) => {
-  const currentTier = getPlanTier(userPlan);
-  
-  if (currentTier === PLAN_TIERS.PRO) return null;
-  
-  if (currentTier === PLAN_TIERS.FREE) {
-    return {
-      message: `Upgrade to Premium to access ${feature}`,
-      action: 'upgrade',
-      targetPlan: PLAN_TIERS.PREMIUM
-    };
+  const tier = getPlanTier(userPlan);
+  if (tier === PLAN_TIERS.FREE) {
+    return `Upgrade to Premium to access ${feature}`;
   }
-  
-  if (currentTier === PLAN_TIERS.PREMIUM) {
-    return {
-      message: `Upgrade to Pro to access ${feature}`,
-      action: 'upgrade',
-      targetPlan: PLAN_TIERS.PRO
-    };
+  if (tier === PLAN_TIERS.PREMIUM) {
+    return `Upgrade to Pro to access ${feature}`;
   }
-  
+  return null;
+};
+
+export const getUpgradeButton = (userPlan) => {
+  const tier = getPlanTier(userPlan);
+  if (tier === PLAN_TIERS.FREE) {
+    return { text: 'Upgrade to Premium', plan: 'premium' };
+  }
+  if (tier === PLAN_TIERS.PREMIUM) {
+    return { text: 'Upgrade to Pro', plan: 'pro' };
+  }
   return null;
 };
 
 export const getPlanBadge = (userPlan) => {
   const tier = getPlanTier(userPlan);
-  
-  const badges = {
-    [PLAN_TIERS.FREE]: {
-      text: 'FREE',
-      className: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-    },
-    [PLAN_TIERS.PREMIUM]: {
-      text: 'PREMIUM',
-      className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-    },
-    [PLAN_TIERS.PRO]: {
-      text: 'PRO',
-      className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-    }
-  };
-  
-  return badges[tier] || badges[PLAN_TIERS.FREE];
+  switch (tier) {
+    case PLAN_TIERS.FREE:
+      return { 
+        color: 'bg-gray-100 text-gray-800', 
+        text: 'Free Plan',
+        icon: '📦'
+      };
+    case PLAN_TIERS.PREMIUM:
+      return { 
+        color: 'bg-blue-100 text-blue-800', 
+        text: 'Premium Plan',
+        icon: '⭐'
+      };
+    case PLAN_TIERS.PRO:
+      return { 
+        color: 'bg-purple-100 text-purple-800', 
+        text: 'Pro Plan',
+        icon: '👑'
+      };
+    default:
+      return { 
+        color: 'bg-gray-100 text-gray-800', 
+        text: 'Free Plan',
+        icon: '📦'
+      };
+  }
 };
 
-export const getUpgradeButton = (userPlan, className = '') => {
-  const currentTier = getPlanTier(userPlan);
-  
-  if (currentTier === PLAN_TIERS.PRO) return null;
-  
-  const buttons = {
-    [PLAN_TIERS.FREE]: {
-      text: 'Upgrade to Premium',
-      href: '/pricing',
-      className: 'bg-green-600 hover:bg-green-700 text-white'
-    },
-    [PLAN_TIERS.PREMIUM]: {
-      text: 'Upgrade to Pro',
-      href: '/pricing',
-      className: 'bg-indigo-600 hover:bg-indigo-700 text-white'
-    }
-  };
-  
-  const button = buttons[currentTier];
-  if (!button) return null;
+export const getRequiredPlanForFeature = (feature) => {
+  if (PLAN_LIMITS[PLAN_TIERS.FREE].features[feature]) return PLAN_TIERS.FREE;
+  if (PLAN_LIMITS[PLAN_TIERS.PREMIUM].features[feature]) return PLAN_TIERS.PREMIUM;
+  if (PLAN_LIMITS[PLAN_TIERS.PRO].features[feature]) return PLAN_TIERS.PRO;
+  return PLAN_TIERS.PRO;
+};
+
+export const getCharacterStatus = (userPlan, content) => {
+  const limit = getCharacterLimit(userPlan);
+  const currentCount = content.length;
+  const remaining = limit - currentCount;
+  const percentage = (currentCount / limit) * 100;
   
   return {
-    ...button,
-    className: `${button.className} ${className}`.trim()
+    current: currentCount,
+    limit: limit,
+    remaining: remaining,
+    percentage: percentage,
+    isOverLimit: currentCount > limit,
+    isNearLimit: percentage > 80
   };
+};
+
+export const hasFeatureAccess = (userPlan, feature) => {
+  // Handle specific features with dedicated functions that support backend data
+  if (feature === 'analytics' || feature === 'advancedAnalytics') {
+    return hasAnalytics(userPlan);
+  }
+  if (feature === 'reader_analytics' || feature === 'readersAnalytics') {
+    return hasReaderAnalytics(userPlan);
+  }
+  
+  // For backend plan objects, check direct properties
+  if (typeof userPlan === 'object' && userPlan) {
+    // Map frontend feature names to backend properties
+    const backendPropertyMap = {
+      'scheduled_posts': 'scheduledPosts',
+      'comment_and_like': 'canComment',
+      'image_customization': 'imageCustomization',
+      'advanced_editor': 'advancedEditor',
+      'advancedAnalytics': 'analytics'
+    };
+    
+    const backendProperty = backendPropertyMap[feature] || feature;
+    if (userPlan[backendProperty] !== undefined) {
+      return userPlan[backendProperty];
+    }
+  }
+  
+  // Fallback to static plan definitions
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.features[feature] || false;
+};
+
+// Additional feature access functions
+export const hasCommentAndLike = (userPlan) => {
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.features.commentAndLike;
+};
+
+export const hasAnalytics = (userPlan) => {
+  // First check if the plan object itself has advancedAnalytics property (backend data)
+  if (typeof userPlan === 'object' && userPlan?.advancedAnalytics === true) {
+    return true;
+  }
+  
+  // If plan object has tier property, check against that
+  if (typeof userPlan === 'object' && userPlan?.tier) {
+    const tier = userPlan.tier.toString().toLowerCase();
+    return tier === 'premium' || tier === 'pro';
+  }
+  
+  // If plan object has planName property, check against that
+  if (typeof userPlan === 'object' && userPlan?.planName) {
+    const planName = userPlan.planName.toString().toLowerCase();
+    return planName === 'premium' || planName === 'pro';
+  }
+  
+  // Fallback to static plan definitions
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.features.analytics;
+};
+
+export const hasReaderAnalytics = (userPlan) => {
+  // First check if the plan object itself has readersAnalytics property (backend data)
+  if (typeof userPlan === 'object' && userPlan?.readersAnalytics === true) {
+    return true;
+  }
+  
+  // If plan object has tier property, check against that (only Pro has reader analytics)
+  if (typeof userPlan === 'object' && userPlan?.tier) {
+    const tier = userPlan.tier.toString().toLowerCase();
+    return tier === 'pro';
+  }
+  
+  // If plan object has planName property, check against that
+  if (typeof userPlan === 'object' && userPlan?.planName) {
+    const planName = userPlan.planName.toString().toLowerCase();
+    return planName === 'pro';
+  }
+  
+  // Fallback to static plan definitions
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.features.readerAnalytics;
+};
+
+export const hasImageCustomization = (userPlan) => {
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.features.imageCustomization;
+};
+
+export const canCreateMorePosts = (userPlan, currentPostCount) => {
+  const tier = getPlanTier(userPlan);
+  const limits = getPlanLimits(tier);
+  return limits.posts === -1 || currentPostCount < limits.posts;
 };

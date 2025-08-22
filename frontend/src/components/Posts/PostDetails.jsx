@@ -15,6 +15,8 @@ import { FaFacebook, FaTwitter } from "react-icons/fa";
 import Avatar from "../User/Avatar";
 import FollowButton from "../User/FollowButton";
 import CommentList from "../Comments/CommentList";
+import useViewTracker from "../../hooks/useViewTracker";
+import AdvancedAnalyticsButton from "../Analytics/AdvancedAnalyticsButton";
 
 const PostDetails = () => {
   const { postId } = useParams();
@@ -52,6 +54,9 @@ const PostDetails = () => {
   const isFollowing = profileData?.user?.following?.some(
     (user) => user?._id?.toString() === targetId?.toString()
   );
+  
+  // Track view for analytics (only if user is authenticated)
+  useViewTracker(postId, !!profileData?.user);
   
   // Local state for save status
   const [localIsSaved, setLocalIsSaved] = useState(false);
@@ -374,6 +379,15 @@ const PostDetails = () => {
                   <FaComment className="h-4 w-4" />
                   <span>{post?.comments?.length || 0}</span>
                 </div>
+
+                {/* Analytics Button for Post Author */}
+                {userId && targetId && userId === targetId && (
+                  <AdvancedAnalyticsButton 
+                    post={post} 
+                    userPlan={profileData?.user?.plan} 
+                    isAuthor={true} 
+                  />
+                )}
               </div>
 
               {/* Social Share */}

@@ -5,38 +5,43 @@ import {
   BellIcon,
   BookOpenIcon,
   UserGroupIcon,
-  CalendarIcon,
   TagIcon,
   CheckIcon,
   BookmarkIcon,
   ChartBarIcon,
   CreditCardIcon,
   CurrencyDollarIcon,
-  SparklesIcon
+  SparklesIcon,
+  DocumentTextIcon,
+  TrophyIcon
 } from "@heroicons/react/24/outline";
-import { FaBlog, FaPen, FaBell, FaSun, FaMoon, FaBars, FaTimes, FaLock } from "react-icons/fa";
+import { FaPen, FaBell, FaSun, FaMoon, FaBars, FaTimes, FaLock } from "react-icons/fa";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserPlanAndUsageAPI, logoutAPI } from "../../APIServices/users/usersAPI";
+import { getUserPublishedPostsAPI } from "../../APIServices/posts/postsAPI";
 import { useNotifications } from "../../contexts/NotificationContext";
 import { logout } from "../../redux/slices/authSlices";
 import { useDarkMode } from "../Navbar/DarkModeContext";
-import { PLAN_TIERS, hasFeatureAccess } from "../../utils/planUtils";
+import { hasFeatureAccess } from "../../utils/planUtils";
 import SearchBar from "../Search/SearchBar";
 import UserPlanStatus from "../Navbar/UserPlanStatus";
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: false, feature: null },
-  { name: "Posts", href: "/posts", icon: BookOpenIcon, current: false, feature: null },
-  { name: "Create Post", href: "/create-post", icon: BookOpenIcon, current: false, feature: null },
-  { name: "Profile", href: "/profile", icon: UserGroupIcon, current: false, feature: null },
-  { name: "Analytics", href: "/analytics", icon: ChartBarIcon, current: false, feature: "advanced_analytics" },
-  { name: "Content Calendar", href: "/calendar", icon: CalendarIcon, current: false, feature: "content_calendar" },
-  { name: "Scheduled Posts", href: "/scheduled-posts", icon: BookmarkIcon, current: false, feature: "scheduled_posts" },
-  { name: "SEO Tools", href: "/seo-tools", icon: TagIcon, current: false, feature: "advanced_seo_tools" },
-  { name: "Team", href: "/team", icon: UserGroupIcon, current: false, feature: "team_collaboration" },
-  { name: "Trending", href: "/trending", icon: FaBlog, current: false, feature: null },
+  { name: "Create Post", href: "/dashboard/create-post", icon: FaPen, current: false, feature: null },
+  { name: "My Posts", href: "/dashboard/posts", icon: BookOpenIcon, current: false, feature: null },
+  { name: "Post Management", href: "/dashboard/post-management", icon: Cog6ToothIcon, current: false, feature: null },
+  { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon, current: false, feature: "advancedAnalytics" },
+  { name: "Saved Posts", href: "/saved-posts", icon: BookmarkIcon, current: false, feature: null },
+  { name: "Followers", href: "/dashboard/my-followers", icon: UserGroupIcon, current: false, feature: null },
+  { name: "Following", href: "/dashboard/my-followings", icon: UserGroupIcon, current: false, feature: null },
+  { name: "Categories", href: "/categories", icon: TagIcon, current: false, feature: null },
+  { name: "Trending", href: "/trending", icon: SparklesIcon, current: false, feature: null },
+  { name: "All Posts", href: "/posts", icon: DocumentTextIcon, current: false, feature: null },
+  { name: "Rankings", href: "/ranking", icon: TrophyIcon, current: false, feature: null },
 ];
 
 function classNames(...classes) {
@@ -83,6 +88,52 @@ export default function GlobalLayout({ userAuth, children }) {
     cacheTime: 600000, // 10 minutes
   });
 
+  // Fetch user's published posts for mini analytics
+  const { data: userPostsData = {} } = useQuery({
+    queryKey: ['user-posts-mini', userAuth?._id],
+    queryFn: getUserPublishedPostsAPI,
+    enabled: !!userAuth?._id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Calculate mini analytics
+  const miniAnalytics = useMemo(() => {
+    const userPosts = userPostsData?.posts || [];
+    
+    if (!userPosts?.length) {
+      return {
+        totalPosts: 0,
+        totalViews: 0,
+        totalLikes: 0,
+        totalComments: 0,
+        recentData: []
+      };
+    }
+
+    const totalPosts = userPosts.length;
+    const totalViews = userPosts.reduce((sum, post) => sum + (post.numViews || 0), 0);
+    const totalLikes = userPosts.reduce((sum, post) => sum + (post.likes?.length || 0), 0);
+    const totalComments = userPosts.reduce((sum, post) => sum + (post.comments?.length || 0), 0);
+    
+    // Recent 7 days data for mini chart
+    const recentData = userPosts
+      .slice(-7)
+      .map((post, index) => ({
+        day: index + 1,
+        views: post.numViews || 0,
+        likes: post.likes?.length || 0,
+        comments: post.comments?.length || 0
+      }));
+
+    return {
+      totalPosts,
+      totalViews,
+      totalLikes,
+      totalComments,
+      recentData
+    };
+  }, [userPostsData]);
+
   // Memoize computed values
   const currentPlan = useMemo(() => usageData?.usage?.plan, [usageData?.usage?.plan]);
   const hasFreePlan = useMemo(() => 
@@ -92,13 +143,13 @@ export default function GlobalLayout({ userAuth, children }) {
 
   // Memoize navigation items with access control
   const accessibleNavigation = useMemo(() => {
-    const userPlan = usageData?.usage?.plan?.tier || PLAN_TIERS.FREE;
+    const userPlan = usageData?.usage?.plan;
     return navigation.map(item => ({
       ...item,
-      hasAccess: !item.feature || hasFeatureAccess(item.feature, userPlan),
+      hasAccess: !item.feature || hasFeatureAccess(userPlan, item.feature),
       current: location.pathname === item.href
     }));
-  }, [usageData?.usage?.plan?.tier, location.pathname]);
+  }, [usageData?.usage?.plan, location.pathname]);
 
   // Memoized logout handler
   const handleLogout = useCallback(async () => {
@@ -142,13 +193,21 @@ export default function GlobalLayout({ userAuth, children }) {
   const layoutConfig = useMemo(() => {
     const isTrendingPage = location.pathname.startsWith('/trending');
     const isPostsList = location.pathname === '/posts' || location.pathname.startsWith('/posts');
-    const shouldShiftContent = navbarSidebarOpen && isPostsList && !isTrendingPage;
+    const isDashboard = location.pathname.startsWith('/dashboard');
+    const isAnalytics = location.pathname.includes('/analytics');
+    
+    // Only shift content on desktop when sidebar is open (lg screens and up)
+    const shouldShiftContent = false; // Never shift content for navbar
+    const shouldShiftContentDesktop = navbarSidebarOpen; // Only for main content on desktop
     
     return {
       isTrendingPage,
       isPostsList,
+      isDashboard,
+      isAnalytics,
       shouldShiftContent,
-      showOverlay: navbarSidebarOpen && !shouldShiftContent
+      shouldShiftContentDesktop,
+      showOverlay: navbarSidebarOpen // Always show overlay on mobile when sidebar is open
     };
   }, [location.pathname, navbarSidebarOpen]);
 
@@ -174,8 +233,17 @@ export default function GlobalLayout({ userAuth, children }) {
   }, [navbarSidebarOpen]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
-      {/* Sidebar Overlay - show when we do NOT shift content (e.g., trending) */}
+    <div 
+      className="min-h-screen bg-gray-50 dark:bg-gray-900 flex"
+      style={{
+        '--sidebar-width': navbarSidebarOpen ? '16rem' : '0rem',
+        '--sidebar-width-sm': navbarSidebarOpen ? '12rem' : '0rem',
+        '--sidebar-width-md': navbarSidebarOpen ? '14rem' : '0rem',
+        '--sidebar-width-lg': navbarSidebarOpen ? '16rem' : '0rem',
+        '--sidebar-width-xl': navbarSidebarOpen ? '18rem' : '0rem'
+      }}
+    >
+      {/* Sidebar Overlay - show on mobile when sidebar is open */}
       {layoutConfig.showOverlay && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -183,11 +251,11 @@ export default function GlobalLayout({ userAuth, children }) {
         />
       )}
 
-      {/* Left Sidebar */}
+      {/* Left Sidebar - Enhanced responsive design */}
       <div 
         data-sidebar
-        className={`fixed inset-y-0 left-0 z-40 w-40 sm:w-48 md:w-56 lg:w-64 bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out ${
-          navbarSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-50 w-40 sm:w-48 md:w-56 lg:w-64 xl:w-72 bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out ${
+          navbarSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Sidebar Header */}
@@ -320,6 +388,61 @@ export default function GlobalLayout({ userAuth, children }) {
               </div>
             </div>
 
+            {/* Mini Analytics Widget */}
+            {userAuth && miniAnalytics.totalPosts > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                  Quick Stats
+                </h3>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-3">
+                  {/* Stats Grid - 2x2 layout for better fit */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-gray-900 dark:text-white">{miniAnalytics.totalPosts}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Posts</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-gray-900 dark:text-white">{miniAnalytics.totalViews}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Views</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-gray-900 dark:text-white">{miniAnalytics.totalLikes}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Likes</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-gray-900 dark:text-white">{miniAnalytics.totalComments}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Comments</div>
+                    </div>
+                  </div>
+                  
+                  {/* Mini Chart */}
+                  {miniAnalytics.recentData.length > 0 && (
+                    <div className="h-16 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={miniAnalytics.recentData}>
+                          <Line 
+                            type="monotone" 
+                            dataKey="views" 
+                            stroke="#10B981" 
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                  
+                  {/* Quick Link to Full Analytics */}
+                  <Link
+                    to="/dashboard/analytics"
+                    className="block w-full text-center text-xs text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                  >
+                    View Full Analytics →
+                  </Link>
+                </div>
+              </div>
+            )}
+
             {/* User Profile Section */}
             {authUser && (
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -340,12 +463,16 @@ export default function GlobalLayout({ userAuth, children }) {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className={`transition-all duration-300 ease-in-out flex-1 min-h-screen pt-16 ${
-        layoutConfig.shouldShiftContent ? 'ml-40 sm:ml-48 md:ml-56 lg:ml-64' : 'ml-0'
-      }`}>
-            {/* Navbar - Fixed Header */}
-            <nav className="hidden lg:block fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-800">
+      {/* Main Content Area - Enhanced responsive layout */}
+      <div 
+        className={`transition-all duration-300 ease-in-out flex-1 min-h-screen ${
+          layoutConfig.shouldShiftContentDesktop ? 'lg:ml-64 xl:ml-72' : ''
+        }`}
+      >
+        {/* Navbar - Fixed Header without sidebar offset */}
+        <nav 
+          className="hidden lg:block fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out"
+        >
           <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               {/* Left: Logo and Navbar Sidebar Toggle */}
@@ -521,7 +648,7 @@ export default function GlobalLayout({ userAuth, children }) {
         </nav>
  
             {/* Page Content */}
-            <div className="pt-16">
+            <div className="pt-16 lg:pt-16">
               <main className="min-h-screen">
                 {/* Upgrade Plan Banner - Show for free plan users */}
                 {userAuth && hasFreePlan && (
@@ -566,9 +693,11 @@ export default function GlobalLayout({ userAuth, children }) {
                   </div>
                 )}
  
-                {/* Page Content */}
-                <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
-                  {children || <Outlet />}
+                {/* Page Content - Improved responsive layout */}
+                <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
+                  <div className="w-full max-w-none overflow-hidden">
+                    {children || <Outlet />}
+                  </div>
                 </div>
               </main>
             </div>
@@ -576,157 +705,157 @@ export default function GlobalLayout({ userAuth, children }) {
 
           {/* Mobile Navbar - Only visible on small devices */}
           <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg">
-        <div className="px-3 sm:px-4 py-3">
-          <div className="flex items-center justify-between">
-            {/* Left: Sidebar Toggle and Logo */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              {/* Navbar Sidebar Toggle Button for Mobile */}
-              {userAuth && (
-                <button
-                  onClick={() => setNavbarSidebarOpen(!navbarSidebarOpen)}
-                  className="navbar-sidebar p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  title={navbarSidebarOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
-                  aria-expanded={navbarSidebarOpen}
-                  data-sidebar-toggle
-                >
-                  {navbarSidebarOpen ? (
-                    <FaTimes className="h-4 w-4 sm:h-5 sm:w-5" />
-                  ) : (
-                    <FaBars className="h-4 w-4 sm:h-5 sm:w-5" />
-                  )}
-                </button>
-              )}
-              
-              <Link
-                to="/posts"
-                className="text-base sm:text-lg font-serif font-bold text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors"
-              >
-                WisdomShare
-              </Link>
-            </div>
-
-            {/* Center: Search Bar - Always visible */}
-            <div className="flex-1 max-w-xs mx-2 sm:mx-4">
-              <SearchBar placeholder="Search posts, users..." />
-            </div>
-
-            {/* Right: Actions */}
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              {userAuth ? (
-                <>
-                  {/* User Plan Status - Compact for mobile */}
-                  <div className="hidden sm:block">
-                    <UserPlanStatus />
-                  </div>
-
-                  {/* Write Button */}
-                  <Link
-                    to="/dashboard/create-post"
-                    className="p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    title="Write Post"
-                  >
-                    <FaPen className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </Link>
-
-                  {/* Notifications */}
-                  <Link
-                    to="/dashboard/notifications"
-                    className="relative p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    title="Notifications"
-                  >
-                    <FaBell className="w-3 h-3 sm:w-4 sm:h-4" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 h-3 w-3 sm:h-4 sm:w-4 min-w-3 sm:min-w-4 px-1 bg-red-600 text-white text-xs rounded-full flex items-center justify-center">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                    )}
-                  </Link>
-
-                  {/* Dark mode toggle */}
-                  <button
-                    onClick={toggleDarkMode}
-                    className="p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    title={darkMode ? "Light Mode" : "Dark Mode"}
-                  >
-                    {darkMode ? <FaSun className="w-3 h-3 sm:w-4 sm:h-4" /> : <FaMoon className="w-3 h-3 sm:w-4 sm:h-4" />}
-                  </button>
-
-                  {/* User Profile - Compact */}
-                  <div className="relative">
+            <div className="px-3 sm:px-4 py-3">
+              <div className="flex items-center justify-between">
+                {/* Left: Sidebar Toggle and Logo */}
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  {/* Navbar Sidebar Toggle Button for Mobile */}
+                  {userAuth && (
                     <button
-                      onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="flex items-center p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                      title="Profile Menu"
+                      onClick={() => setNavbarSidebarOpen(!navbarSidebarOpen)}
+                      className="navbar-sidebar p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      title={navbarSidebarOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+                      aria-expanded={navbarSidebarOpen}
+                      data-sidebar-toggle
                     >
-                      {authUser?.profilePicture ? (
-                        <img
-                          className="h-6 w-6 sm:h-7 sm:w-7 rounded-full object-cover border-2 border-white dark:border-gray-700"
-                          src={authUser?.profilePicture?.url || authUser?.profilePicture?.path || authUser?.profilePicture || "https://via.placeholder.com/32"}
-                          alt="User profile"
-                        />
+                      {navbarSidebarOpen ? (
+                        <FaTimes className="h-4 w-4 sm:h-5 sm:w-5" />
                       ) : (
-                        <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center border-2 border-white dark:border-gray-700">
-                          <span className="text-xs text-white font-medium">
-                            {getUserInitials(authUser)}
-                          </span>
-                        </div>
+                        <FaBars className="h-4 w-4 sm:h-5 sm:w-5" />
                       )}
                     </button>
-
-                    {dropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
-                        <div className="px-3 sm:px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                          <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">
-                            {authUser?.name || authUser?.username}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                            @{authUser?.username}
-                          </p>
-                        </div>
-                        <Link
-                          to="/dashboard/profile"
-                          className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => setDropdownOpen(false)}
-                        >
-                          Profile
-                        </Link>
-                        <Link
-                          to="/dashboard/settings"
-                          className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => setDropdownOpen(false)}
-                        >
-                          Settings
-                        </Link>
-                        <button
-                          onClick={handleLogout}
-                          className="block w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center space-x-1 sm:space-x-2">
+                  )}
+                  
                   <Link
-                    to="/login"
-                    className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 text-xs sm:text-sm px-2 sm:px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    to="/posts"
+                    className="text-base sm:text-lg font-serif font-bold text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors"
                   >
-                    Login
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="bg-green-600 text-white px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-green-700 transition-colors"
-                  >
-                    Sign Up
+                    WisdomShare
                   </Link>
                 </div>
-              )}
+
+                {/* Center: Search Bar - Always visible */}
+                <div className="flex-1 max-w-xs mx-2 sm:mx-4">
+                  <SearchBar placeholder="Search posts, users..." />
+                </div>
+
+                {/* Right: Actions */}
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  {userAuth ? (
+                    <>
+                      {/* User Plan Status - Compact for mobile */}
+                      <div className="hidden sm:block">
+                        <UserPlanStatus />
+                      </div>
+
+                      {/* Write Button */}
+                      <Link
+                        to="/dashboard/create-post"
+                        className="p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        title="Write Post"
+                      >
+                        <FaPen className="w-3 h-3 sm:w-4 sm:h-4" />
+                      </Link>
+
+                      {/* Notifications */}
+                      <Link
+                        to="/dashboard/notifications"
+                        className="relative p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        title="Notifications"
+                      >
+                        <FaBell className="w-3 h-3 sm:w-4 sm:h-4" />
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 h-3 w-3 sm:h-4 sm:w-4 min-w-3 sm:min-w-4 px-1 bg-red-600 text-white text-xs rounded-full flex items-center justify-center">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
+                      </Link>
+
+                      {/* Dark mode toggle */}
+                      <button
+                        onClick={toggleDarkMode}
+                        className="p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        title={darkMode ? "Light Mode" : "Dark Mode"}
+                      >
+                        {darkMode ? <FaSun className="w-3 h-3 sm:w-4 sm:h-4" /> : <FaMoon className="w-3 h-3 sm:w-4 sm:h-4" />}
+                      </button>
+
+                      {/* User Profile - Compact */}
+                      <div className="relative">
+                        <button
+                          onClick={() => setDropdownOpen(!dropdownOpen)}
+                          className="flex items-center p-2 rounded-lg text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          title="Profile Menu"
+                        >
+                          {authUser?.profilePicture ? (
+                            <img
+                              className="h-6 w-6 sm:h-7 sm:w-7 rounded-full object-cover border-2 border-white dark:border-gray-700"
+                              src={authUser?.profilePicture?.url || authUser?.profilePicture?.path || authUser?.profilePicture || "https://via.placeholder.com/32"}
+                              alt="User profile"
+                            />
+                          ) : (
+                            <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center border-2 border-white dark:border-gray-700">
+                              <span className="text-xs text-white font-medium">
+                                {getUserInitials(authUser)}
+                              </span>
+                            </div>
+                          )}
+                        </button>
+
+                        {dropdownOpen && (
+                          <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                            <div className="px-3 sm:px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {authUser?.name || authUser?.username}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                @{authUser?.username}
+                              </p>
+                            </div>
+                            <Link
+                              to="/dashboard/profile"
+                              className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              onClick={() => setDropdownOpen(false)}
+                            >
+                              Profile
+                            </Link>
+                            <Link
+                              to="/dashboard/settings"
+                              className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              onClick={() => setDropdownOpen(false)}
+                            >
+                              Settings
+                            </Link>
+                            <button
+                              onClick={handleLogout}
+                              className="block w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Logout
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center space-x-1 sm:space-x-2">
+                      <Link
+                        to="/login"
+                        className="text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 text-xs sm:text-sm px-2 sm:px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        to="/register"
+                        className="bg-green-600 text-white px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-green-700 transition-colors"
+                      >
+                        Sign Up
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          </nav>
         </div>
-      </nav>
-    </div>
-  );
-}
+      );
+    }

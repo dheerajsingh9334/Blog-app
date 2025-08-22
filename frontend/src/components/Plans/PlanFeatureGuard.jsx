@@ -2,7 +2,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { getUserPlanAndUsageAPI } from "../../APIServices/users/usersAPI";
-import { hasFeature, getPlanTier, PLAN_TIERS } from "../../utils/planUtils";
+import { hasFeatureAccess, getPlanTier, PLAN_TIERS } from "../../utils/planUtils";
 import { FaExclamationTriangle, FaCrown, FaChartLine, FaLock } from "react-icons/fa";
 
 const PlanFeatureGuard = ({ 
@@ -38,7 +38,7 @@ const PlanFeatureGuard = ({
   const planTier = getPlanTier(plan);
 
   // Check if user can access the feature
-  const canAccess = hasFeature(plan, feature);
+  const canAccess = hasFeatureAccess(plan, feature);
 
   if (canAccess) {
     return children;

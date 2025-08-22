@@ -145,19 +145,22 @@ const PaymentSuccess = () => {
             )}
 
             {/* Feature Highlights */}
-            {planInfo && (
+            {planInfo && planInfo.features && (
               <div className="w-full">
                 <h3 className="font-semibold text-gray-900 mb-2">Your new features include:</h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  {planInfo.features.slice(0, 5).map((feature, index) => (
+                  {Object.entries(planInfo.features)
+                    .filter(([, value]) => value === true)
+                    .slice(0, 5)
+                    .map(([feature], index) => (
                     <li key={index} className="flex items-center">
                       <FaCheckCircle className="text-green-500 mr-2 text-xs" />
-                      {feature}
+                      {feature.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                     </li>
                   ))}
-                  {planInfo.features.length > 5 && (
+                  {Object.entries(planInfo.features).filter(([, value]) => value === true).length > 5 && (
                     <li className="text-gray-500 italic">
-                      ...and {planInfo.features.length - 5} more features
+                      ...and {Object.entries(planInfo.features).filter(([, value]) => value === true).length - 5} more features
                     </li>
                   )}
                 </ul>

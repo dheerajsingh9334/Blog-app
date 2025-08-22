@@ -87,26 +87,62 @@ const commentsController = {
   //! Delete comment
   delete: asyncHandler(async (req, res) => {
     const { commentId } = req.params;
+    
+    console.log('🗑️ Delete comment request received');
+    console.log('Comment ID:', commentId);
+    console.log('User ID from token:', req.user);
+
+    if (!req.user) {
+      console.log('❌ No user ID found in request');
+      throw new Error("Authentication required");
+    }
+
+    // Get user details to check role
+    const User = require("../../models/User/User");
+    const currentUser = await User.findById(req.user);
+    if (!currentUser) {
+      console.log('❌ User not found');
+      throw new Error("User not found");
+    }
+
+    console.log('👤 Current user:', currentUser.username, 'Role:', currentUser.role);
 
     const comment = await Comment.findById(commentId);
     if (!comment) {
+      console.log('❌ Comment not found');
       throw new Error("Comment not found");
     }
 
+    console.log('📝 Found comment:');
+    console.log('- Comment author:', comment.author.toString());
+    console.log('- Request user:', req.user);
+    console.log('- Authors match:', comment.author.toString() === req.user);
+    console.log('- User is admin:', currentUser.role === 'admin');
+
     // Check if user is the author or admin
-    if (comment.author.toString() !== req.user && req.user.role !== 'admin') {
+    if (comment.author.toString() !== req.user && currentUser.role !== 'admin') {
+      console.log('❌ Authorization failed - user cannot delete this comment');
       throw new Error("You can only delete your own comments");
     }
 
+    console.log('✅ Authorization passed - proceeding with deletion');
+
+    console.log('✅ Authorization passed - proceeding with deletion');
+
     // If this comment has replies, just mark it as deleted instead of removing
     if (comment.replies && comment.replies.length > 0) {
+      console.log('🔄 Comment has replies, marking as deleted...');
       await Comment.findByIdAndUpdate(commentId, {
         content: "[Comment deleted]",
         isDeleted: true
       });
+      console.log('✅ Comment marked as deleted');
     } else {
+      console.log('🗑️ Comment has no replies, removing completely...');
+      
       // Remove from parent comment's replies if it's a reply
       if (comment.parentComment) {
+        console.log('📤 Removing from parent comment replies...');
         await Comment.findByIdAndUpdate(
           comment.parentComment,
           { $pull: { replies: commentId } }
@@ -114,15 +150,19 @@ const commentsController = {
       }
 
       // Remove from post's comments
+      console.log('📤 Removing from post comments...');
       await Post.findByIdAndUpdate(
         comment.post,
         { $pull: { comments: commentId } }
       );
 
       // Delete the comment
+      console.log('🗑️ Deleting comment from database...');
       await Comment.findByIdAndDelete(commentId);
+      console.log('✅ Comment completely removed');
     }
 
+    console.log('✅ Comment deletion completed successfully');
     res.json({
       status: "success",
       message: "Comment deleted successfully",

@@ -330,59 +330,6 @@ const PlanManagement = () => {
           </div>
         </div>
 
-        {/* Plan Comparison Table */}
-        <div className="max-w-7xl mx-auto mb-12 sm:mb-16">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8">
-            <h2 className={`${r.text.h2} text-gray-900 dark:text-white text-center mb-6 sm:mb-8`}>
-              Plan Comparison
-            </h2>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Features</th>
-                    <th className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Free</th>
-                    <th className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Premium</th>
-                    <th className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">Pro</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">Monthly Price</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">$0</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">${premiumPlan?.price || '29'}</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white font-semibold">${proPlan?.price || '99'}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">Post Limit</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">{freePlan?.postLimit || '10'}</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Unlimited</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Unlimited</td>
-                  </tr>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">Analytics</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Basic</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Advanced</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Enterprise</td>
-                  </tr>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">Support</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Email</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Priority</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">Dedicated</td>
-                  </tr>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-gray-600 dark:text-gray-400">API Access</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">❌</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">❌</td>
-                    <td className="text-center py-3 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-white">✅</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
         {/* Plans Grid */}
         <div className={`${r.layout.grid3} gap-6 sm:gap-8 max-w-7xl mx-auto mb-12 sm:mb-16`}>
           {/* Free Plan */}

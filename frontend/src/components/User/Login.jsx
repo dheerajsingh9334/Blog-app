@@ -39,7 +39,7 @@ const Login = () => {
           // Invalidate and refetch auth query
           queryClient.invalidateQueries(['user-auth']);
           // Navigate to dashboard
-          navigate("/dashboard");
+          navigate("/postlist");
         })
         .catch(() => {});
     },
@@ -103,13 +103,13 @@ const Login = () => {
           >
             {userMutation.isPending ? "Signing in..." : "Login"}
           </button>
-
+{/* 
           <a
             href={`${BASE_URL}/users/auth/google`}
             className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <FaGoogle /> Sign in with Google
-          </a>
+          </a> */}
 
           <div className="flex items-center justify-between text-sm">
             <Link to="/forgot-password" className="text-blue-600 hover:underline">Forgot password?</Link>

@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const Plan = require("../../models/Plan/Plan");
 const User = require("../../models/User/User");
 const Payment = require("../../models/Payment/Payment");
+const PlanHistory = require("../../models/Payment/PlanHistory");
 //-----Stripe Payment-----
 const stripePaymentController = {
   //----- payment
@@ -32,17 +33,76 @@ const stripePaymentController = {
       // Mimic plan doc shape for price
       plan = { price: staticPlan.price, _id: staticPlan._id, tier: staticPlan.tier };
     }
-    //! get the user
-    const user = req.user;
+  //! get the user
+  const user = await User.findById(req.user).populate('plan');
     //! Create payment intent/making the payment
     try {
+      // Proration logic: if upgrading during an active cycle, apply credit for remaining days of current plan price
+      let amountCents = Math.round((plan.price || 0) * 100);
+      let discountCents = 0;
+      let previousPayment = null;
+
+      // Try to find latest successful payment for user
+      previousPayment = await Payment.findOne({ user: user._id, status: 'success' })
+        .sort({ createdAt: -1 })
+        .populate('subscriptionPlan');
+
+      const cycleStart = previousPayment?.createdAt || new Date();
+      const cycleEnd = new Date(cycleStart);
+      cycleEnd.setMonth(cycleEnd.getMonth() + 1);
+      const now = new Date();
+
+      // Only apply proration if there's time left and user has an existing plan with a price
+      if (previousPayment && previousPayment.subscriptionPlan && user.plan) {
+        const oldPlan = previousPayment.subscriptionPlan;
+        const isUpgrade = (plan.price || 0) > (oldPlan.price || 0);
+        const isDowngrade = (plan.price || 0) < (oldPlan.price || 0);
+        if (now < cycleEnd) {
+          const totalDays = Math.max(1, Math.ceil((cycleEnd - cycleStart) / (1000*60*60*24)));
+          const remainingDays = Math.max(0, Math.ceil((cycleEnd - now) / (1000*60*60*24)));
+          const dailyOldPrice = (oldPlan.price || 0) / totalDays;
+          const credit = dailyOldPrice * remainingDays;
+          const creditCents = Math.round(credit * 100);
+          if (isUpgrade) {
+            // Apply discount for remaining value of old plan
+            discountCents = Math.min(creditCents, amountCents);
+            amountCents = Math.max(0, amountCents - discountCents);
+          }
+          // For downgrade, we can record that refund should be processed; handled post-verify or separate endpoint
+          await PlanHistory.create({
+            user: user._id,
+            fromPlan: oldPlan._id,
+            toPlan: mongoose.isValidObjectId(plan._id) ? plan._id : null,
+            action: isUpgrade ? 'upgrade' : (isDowngrade ? 'downgrade' : 'switch'),
+            oldPrice: oldPlan.price || 0,
+            newPrice: plan.price || 0,
+            cycleStart,
+            cycleEnd,
+            remainingDays,
+            creditCalculated: credit,
+            discountApplied: discountCents / 100,
+            previousPaymentReference: previousPayment.reference,
+            notes: isDowngrade ? 'Refund should be issued for unused time on old plan' : ''
+          });
+        }
+      } else {
+        // First-time purchase record
+        await PlanHistory.create({
+          user: user._id,
+          toPlan: mongoose.isValidObjectId(plan._id) ? plan._id : null,
+          action: 'start',
+          oldPrice: 0,
+          newPrice: plan.price || 0
+        });
+      }
+
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: plan.price * 100,
+        amount: amountCents,
         currency: "usd",
-        // add some metadata
         metadata: {
-          userId: user?.toString(),
+          userId: user._id.toString(),
           subscriptionPlanId,
+          discountCents: discountCents.toString(),
         },
       });
       //! Send the response
@@ -75,7 +135,7 @@ const stripePaymentController = {
       //!get the data from the metadata
       const metadata = paymentIntent?.metadata;
       const subscriptionPlanId = metadata?.subscriptionPlanId;
-      const userId = metadata.userId;
+  const userId = metadata.userId;
       
       //! Find the user
       const userFound = await User.findById(userId);
@@ -131,6 +191,71 @@ const stripePaymentController = {
         userFound.plan = plan._id; // Use the actual plan ObjectId
         //resave
         await userFound.save();
+
+        // After successful switch, if this is a downgrade during active cycle, process pro-rated refund on previous charge
+        // Find previous successful payment before this one
+        const previousPayment = await Payment.findOne({ user: userId, status: 'success', _id: { $ne: newPayment._id } })
+          .sort({ createdAt: -1 })
+          .populate('subscriptionPlan');
+
+        if (previousPayment?.subscriptionPlan) {
+          const oldPlan = previousPayment.subscriptionPlan;
+          // Determine if downgrade and within same billing cycle
+          const cycleStart = previousPayment.createdAt;
+          const cycleEnd = new Date(cycleStart);
+          cycleEnd.setMonth(cycleEnd.getMonth() + 1);
+          const now = new Date();
+          const isDowngrade = (oldPlan.price || 0) > (plan.price || 0);
+          if (isDowngrade && now < cycleEnd) {
+            const totalDays = Math.max(1, Math.ceil((cycleEnd - cycleStart) / (1000*60*60*24)));
+            const remainingDays = Math.max(0, Math.ceil((cycleEnd - now) / (1000*60*60*24)));
+            const dailyOldPrice = (oldPlan.price || 0) / totalDays;
+            const credit = dailyOldPrice * remainingDays; // USD
+            const creditCents = Math.round(credit * 100);
+            try {
+              // Retrieve previous payment intent to get charge id
+              const prevPI = await stripe.paymentIntents.retrieve(previousPayment.reference);
+              const chargeId = prevPI?.latest_charge;
+              if (chargeId && creditCents > 0) {
+                const refund = await stripe.refunds.create({ charge: chargeId, amount: creditCents });
+                await PlanHistory.create({
+                  user: userId,
+                  fromPlan: oldPlan._id,
+                  toPlan: plan._id,
+                  action: 'downgrade',
+                  oldPrice: oldPlan.price || 0,
+                  newPrice: plan.price || 0,
+                  cycleStart,
+                  cycleEnd,
+                  remainingDays,
+                  creditCalculated: credit,
+                  refundProcessed: credit,
+                  stripeRefundId: refund.id,
+                  previousPaymentReference: previousPayment.reference,
+                  notes: 'Automatic prorated refund processed on downgrade'
+                });
+              }
+            } catch (refundErr) {
+              console.error('Refund processing failed:', refundErr?.message || refundErr);
+              // Record history even if refund fails
+              await PlanHistory.create({
+                user: userId,
+                fromPlan: oldPlan._id,
+                toPlan: plan._id,
+                action: 'downgrade',
+                oldPrice: oldPlan.price || 0,
+                newPrice: plan.price || 0,
+                cycleStart,
+                cycleEnd,
+                remainingDays,
+                creditCalculated: credit,
+                refundProcessed: 0,
+                previousPaymentReference: previousPayment.reference,
+                notes: 'Refund calculation recorded; Stripe refund failed.'
+              });
+            }
+          }
+        }
       }
       
       //! Fetch the updated user with populated plan

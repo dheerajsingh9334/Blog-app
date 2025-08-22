@@ -26,6 +26,7 @@ const UserPlanStatus = () => {
 
   const { usage } = usageData;
   const { plan, posts } = usage;
+  
   const planBadge = getPlanBadge(plan);
   const upgradeButton = getUpgradeButton(plan);
   
@@ -58,10 +59,10 @@ const UserPlanStatus = () => {
       )}
 
       {/* Upgrade Button */}
-      {upgradeButton && (
+      {upgradeButton && upgradeButton.show && (
         <Link
           to="/dashboard/plan-management"
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white ${upgradeButton.className} hover:opacity-90 transition-opacity`}
+          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
         >
           {upgradeButton.text}
         </Link>

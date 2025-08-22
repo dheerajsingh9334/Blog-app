@@ -10,14 +10,14 @@ import { adminAuthStatus } from "./redux/slices/adminAuthSlice";
 import { useEffect } from "react";
 import AuthRoute from "./components/AuthRoute/AuthRoute";
 import AccountSummaryDashboard from "./components/User/AccountSummary";
-import AddCategory from "./components/Category/AddCategory";
+// import AddCategory from "./components/Category/AddCategory";
 import Pricing from "./components/Plans/Pricing";
 import PlanManagement from "./components/Plans/PlanManagement";
 import CheckoutForm from "./components/Plans/CheckoutForm";
 import PaymentSuccess from "./components/Plans/PaymentSuccess";
 import PayingFreePlan from "./components/Plans/PayingFreePlan";
 import PostLimitReached from "./components/Plans/PostLimitReached";
-import RequestResetPassword from "./components/User/RequestResetPassword";
+// import RequestResetPassword from "./components/User/RequestResetPassword";
 import ResetPassword from "./components/User/ResetPassword";
 import Rankings from "./components/User/CreatorsRanking";
 import Notifications from "./components/Notification/Notifications";
@@ -35,7 +35,7 @@ import PostDetails from "./components/Posts/PostDetails";
 import Login from "./components/User/Login";
 import Register from "./components/User/Register";
 import Profile from "./components/User/Profile";
-import Dashboard from "./components/User/Dashboard";
+// Dashboard component route is handled via nested routes below
 import { DarkModeProvider } from "./components/Navbar/DarkModeContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import TrendingPosts from "./components/Posts/TrendingPosts";
@@ -45,8 +45,9 @@ import UserFollowers from "./components/User/UserFollowers";
 import UserFollowing from "./components/User/UserFollowing";
 import SearchResults from "./components/Search/SearchResults";
 import Analytics from "./components/Analytics/Analytics";
+import MyPostsAnalytics from "./components/Posts/MyPostsAnalytics";
+import UserPostManagement from "./components/Posts/PostManagement";
 import ContentCalendar from "./components/Calendar/ContentCalendar";
-import AdvancedAnalytics from "./components/Analytics/AdvancedAnalytics";
 
 import AdminAuthLogin from "./components/Admin/AdminAuthLogin";
 import AdminAuthRegister from "./components/Admin/AdminAuthRegister";
@@ -211,7 +212,7 @@ function App() {
           <Route path="/user/:userId" element={<GlobalLayout userAuth={userAuth}><UserProfile /></GlobalLayout>} />
           <Route path="/user/:userId/followers" element={<GlobalLayout userAuth={userAuth}><UserFollowers /></GlobalLayout>} />
           <Route path="/user/:userId/following" element={<GlobalLayout userAuth={userAuth}><UserFollowing /></GlobalLayout>} />
-          <Route element={<GlobalLayout userAuth={userAuth}><RequestResetPassword /></GlobalLayout>} path="/forgot-password" />
+          {/* <Route element={<GlobalLayout userAuth={userAuth}><RequestResetPassword /></GlobalLayout>} path="/forgot-password" /> */}
           <Route element={<GlobalLayout userAuth={userAuth}><ResetPassword /></GlobalLayout>} path="/reset-password" />
           
           {/* Redirect /checkout to /pricing if no planId */}
@@ -221,17 +222,7 @@ function App() {
           <Route element={<GlobalLayout userAuth={userAuth}><CheckoutForm /></GlobalLayout>} path="/checkout/:planId" />
           <Route element={<GlobalLayout userAuth={userAuth}><PostLimitReached /></GlobalLayout>} path="/post-limit-reached" />
           
-          {/* Dashboard route */}
-          <Route 
-            element={
-              <GlobalLayout userAuth={userAuth}>
-                <AuthRoute>
-                  <Dashboard />
-                </AuthRoute>
-              </GlobalLayout>
-            } 
-            path="/dashboard" 
-          />
+          {/* Standalone /dashboard route removed to avoid duplication; nested /dashboard below */}
 
           {/* Profile route - Standalone */}
           <Route 
@@ -371,14 +362,14 @@ function App() {
               }
               path="plan-management"
             />
-            <Route
+            {/* <Route
               element={
                 <AuthRoute>
                   <AddCategory />
                 </AuthRoute>
               }
               path="add-category"
-            />
+            /> */}
             <Route
               element={
                 <AuthRoute>
@@ -390,12 +381,28 @@ function App() {
             <Route
               element={
                 <AuthRoute>
+                  <MyPostsAnalytics />
+                </AuthRoute>
+              }
+              path="my-posts-analytics"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <UserPostManagement />
+                </AuthRoute>
+              }
+              path="post-management"
+            />
+            <Route
+              element={
+                <AuthRoute>
                   <ContentCalendar />
                 </AuthRoute>
               }
               path="content-calendar"
             />
-            <Route
+                        <Route
               element={
                 <AuthRoute>
                   <SavedPosts />
@@ -412,67 +419,81 @@ function App() {
               path="trending-posts"
             />
           </Route>
-
-          {/* Edit post route - moved to root level */}
-          <Route
-            element={
-              <AuthRoute>
-                <UpdatePost />
-              </AuthRoute>
-            }
-            path="/edit-post/:postId"
-          />
-          
-          {/* Additional routes that should use the sidebar */}
-          <Route
-            element={
+        </Route>
+        
+        {/* Additional standalone routes with GlobalLayout */}
+        <Route 
+          element={
+            <GlobalLayout userAuth={userAuth}>
               <AuthRoute>
                 <PostsList />
               </AuthRoute>
-            }
-            path="/posts"
-          />
-          <Route
-            element={
+            </GlobalLayout>
+          } 
+          path="/posts" 
+        />
+        <Route 
+          element={
+            <GlobalLayout userAuth={userAuth}>
               <AuthRoute>
                 <PostDetails />
               </AuthRoute>
-            }
-            path="/posts/:postId"
-          />
-          <Route
-            element={
+            </GlobalLayout>
+          } 
+          path="/posts/:postId" 
+        />
+        <Route 
+          element={
+            <GlobalLayout userAuth={userAuth}>
               <AuthRoute>
                 <TrendingPosts />
               </AuthRoute>
-            }
-            path="/trending"
-          />
-          <Route
-            element={
+            </GlobalLayout>
+          } 
+          path="/trending" 
+        />
+        <Route 
+          element={
+            <GlobalLayout userAuth={userAuth}>
               <AuthRoute>
                 <SavedPosts />
               </AuthRoute>
-            }
-            path="/saved-posts"
-          />
-          <Route
-            element={
+            </GlobalLayout>
+          } 
+          path="/saved-posts" 
+        />
+        <Route 
+          element={
+            <GlobalLayout userAuth={userAuth}>
               <AuthRoute>
                 <Rankings />
               </AuthRoute>
-            }
-            path="/ranking"
-          />
-          <Route
-            element={
+            </GlobalLayout>
+          } 
+          path="/ranking" 
+        />
+        <Route 
+          element={
+            <GlobalLayout userAuth={userAuth}>
               <AuthRoute>
                 <SearchResults />
               </AuthRoute>
-            }
-            path="/search"
-          />
-        </Route>
+            </GlobalLayout>
+          } 
+          path="/search" 
+        />
+        
+        {/* Edit post route - moved to root level */}
+        <Route
+          element={
+            <GlobalLayout userAuth={userAuth}>
+              <AuthRoute>
+                <UpdatePost />
+              </AuthRoute>
+            </GlobalLayout>
+          }
+          path="/edit-post/:postId"
+        />
         
         {/* Catch-all route for unmatched paths */}
         <Route path="*" element={<Navigate to="/" replace />} />

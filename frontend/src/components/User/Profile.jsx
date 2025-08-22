@@ -6,6 +6,7 @@ import { FaCamera, FaExclamationTriangle, FaCrown, FaChartLine, FaGift, FaDollar
 import { getPlanBadge, getUpgradeButton } from "../../utils/planUtils";
 import Avatar from "./Avatar";
 import { r } from "../../utils/unifiedResponsive";
+import AdvancedAnalyticsButton from "../Analytics/AdvancedAnalyticsButton";
 
 const Profile = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -335,6 +336,14 @@ const Profile = () => {
                           >
                             Edit
                           </Link>
+                        </div>
+                        {/* Analytics Button */}
+                        <div className="mt-2">
+                          <AdvancedAnalyticsButton 
+                            post={post} 
+                            userPlan={user?.plan} 
+                            isAuthor={true} 
+                          />
                         </div>
                       </div>
                     </div>
