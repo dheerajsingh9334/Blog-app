@@ -38,18 +38,23 @@ const InstagramStylePostCard = ({ post, userPlan, onLike, onComment }) => {
       <div className="p-4 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img
-              src={post.author?.profilePicture || '/default-avatar.png'}
-              alt={post.author?.username}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            <Link to={`/user/${post.author?._id}`} className="flex-shrink-0">
+              <img
+                src={post.author?.profilePicture || '/default-avatar.png'}
+                alt={post.author?.username}
+                className="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-blue-500 transition-all"
+              />
+            </Link>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">
+              <Link 
+                to={`/user/${post.author?._id}`}
+                className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
                 {post.author?.username}
                 {(isPremiumUser || isProUser) && (
                   <FaCrown className="inline ml-2 text-yellow-500" size={14} />
                 )}
-              </h3>
+              </Link>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {new Date(post.createdAt).toLocaleDateString()}
               </p>
@@ -65,7 +70,7 @@ const InstagramStylePostCard = ({ post, userPlan, onLike, onComment }) => {
       {post.image && (
         <div className="relative aspect-square">
           <img
-            src={post.image}
+            src={typeof post.image === 'string' ? post.image : post.image.url || post.image.path || post.image}
             alt={post.title}
             className="w-full h-full object-cover"
           />

@@ -130,7 +130,7 @@ userSchema.methods.generatePasswordResetToken = function () {
 
 //! Compare password method
 userSchema.methods.comparePassword = async function (candidatePassword) {
-  const bcrypt = require("bcrypt");
+  const bcrypt = require("bcryptjs");
   return await bcrypt.compare(candidatePassword, this.password);
 };
 const User = mongoose.model("User", userSchema);

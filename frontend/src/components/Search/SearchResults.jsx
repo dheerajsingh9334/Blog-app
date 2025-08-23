@@ -134,7 +134,7 @@ const SearchResults = () => {
                   {post.image && (
                     <div className="aspect-w-16 aspect-h-9">
                       <img
-                        src={typeof post.image === "string" ? post.image : post.image.path}
+                        src={typeof post.image === "string" ? post.image : post.image.url}
                         alt={post.title}
                         className="w-full h-48 object-cover"
                       />

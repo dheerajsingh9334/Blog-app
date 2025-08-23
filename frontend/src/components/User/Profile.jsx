@@ -9,29 +9,29 @@ import { r } from "../../utils/unifiedResponsive";
 import AdvancedAnalyticsButton from "../Analytics/AdvancedAnalyticsButton";
 
 const Profile = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Initialize dark mode state
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-    setIsDarkMode(shouldBeDark);
-  }, []);
+  // useEffect(() => {
+  //   const savedTheme = localStorage.getItem('theme');
+  //   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  //   const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+  //   setIsDarkMode(shouldBeDark);
+  // }, []);
 
   // Toggle dark mode
-  const toggleDarkMode = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
+  // const toggleDarkMode = () => {
+  //   const newMode = !isDarkMode;
+  //   setIsDarkMode(newMode);
     
-    if (newMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  };
+  //   if (newMode) {
+  //     document.documentElement.classList.add('dark');
+  //     localStorage.setItem('theme', 'dark');
+  //   } else {
+  //     document.documentElement.classList.remove('dark');
+  //     localStorage.setItem('theme', 'light');
+  //   }
+  // };
 
   const { isError, isLoading, data, error, refetch } = useQuery({
     queryKey: ["profile"],
@@ -203,7 +203,7 @@ const Profile = () => {
               Manage Plan
             </Link>
             <div className="flex items-center gap-3 justify-center sm:justify-start">
-              <button
+              {/* <button
                 onClick={toggleDarkMode}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 title="Toggle dark mode"
@@ -213,7 +213,7 @@ const Profile = () => {
                 ) : (
                   <FaMoon className="h-5 w-5 text-gray-600" />
                 )}
-              </button>
+              </button> */}
               <Link
                 to="/dashboard/settings"
                 className={`inline-flex items-center justify-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors ${r.text.bodySmall} font-medium`}
@@ -306,7 +306,7 @@ const Profile = () => {
             ) : (
               <div className={`${r.layout.grid3} gap-4 sm:gap-6`}>
                 {user?.posts?.map((post) => {
-                  const imageUrl = typeof post.image === 'string' ? post.image : post.image?.path;
+                  const imageUrl = typeof post.image === 'string' ? post.image : post.image?.url;
                   return (
                     <div key={post._id} className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                       {imageUrl && (

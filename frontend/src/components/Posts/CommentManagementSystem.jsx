@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import { 
   FaComment, 
   FaTrash, 
@@ -204,18 +205,23 @@ const CommentManagementSystem = ({
                   )}
 
                   {/* User Avatar */}
-                  <img
-                    src={comment.user.profilePicture || '/default-avatar.png'}
-                    alt={comment.user.username}
-                    className="w-10 h-10 rounded-full"
-                  />
+                  <Link to={`/user/${comment.user._id}`} className="flex-shrink-0">
+                    <img
+                      src={comment.user.profilePicture || '/default-avatar.png'}
+                      alt={comment.user.username}
+                      className="w-10 h-10 rounded-full hover:ring-2 hover:ring-blue-500 transition-all"
+                    />
+                  </Link>
 
                   {/* Comment Content */}
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
-                      <h4 className="font-medium text-gray-900 dark:text-white">
+                      <Link 
+                        to={`/user/${comment.user._id}`}
+                        className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      >
                         {comment.user.username}
-                      </h4>
+                      </Link>
                       <span className={`px-2 py-1 rounded text-xs ${
                         comment.user.plan === 'Pro' 
                           ? 'bg-purple-100 text-purple-800' 

@@ -1,4 +1,5 @@
-# MERN Blog Platform
+# WisdomShare - MERN Blog Platform
+*Share Knowledge, Inspire Growth*
 
 ```markdown
 Live Demo : https://blog-app-sigma-tan.vercel.app/ 

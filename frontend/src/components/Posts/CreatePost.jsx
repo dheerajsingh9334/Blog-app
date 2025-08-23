@@ -97,6 +97,9 @@ const CreatePost = () => {
   const postMutation = useMutation({
     mutationKey: ["create-post"],
     mutationFn: createPostAPI,
+    onError: (error) => {
+      // Removed email verification error handling
+    },
   });
 
   // Memoize ReactQuill modules and formats to prevent re-renders
@@ -794,6 +797,8 @@ const CreatePost = () => {
         </form>
       </div>
     </div>
+    
+    {/* Removed email verification prompt */}
     </PlanAccessGuard>
   );
 };

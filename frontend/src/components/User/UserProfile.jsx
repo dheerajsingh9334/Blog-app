@@ -117,34 +117,39 @@ const UserProfile = () => {
               </div>
             </div>
 
-            {currentUserId && currentUserId !== user?._id && (
-              <div className="flex gap-2">
-                <button
-                  onClick={toggleDarkMode}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  title="Toggle dark mode"
-                >
-                  {isDarkMode ? (
-                    <FaSun className="h-5 w-5 text-yellow-500" />
-                  ) : (
-                    <FaMoon className="h-5 w-5 text-gray-600" />
-                  )}
-                </button>
-                <FollowButton
-                  targetUserId={user?._id}
-                  currentUserId={currentUserId}
-                  isFollowing={isFollowing}
-                  size="md"
-                  variant="default"
-                />
-                <Link
-                  to={`/user/${userId}/followers`}
-                  className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Followers
-                </Link>
-              </div>
-            )}
+            <div className="flex gap-2">
+              {/* Dark Mode Toggle - Always visible */}
+              <button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Toggle dark mode"
+              >
+                {isDarkMode ? (
+                  <FaSun className="h-5 w-5 text-yellow-500" />
+                ) : (
+                  <FaMoon className="h-5 w-5 text-gray-600" />
+                )}
+              </button>
+              
+              {/* Other user actions - Only for other users */}
+              {currentUserId && currentUserId !== user?._id && (
+                <>
+                  <FollowButton
+                    targetUserId={user?._id}
+                    currentUserId={currentUserId}
+                    isFollowing={isFollowing}
+                    size="md"
+                    variant="default"
+                  />
+                  <Link
+                    to={`/user/${userId}/followers`}
+                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    Followers
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -156,7 +161,7 @@ const UserProfile = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
             {user?.posts?.map((post) => {
-              const imageUrl = typeof post.image === 'string' ? post.image : post.image?.path;
+              const imageUrl = typeof post.image === 'string' ? post.image : post.image?.url;
               return (
                 <Link key={post._id} to={`/posts/${post._id}`} className="relative group bg-gray-100 dark:bg-gray-800 aspect-square overflow-hidden rounded">
                   {imageUrl ? (

@@ -2,21 +2,20 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
-import { FaSearch, FaEye, FaHeart, FaComment, FaRegBookmark, FaTimes, FaFilter, FaSort, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaEye, FaHeart, FaComment, FaRegBookmark, FaTimes, FaFilter, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { fetchAllPosts } from '../../APIServices/posts/postsAPI';
 import { fetchCategoriesAPI } from '../../APIServices/category/categoryAPI';
 import { truncateText } from '../../utils/responsiveUtils';
-import { fetchTrendingPostsAPI } from '../../APIServices/posts/postsAPI';
+import { fetchTrendingPostsAPI, getPopularTagsAPI } from '../../APIServices/posts/postsAPI';
 import AdvancedAnalyticsButton from '../Analytics/AdvancedAnalyticsButton';
 import './postCss.css';
 
 const PostsList = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [selectedTags, setSelectedTags] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(""); // Category name for display
   const [selectedCategoryId, setSelectedCategoryId] = useState(""); // Category ID for API
-  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
   const [savedPosts, setSavedPosts] = useState(new Set()); // Track saved posts
   const [trendingIndex, setTrendingIndex] = useState(0);
@@ -138,6 +137,13 @@ const PostsList = () => {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Fetch popular tags from backend
+  const { data: popularTagsFromAPI, isLoading: popularTagsLoading, error: popularTagsError } = useQuery({
+    queryKey: ['popular-tags-api'],
+    queryFn: () => getPopularTagsAPI(20), // Get top 20 tags
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Determine how many trending items to show per view (2 on mobile, 4 on larger)
   useEffect(() => {
     const updateItemsPerView = () => {
@@ -234,60 +240,6 @@ const PostsList = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Fetch popular tags for search - Get real tags from posts data
-  const { data: popularTagsData, error: tagsError, isLoading: tagsLoading } = useQuery({
-    queryKey: ["popular-tags", data?.posts],
-    queryFn: async () => {
-      try {
-        console.log("🔍 Extracting tags from posts data...");
-        
-        // Extract unique tags from all posts
-        const allTags = new Set();
-        if (data?.posts) {
-          data.posts.forEach(post => {
-            if (post.tags && Array.isArray(post.tags)) {
-              post.tags.forEach(tag => {
-                if (tag && typeof tag === 'string') {
-                  allTags.add(tag.trim());
-                }
-              });
-            }
-          });
-        }
-        
-        const tagsArray = Array.from(allTags).sort();
-        console.log("🏷️ Extracted tags from posts:", tagsArray.length, tagsArray);
-        return { tags: tagsArray };
-      } catch (error) {
-        console.error("❌ Error extracting tags:", error);
-        return { tags: [] };
-      }
-    },
-    enabled: !!data?.posts, // Only run when posts data is available
-    retry: 2,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  // Handle search submission
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchTerm.trim() && searchTerm.trim().length >= 2) {
-      console.log("🔍 Search submitted:", searchTerm.trim());
-      setSearchTerm(searchTerm.trim());
-      setPage(1);
-      refetch(); // Trigger refetch immediately
-    } else if (searchTerm.trim().length < 2) {
-      alert("Search query must be at least 2 characters long");
-    }
-  };
-
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    // Don't refetch here - let the useEffect handle it with debouncing
-  };
-
   // Handle category selection
   const handleCategorySelect = (category) => {
     console.log('🏷️ Category selected:', category);
@@ -331,23 +283,6 @@ const PostsList = () => {
     setSelectedCategoryId("");
     setShowCategorySuggestions(false);
     setPage(1); // Reset to first page
-  };
-
-  // Handle clear all tags
-  const handleClearTags = () => {
-    console.log('🗑️ Clearing all tags');
-    setSelectedTags([]);
-    setShowTagSuggestions(false);
-    setPage(1); // Reset to first page
-  };
-
-  // Clear all filters
-  const clearAllFilters = () => {
-    setSearchTerm("");
-    setSelectedCategory("");
-    setSelectedCategoryId("");
-    setSelectedTags([]);
-    setPage(1);
   };
 
   // Handle save post
@@ -429,29 +364,49 @@ const PostsList = () => {
       <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-3 sm:py-4 lg:py-6">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex flex-col space-y-3 sm:space-y-4">
-            {/* Search Bar - Better Mobile Layout */}
-            <div className="flex items-center justify-center">
-              <div className="w-full max-w-2xl">
-                <form onSubmit={handleSearchSubmit} className="relative">
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    placeholder="Search stories, topics, or authors (min 2 characters)..."
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 pl-8 sm:pl-10 bg-gray-100 dark:bg-gray-800 border-0 rounded-full text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white dark:focus:bg-gray-700 transition-all duration-200 text-sm sm:text-base"
-                  />
-                  <FaSearch className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4 sm:h-5 sm:w-5" />
-                </form>
-              </div>
-              {(searchTerm || selectedCategory || selectedTags.length > 0) && (
-                <button
-                  onClick={clearAllFilters}
-                  className="ml-2 sm:ml-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors text-xs sm:text-sm font-medium"
-                >
-                  Clear
-                </button>
-              )}
+            
+            {/* Website Slogan */}
+            <div className="text-center py-4">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                Share Knowledge, Inspire Growth
+              </h1>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Discover trending content and explore the most popular topics in our community
+              </p>
             </div>
+
+            {/* Popular Tags Section */}
+            {!popularTagsLoading && !popularTagsError && popularTagsFromAPI?.popularTags && popularTagsFromAPI.popularTags.length > 0 && (
+              <section aria-label="Popular Tags" className="popular-tags-section">
+                <div className="text-center mb-4">
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    🏷️ Most Popular Tags
+                  </h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Explore the top {popularTagsFromAPI.popularTags.length} trending topics
+                  </p>
+                </div>
+                <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-4xl mx-auto">
+                  {popularTagsFromAPI.popularTags.map((tagData) => (
+                    <button
+                      key={tagData._id}
+                      onClick={() => handleTagSelect(tagData._id)}
+                      className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                        selectedTags.includes(tagData._id)
+                          ? 'bg-blue-600 text-white shadow-lg scale-105'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-700 dark:hover:text-blue-300 hover:scale-105'
+                      }`}
+                      title={`${tagData.count} posts tagged with #${tagData._id}`}
+                    >
+                      <span className="mr-1">#{tagData._id}</span>
+                      <span className="bg-white dark:bg-gray-600 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full text-xs">
+                        {tagData.count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Trending carousel (paged: 2 on mobile, 4 on larger) */}
             {!trendingLoading && !trendingError && totalTrending > 0 && (
@@ -481,7 +436,7 @@ const PostsList = () => {
                   </button>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     {visibleTrending.map((post, idx) => {
-                      const imageUrl = typeof post.image === 'string' ? post.image : (post.image?.path || '');
+                      const imageUrl = typeof post.image === 'string' ? post.image : (post.image?.url || '');
                       const rank = (trendingIndex + idx) % totalTrending;
                       return (
                         <Link
@@ -521,7 +476,7 @@ const PostsList = () => {
               </section>
             )}
 
-            {/* Categories and Tags - Improved Mobile Layout */}
+            {/* Categories - Improved Mobile Layout */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-4 justify-center items-center">
               {/* Categories Dropdown - Better Mobile Positioning */}
               <div className="relative w-full sm:w-auto">
@@ -577,62 +532,6 @@ const PostsList = () => {
                     ) : (
                       <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                         No categories found
-                      </div>
-                    )}
-                </div>
-              )}
-              </div>
-
-              {/* Tags Dropdown - Better Mobile Positioning */}
-              <div className="relative w-full sm:w-auto">
-                <button
-                  onClick={() => setShowTagSuggestions(!showTagSuggestions)}
-                  className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center sm:justify-start space-x-2 text-sm"
-                >
-                  <FaSort className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>Tags</span>
-                  <svg className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${showTagSuggestions ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                {showTagSuggestions && (
-                  <div className="absolute top-full left-0 mt-2 w-full sm:w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-60 overflow-y-auto">
-                    {tagsLoading ? (
-                      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                        Loading tags...
-                      </div>
-                    ) : tagsError ? (
-                      <div className="p-4 text-center text-red-500">
-                        Error loading tags
-                      </div>
-                    ) : popularTagsData?.tags && popularTagsData.tags.length > 0 ? (
-                      <>
-                        <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-                          <button
-                            onClick={handleClearTags}
-                            className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            Clear All Tags
-                          </button>
-                        </div>
-                        {popularTagsData.tags.slice(0, 15).map((tag) => (
-                    <button
-                      key={tag}
-                            onClick={() => handleTagSelect(tag)}
-                            className={`w-full text-left px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                        selectedTags.includes(tag)
-                          ? 'bg-blue-500 text-white'
-                                : 'text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      #{tag}
-                    </button>
-                  ))}
-                      </>
-                    ) : (
-                      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                        No tags found
                       </div>
                     )}
                 </div>
@@ -747,23 +646,28 @@ const PostsList = () => {
                     {/* Author & Meta */}
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
                       <div className="flex items-center space-x-3">
-                        {post.author?.profilePicture ? (
-                          <img
-                            src={post.author.profilePicture.url || post.author.profilePicture.path || post.author.profilePicture}
-                            alt={post.author.name || post.author.username}
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                            <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
-                              {(post.author?.name || post.author?.username || 'U').charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
+                        <Link to={`/user/${post.author?._id}`} className="flex-shrink-0">
+                          {post.author?.profilePicture ? (
+                            <img
+                              src={post.author.profilePicture.url || post.author.profilePicture.path || post.author.profilePicture}
+                              alt={post.author.name || post.author.username}
+                              className="w-8 h-8 rounded-full object-cover hover:ring-2 hover:ring-blue-500 transition-all"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center hover:ring-2 hover:ring-blue-500 transition-all">
+                              <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                                {(post.author?.name || post.author?.username || 'U').charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                        </Link>
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          <Link 
+                            to={`/user/${post.author?._id}`}
+                            className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          >
                             {post.author?.name || post.author?.username || 'Anonymous'}
-                          </p>
+                          </Link>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
                             {new Date(post.createdAt).toLocaleDateString('en-US', { 
                               month: 'short', 
@@ -894,11 +798,10 @@ const PostsList = () => {
       </div>
 
       {/* Click outside to close dropdowns */}
-      {(showTagSuggestions || showCategorySuggestions) && (
+      {showCategorySuggestions && (
         <div 
           className="fixed inset-0 z-40"
           onClick={() => {
-            setShowTagSuggestions(false);
             setShowCategorySuggestions(false);
           }}
         />

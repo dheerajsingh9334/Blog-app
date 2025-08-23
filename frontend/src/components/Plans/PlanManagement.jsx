@@ -331,26 +331,23 @@ const PlanManagement = () => {
         </div>
 
         {/* Plans Grid */}
-        <div className={`${r.layout.grid3} gap-6 sm:gap-8 max-w-7xl mx-auto mb-12 sm:mb-16`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto mb-12 sm:mb-16">
           {/* Free Plan */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8 relative">
             <div className="text-center">
               <div className="flex items-center justify-center mb-4">
                 <FaGift className="text-2xl sm:text-3xl text-blue-500 mr-3" />
                 <h3 className={`${r.text.h3} text-gray-900 dark:text-white`}>
-                  {freePlan?.planName || "Free"}
+                  Free
                 </h3>
               </div>
-              {freePlan?.description && (
-                <p className={`${r.text.body} text-gray-600 dark:text-gray-400 mb-4 sm:mb-6`}>{freePlan.description}</p>
-              )}
               <div className="mb-4 sm:mb-6">
                 <span className={`${r.text.h1} font-bold text-gray-900 dark:text-white`}>$0</span>
                 <span className={`${r.text.body} text-gray-600 dark:text-gray-400`}>/month</span>
               </div>
               <div className="mb-4 sm:mb-6">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 ${r.text.bodySmall} text-gray-700 dark:text-gray-300`}>
-                  {freePlan?.postLimit ? `Limit: ${freePlan.postLimit} posts` : "Limited posts"}
+                  Limit: 10 posts
                 </span>
               </div>
               <Link
@@ -365,18 +362,23 @@ const PlanManagement = () => {
                 <FaCheck className="text-green-500 mr-2" />
                 What's included:
               </h4>
-              <ul className="space-y-3 max-h-96 overflow-y-auto">
-                {getPlanFeatures(freePlan).slice(0, 10).map((feature, index) => (
-                  <li key={index} className="flex items-center">
-                    <FaCheck className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
-                    <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>{feature}</span>
-                  </li>
-                ))}
-                {getPlanFeatures(freePlan).length > 10 && (
-                  <li className="text-center text-sm text-gray-500">
-                    +{getPlanFeatures(freePlan).length - 10} more features
-                  </li>
-                )}
+              <ul className="space-y-3">
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 10 posts</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>View posts only</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Single category selection</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 1,000 characters per post</span>
+                </li>
               </ul>
             </div>
           </div>
@@ -392,14 +394,11 @@ const PlanManagement = () => {
               <div className="flex items-center justify-center mb-4">
                 <FaChartLine className="text-2xl sm:text-3xl text-white mr-3" />
                 <h3 className={`${r.text.h3} text-white`}>
-                  {premiumPlan?.planName || "Premium"}
+                  Premium
                 </h3>
               </div>
-              {premiumPlan?.description && (
-                <p className={`${r.text.body} text-green-100 mb-4 sm:mb-6`}>{premiumPlan.description}</p>
-              )}
               <div className="mb-4 sm:mb-6">
-                <span className={`${r.text.h1} font-bold text-white`}>${premiumPlan?.price || "29"}</span>
+                <span className={`${r.text.h1} font-bold text-white`}>$29</span>
                 <span className={`${r.text.body} text-green-100`}>/month</span>
               </div>
               <div className="mb-4 sm:mb-6">
@@ -412,7 +411,7 @@ const PlanManagement = () => {
                 </span>
               </div>
               <Link
-                to={`/checkout/${premiumPlan?._id}`}
+                to={`/checkout/${premiumPlan?._id || 'premium'}`}
                 className={`w-full inline-flex items-center justify-center px-6 py-3 bg-white text-green-600 rounded-lg text-sm font-semibold hover:bg-gray-50 transition duration-200`}
               >
                 Start Premium
@@ -423,18 +422,27 @@ const PlanManagement = () => {
                 <FaCheck className="text-green-200 mr-2" />
                 What's included:
               </h4>
-              <ul className="space-y-3 max-h-96 overflow-y-auto">
-                {getPlanFeatures(premiumPlan).slice(0, 10).map((feature, index) => (
-                  <li key={index} className="flex items-center">
-                    <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
-                    <span className={`text-green-100 ${r.text.bodySmall}`}>{feature}</span>
-                  </li>
-                ))}
-                {getPlanFeatures(premiumPlan).length > 10 && (
-                  <li className="text-center text-sm text-green-200">
-                    +{getPlanFeatures(premiumPlan).length - 10} more features
-                  </li>
-                )}
+              <ul className="space-y-3">
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
+                  <span className={`text-green-100 ${r.text.bodySmall}`}>Up to 50 posts</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
+                  <span className={`text-green-100 ${r.text.bodySmall}`}>View, Comment & Like posts</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
+                  <span className={`text-green-100 ${r.text.bodySmall}`}>Multiple categories selection</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
+                  <span className={`text-green-100 ${r.text.bodySmall}`}>Up to 5,000 characters per post</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
+                  <span className={`text-green-100 ${r.text.bodySmall}`}>Scheduled Posts</span>
+                </li>
               </ul>
             </div>
           </div>
@@ -450,14 +458,11 @@ const PlanManagement = () => {
               <div className="flex items-center justify-center mb-4">
                 <FaCrown className="text-2xl sm:text-3xl text-yellow-500 mr-3" />
                 <h3 className={`${r.text.h3} text-gray-900 dark:text-white`}>
-                  {proPlan?.planName || "Pro"}
+                  Pro
                 </h3>
               </div>
-              {proPlan?.description && (
-                <p className={`${r.text.body} text-gray-600 dark:text-gray-400 mb-4 sm:mb-6`}>{proPlan.description}</p>
-              )}
               <div className="mb-4 sm:mb-6">
-                <span className={`${r.text.h1} font-bold text-gray-900 dark:text-white`}>${proPlan?.price || "99"}</span>
+                <span className={`${r.text.h1} font-bold text-gray-900 dark:text-white`}>$99</span>
                 <span className={`${r.text.body} text-gray-600 dark:text-gray-400`}>/month</span>
               </div>
               <div className="mb-4 sm:mb-6">
@@ -467,7 +472,7 @@ const PlanManagement = () => {
                 </span>
               </div>
               <Link
-                to={`/checkout/${proPlan?._id}`}
+                to={`/checkout/${proPlan?._id || 'pro'}`}
                 className={`w-full inline-flex items-center justify-center ${r.components.button.primary}`}
               >
                 Start Pro
@@ -478,18 +483,35 @@ const PlanManagement = () => {
                 <FaCheck className="text-indigo-500 mr-2" />
                 What's included:
               </h4>
-              <ul className="space-y-3 max-h-96 overflow-y-auto">
-                {getPlanFeatures(proPlan).slice(0, 10).map((feature, index) => (
-                  <li key={index} className="flex items-center">
-                    <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
-                    <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>{feature}</span>
-                  </li>
-                ))}
-                {getPlanFeatures(proPlan).length > 10 && (
-                  <li className="text-center text-sm text-gray-500">
-                    +{getPlanFeatures(proPlan).length - 10} more features
-                  </li>
-                )}
+              <ul className="space-y-3">
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 100 posts</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>View, Comment & Like posts</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Multiple categories selection</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 10,000 characters per post</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Scheduled Posts</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Advanced analytics</span>
+                </li>
+                <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>See who reads your blog</span>
+                </li>
               </ul>
             </div>
           </div>

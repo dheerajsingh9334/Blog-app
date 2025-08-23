@@ -1,3 +1,4 @@
+require("dotenv").config({ path: require('path').join(__dirname, '../.env') });
 const passport = require("passport");
 const User = require("../models/User/User");
 const bcrypt = require("bcryptjs");
@@ -34,6 +35,7 @@ passport.use(
 );
 
 //JWT-Options
+console.log("JWT_SECRET loaded:", process.env.JWT_SECRET ? "Yes" : "No");
 const options = {
   jwtFromRequest: ExtractJWT.fromExtractors([
     (req) => {

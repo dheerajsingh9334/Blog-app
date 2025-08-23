@@ -175,18 +175,23 @@ const TrendingCarousel = ({ posts = [], title = "Trending Posts" }) => {
 
                     {/* Author and Date */}
                     <div className="flex items-center mb-4">
-                      <img
-                        src={post.author?.profilePicture || '/default-avatar.png'}
-                        alt={post.author?.username || 'Author'}
-                        className="w-8 h-8 rounded-full mr-3"
-                        onError={(e) => {
-                          e.target.src = '/default-avatar.png';
-                        }}
-                      />
+                      <Link to={`/user/${post.author?._id}`} className="flex-shrink-0">
+                        <img
+                          src={post.author?.profilePicture || '/default-avatar.png'}
+                          alt={post.author?.username || 'Author'}
+                          className="w-8 h-8 rounded-full mr-3 hover:ring-2 hover:ring-blue-500 transition-all"
+                          onError={(e) => {
+                            e.target.src = '/default-avatar.png';
+                          }}
+                        />
+                      </Link>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        <Link 
+                          to={`/user/${post.author?._id}`}
+                          className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        >
                           {post.author?.username || 'Anonymous'}
-                        </p>
+                        </Link>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {formatDate(post.createdAt)}
                         </p>

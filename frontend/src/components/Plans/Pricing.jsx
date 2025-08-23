@@ -54,14 +54,15 @@ const Pricing = () => {
     );
   }
 
-  // Get plans by tier with fallback
+  // Get plans by tier with fallback - matching the design image
   const freePlan = data?.plans?.find((plan) => plan.tier === "free" || plan.planName === "Free") || {
     _id: "free",
     planName: "Free",
     tier: "free",
     price: 0,
     postLimit: 10,
-    features: ["Up to 10 posts", "Basic analytics", "Community access", "Standard support"]
+    characterLimit: 1000,
+    features: ["Up to 10 posts", "View posts only", "Single category selection", "Up to 1,000 characters per post"]
   };
   
   const premiumPlan = data?.plans?.find((plan) => plan.tier === "premium" || plan.planName === "Premium") || {
@@ -69,8 +70,9 @@ const Pricing = () => {
     planName: "Premium", 
     tier: "premium",
     price: 29,
-    postLimit: null,
-    features: ["Unlimited posts", "Advanced analytics", "SEO tools", "Content calendar", "Priority support"]
+    postLimit: 50,
+    characterLimit: 5000,
+    features: ["Up to 50 posts", "View, Comment & Like posts", "Multiple categories selection", "Up to 5,000 characters per post", "Scheduled Posts"]
   };
   
   const proPlan = data?.plans?.find((plan) => plan.tier === "pro" || plan.planName === "Pro") || {
@@ -78,8 +80,9 @@ const Pricing = () => {
     planName: "Pro",
     tier: "pro", 
     price: 99,
-    postLimit: null,
-    features: ["Everything in Premium", "Team collaboration", "API access", "White-label solution", "Dedicated support"]
+    postLimit: 100,
+    characterLimit: 10000,
+    features: ["Up to 100 posts", "View, Comment & Like posts", "Multiple categories selection", "Up to 10,000 characters per post", "Scheduled Posts", "Advanced analytics", "See who reads your blog"]
   };
 
   return (
@@ -125,49 +128,9 @@ const Pricing = () => {
               <ul className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
                 {(freePlan?.features || [
                   "Up to 10 posts",
-                  "Basic analytics",
-                  "Community access",
-                  "Standard support",
-                  "Basic templates",
-                  "Public profile",
-                  "Follow other users",
-                  "Comment on posts",
-                  "Like and share posts",
-                  "Email notifications",
-                  "Mobile responsive",
-                  "Basic SEO tools",
-                  "Social media sharing",
-                  "Basic content editor",
-                  "Image uploads (up to 5MB)",
-                  "Basic search functionality",
-                  "Community engagement",
-                  "Basic reporting",
-                  "Email support",
-                  "Mobile app access",
-                  "Basic content scheduling",
-                  "Draft saving",
-                  "Basic content optimization",
-                  "Social media integration",
-                  "Newsletter signup",
-                  "Basic user analytics",
-                  "Content backup",
-                  "Basic security features",
-                  "Multi-language support (basic)",
-                  "Basic API access",
-                  "Basic content calendar",
-                  "Basic user management",
-                  "Basic content moderation",
-                  "Basic performance insights",
-                  "Basic collaboration tools",
-                  "Basic automation features",
-                  "Basic A/B testing",
-                  "Basic custom workflows",
-                  "Basic data export",
-                  "Basic custom reporting",
-                  "Basic monetization tools",
-                  "Basic webhook integrations",
-                  "Basic content optimization",
-                  "Basic multi-site management"
+                  "View posts only", 
+                  "Single category selection",
+                  "Up to 1,000 characters per post"
                 ]).map((feature, index) => (
                   <li key={index} className="flex items-center">
                     <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -200,7 +163,7 @@ const Pricing = () => {
               </div>
               <div className="mb-4 sm:mb-6">
                 <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-white/20 text-xs sm:text-sm text-white mr-2">
-                  Unlimited posts
+                  ∞ Unlimited posts
                 </span>
                 <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-white text-green-600 text-xs font-semibold">
                   PREMIUM
@@ -218,68 +181,11 @@ const Pricing = () => {
               <h4 className="font-semibold text-white mb-3 sm:mb-4 text-sm sm:text-base">What's included:</h4>
               <ul className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
                 {(premiumPlan?.features || [
-                  "Unlimited posts",
-                  "Priority support",
-                  "Advanced analytics",
-                  "Custom branding",
-                  "Email notifications",
-                  "Ad-free experience",
-                  "Priority listing",
-                  "Advanced SEO tools",
-                  "Custom domain",
-                  "Scheduled posts",
-                  "Draft saving",
-                  "Rich text editor",
-        
-                  "Social media integration",
-                  "Newsletter integration",
-                  "Comment moderation",
-                  "User engagement insights",
-                  "Content calendar",
-                  "Backup and restore",
-                  "Priority customer support",
-                  "Advanced content scheduling",
-                  "A/B testing",
-                  "Advanced user management",
-                  "Custom workflows",
-                  "Advanced security features",
-                  "Data export and import",
-                  "Custom reporting",
-                  "Advanced monetization tools",
-                  "Priority feature requests",
-                  "Dedicated account manager",
-                  "Custom training sessions",
-                  "Advanced automation",
-                  "Enterprise-grade security",
-                  "99.9% uptime guarantee",
-                  "Custom branding removal",
-                  "Advanced API rate limits",
-                  "Webhook integrations",
-                  "Advanced content optimization",
-                  "Multi-site management",
-                  "Advanced analytics dashboard",
-                  "Custom themes and templates",
-                  "Multi-language support",
-                  "Team collaboration",
-                  "Revenue sharing",
-                  "Advanced content scheduling",
-                  "Advanced user management",
-                  "Custom workflows",
-                  "Advanced security features",
-                  "Data export and import",
-                  "Custom reporting",
-                  "Advanced monetization tools",
-                  "Priority feature requests",
-                  "Dedicated account manager",
-                  "Custom training sessions",
-                  "Advanced automation",
-                  "Enterprise-grade security",
-                  "99.9% uptime guarantee",
-                  "Custom branding removal",
-                  "Advanced API rate limits",
-                  "Webhook integrations",
-                  "Advanced content optimization",
-                  "Multi-site management"
+                  "Up to 50 posts",
+                  "View, Comment & Like posts", 
+                  "Multiple categories selection",
+                  "Up to 5,000 characters per post",
+                  "Scheduled Posts"
                 ]).map((feature, index) => (
                   <li key={index} className="flex items-center">
                     <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-200 mr-2 sm:mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -311,8 +217,8 @@ const Pricing = () => {
                 <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">/month</span>
               </div>
               <div className="mb-4 sm:mb-6">
-                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:indigo-300 text-xs sm:text-sm">
-                  Unlimited everything
+                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs sm:text-sm">
+                  🚀 Unlimited everything
                 </span>
               </div>
               <button
@@ -327,58 +233,13 @@ const Pricing = () => {
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 text-sm sm:text-base">What's included:</h4>
               <ul className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
                 {(proPlan?.features || [
-                  "Everything in Premium",
-                  "API access",
-                  "White-label solution",
-                  "Dedicated support",
-                  "Custom integrations",
-                  "Team collaboration",
-                  "Advanced SEO tools",
-                  "Revenue sharing",
-                  "Advanced analytics dashboard",
-                  "Custom themes and templates",
-                  "Multi-language support",
-                  "Advanced content scheduling",
-                  "A/B testing",
-                  "Advanced user management",
-                  "Custom workflows",
-                  "Advanced security features",
-                  "Data export and import",
-                  "Custom reporting",
-                  "Advanced monetization tools",
-                  "Priority feature requests",
-                  "Dedicated account manager",
-                  "Custom training sessions",
-                  "Advanced automation",
-                  "Enterprise-grade security",
-                  "99.9% uptime guarantee",
-                  "Custom branding removal",
-                  "Advanced API rate limits",
-                  "Webhook integrations",
-                  "Advanced content optimization",
-                  "Multi-site management",
-                  "Advanced analytics dashboard",
-                  "Custom themes and templates",
-                  "Multi-language support",
-                  "Advanced content scheduling",
-                  "A/B testing",
-                  "Advanced user management",
-                  "Custom workflows",
-                  "Advanced security features",
-                  "Data export and import",
-                  "Custom reporting",
-                  "Advanced monetization tools",
-                  "Priority feature requests",
-                  "Dedicated account manager",
-                  "Custom training sessions",
-                  "Advanced automation",
-                  "Enterprise-grade security",
-                  "99.9% uptime guarantee",
-                  "Custom branding removal",
-                  "Advanced API rate limits",
-                  "Webhook integrations",
-                  "Advanced content optimization",
-                  "Multi-site management"
+                  "Up to 100 posts",
+                  "View, Comment & Like posts",
+                  "Multiple categories selection",
+                  "Up to 10,000 characters per post",
+                  "Scheduled Posts",
+                  "Advanced analytics", 
+                  "See who reads your blog"
                 ]).map((feature, index) => (
                   <li key={index} className="flex items-center">
                     <svg className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500 mr-2 sm:mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">

@@ -6,7 +6,7 @@ const passport = require("passport");
 const User = require("../../models/User/User");
 const Notification = require("../../models/Notification/Notification");
 const Post = require("../../models/Post/Post");
-const sendAccVerificationEmail = require("../../utils/sendAccVerificationEmail");
+const { sendEmailVerificationEmail } = require("../../utils/sendNotificationEmails");
 const sendPasswordEmail = require("../../utils/sendPasswordEmail");
 
 //-----User Controller---
@@ -81,7 +81,7 @@ const userController = {
     
     // Send verification email
     try {
-      await sendAccVerificationEmail(email, verificationToken);
+      await sendEmailVerificationEmail(userRegistered, verificationToken);
       console.log("✅ Verification email sent to:", email);
     } catch (emailError) {
       console.error("❌ Failed to send verification email:", emailError.message);
@@ -308,6 +308,8 @@ const userController = {
     // Create notification for the user being followed
     try {
       const follower = await User.findById(userId).select('username profilePicture');
+      const followedUser = await User.findById(followId).select('email isEmailVerified');
+      
       await Notification.create({
         userId: followId,
         title: "New Follower",
@@ -322,6 +324,12 @@ const userController = {
           targetId: followId
         }
       });
+
+      // Send email notification if user has verified email
+      if (followedUser.isEmailVerified && followedUser.email) {
+        const { sendFollowerNotificationEmail } = require("../utils/sendNotificationEmails");
+        await sendFollowerNotificationEmail(followedUser, follower);
+      }
     } catch (notificationError) {
       console.error("Failed to create follow notification:", notificationError);
       // Don't fail the follow operation if notification fails
@@ -368,7 +376,7 @@ const userController = {
     //resave the user
     await user.save();
     //send the email
-    sendAccVerificationEmail(user?.email, token);
+  await sendEmailVerificationEmail(user, token);
     res.json({
       message: `Account verification email sent to ${user?.email} token expires in 10 minutes`,
     });
@@ -424,8 +432,17 @@ const userController = {
     const token = await user.generatePasswordResetToken();
     //resave the user
     await user.save();
-    //send the email
-    sendPasswordEmail(user?.email, token);
+    
+    //send the email using the enhanced email service
+    try {
+      const sendPasswordEmail = require("../../utils/sendPasswordEmail");
+      await sendPasswordEmail(user?.email, token);
+      console.log("✅ Password reset email sent to:", email);
+    } catch (emailError) {
+      console.error("❌ Failed to send password reset email:", emailError.message);
+      throw new Error("Failed to send password reset email");
+    }
+    
     res.json({
       message: `Password reset email sent to ${email}`,
     });
@@ -480,6 +497,52 @@ const userController = {
       message: "Password changed successfully",
     });
   }),
+  //! Reset password with token (from forgot password email)
+  resetPasswordWithToken: asyncHandler(async (req, res) => {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({
+        message: "Token and password are required",
+      });
+    }
+
+    try {
+      // Hash the token to compare with the stored version
+      const crypto = require("crypto");
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+
+      // Find user with the reset token and check if it hasn't expired
+      const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now() },
+      });
+
+      if (!user) {
+        return res.status(400).json({
+          message: "Invalid or expired reset token",
+        });
+      }
+
+      // Update password and clear reset token fields
+      user.password = password;
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save();
+
+      res.json({
+        message: "Password reset successfully",
+      });
+    } catch (error) {
+      console.error("Reset password with token error:", error);
+      res.status(500).json({
+        message: "Server error during password reset",
+      });
+    }
+  }),
   // update email
   updateEmail: asyncHandler(async (req, res) => {
     //email
@@ -494,7 +557,7 @@ const userController = {
     //use the method from the model
     const token = await user.generateAccVerificationToken();
     //send the verification email
-    sendAccVerificationEmail(user?.email, token);
+  await sendEmailVerificationEmail(user, token);
     //send the response
     res.json({
       message: `Account verification email sent to ${user?.email} token expires in 10 minutes`,

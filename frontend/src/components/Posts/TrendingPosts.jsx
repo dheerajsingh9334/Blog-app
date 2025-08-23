@@ -100,7 +100,7 @@ const TrendingPosts = () => {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {data?.posts?.map((post, index) => {
-            const imageUrl = typeof post.image === "string" ? post.image : post.image?.path || "";
+            const imageUrl = typeof post.image === "string" ? post.image : post.image?.url || "";
             const isSaved = profileData?.user?.savedPosts?.some((id) => id?.toString() === post._id?.toString());
             return (
               <article key={post._id} className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-600">

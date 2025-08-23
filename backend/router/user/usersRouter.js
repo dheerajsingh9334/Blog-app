@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const userController = require("../../controllers/users/userController");
 const isAuthenticated = require("../../middlewares/isAuthenticated");
+const checkUserBan = require("../../middlewares/checkUserBan");
 const storage = require("../../utils/fileupload");
 
 const usersRouter = express.Router();
@@ -19,6 +20,7 @@ usersRouter.get("/profile", isAuthenticated, userController.profile);
 usersRouter.put(
   "/follow/:followId",
   isAuthenticated,
+  checkUserBan,
   userController.followUser
 );
 usersRouter.put("/update-email", isAuthenticated, userController.updateEmail);
@@ -39,24 +41,10 @@ usersRouter.put(
 usersRouter.put(
   "/unfollow/:unfollowId",
   isAuthenticated,
+  checkUserBan,
   userController.unFollowUser
 );
-usersRouter.put(
-  "/account-verification-email",
-  isAuthenticated,
-  userController.verifyEmailAccount
-);
-usersRouter.put(
-  "/verify-account/:verifyToken",
-  isAuthenticated,
-  userController.verifyEmailAcc
-);
-usersRouter.post("/forgot-password", userController.forgotPassword);
-usersRouter.post(
-  "/reset-password",
-  isAuthenticated, // <-- this sets req.user
-  userController.resetPassword
-);
+// Removed email verification and password reset routes
 usersRouter.put(
   "/change-password",
   isAuthenticated,

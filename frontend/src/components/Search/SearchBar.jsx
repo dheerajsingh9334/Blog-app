@@ -119,7 +119,7 @@ const SearchBar = ({ className = "", placeholder = "Search posts, users, or cont
                       <div className="flex items-center space-x-3">
                         {post.image && (
                           <img
-                            src={typeof post.image === "string" ? post.image : post.image.path}
+                            src={typeof post.image === "string" ? post.image : post.image.url}
                             alt={post.title}
                             className="w-8 h-8 rounded object-cover"
                           />

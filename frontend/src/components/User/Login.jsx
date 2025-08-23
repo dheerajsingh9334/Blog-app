@@ -39,7 +39,7 @@ const Login = () => {
           // Invalidate and refetch auth query
           queryClient.invalidateQueries(['user-auth']);
           // Navigate to dashboard
-          navigate("/postlist");
+          navigate("/posts");
         })
         .catch(() => {});
     },
@@ -111,8 +111,7 @@ const Login = () => {
             <FaGoogle /> Sign in with Google
           </a> */}
 
-          <div className="flex items-center justify-between text-sm">
-            <Link to="/forgot-password" className="text-blue-600 hover:underline">Forgot password?</Link>
+          <div className="flex items-center justify-end text-sm">
             <Link to="/register" className="text-gray-600 dark:text-gray-300 hover:underline">Create account</Link>
           </div>
         </form>

@@ -46,6 +46,7 @@ const AccountSummaryDashboard = () => {
 
   const hasPlan = data?.user?.hasSelectedPlan;
   const userPlan = data?.user?.plan;
+  // Removed email verification functionality
 
   const totalFollowers = data?.user?.followers?.length || 0;
   const totalFollowing = data?.user?.following?.length || 0;
@@ -182,6 +183,8 @@ const AccountSummaryDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Removed email verification alert */}
 
       {/* {!hasEmail && (
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">

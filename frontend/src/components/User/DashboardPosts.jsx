@@ -400,7 +400,7 @@ const DashboardPosts = () => {
                     {post.image && (
                       <div className="mb-3">
                         <img 
-                          src={post.image} 
+                          src={typeof post.image === 'string' ? post.image : post.image.url || post.image.path || post.image} 
                           alt={post.title || "Post image"}
                           className="w-full h-32 sm:h-36 md:h-40 lg:h-48 object-cover rounded-lg"
                           onError={(e) => {

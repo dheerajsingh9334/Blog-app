@@ -5,7 +5,6 @@ import {
   BellIcon,
   BookOpenIcon,
   UserGroupIcon,
-  TagIcon,
   CheckIcon,
   BookmarkIcon,
   ChartBarIcon,
@@ -39,7 +38,6 @@ const navigation = [
   { name: "Saved Posts", href: "/saved-posts", icon: BookmarkIcon, current: false, feature: null },
   { name: "Followers", href: "/dashboard/my-followers", icon: UserGroupIcon, current: false, feature: null },
   { name: "Following", href: "/dashboard/my-followings", icon: UserGroupIcon, current: false, feature: null },
-  { name: "Categories", href: "/categories", icon: TagIcon, current: false, feature: null },
   { name: "Trending", href: "/trending", icon: SparklesIcon, current: false, feature: null },
   { name: "All Posts", href: "/posts", icon: DocumentTextIcon, current: false, feature: null },
   { name: "Rankings", href: "/ranking", icon: TrophyIcon, current: false, feature: null },
@@ -350,13 +348,13 @@ export default function GlobalLayout({ userAuth, children }) {
                   <CreditCardIcon className="mr-2 sm:mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
                   Manage Plans
                 </Link>
-                <Link
+                {/* <Link
                   to="/pricing"
                   className="group flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-green-600"
                 >
                   <CurrencyDollarIcon className="mr-2 sm:mr-3 h-5 w-5 text-gray-400 group-hover:text-green-600" />
                   View Pricing
-                </Link>
+                </Link> */}
                 {hasFreePlan && (
                   <Link
                     to="/upgrade"

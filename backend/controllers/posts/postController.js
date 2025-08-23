@@ -606,16 +606,50 @@ fetchAllPosts: asyncHandler(async (req, res) => {
     //user liking a post
     const userId = req.user;
     //Find the post
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate('author', 'email isEmailVerified username');
     //Check if a user has already disliked the post
     if (post?.dislikes.includes(userId)) {
       post?.dislikes?.pull(userId);
     }
     //Check if a user has already liked the post
-    if (post?.likes.includes(userId)) {
+    const wasLiked = post?.likes.includes(userId);
+    if (wasLiked) {
       post?.likes?.pull(userId);
     } else {
       post?.likes?.push(userId);
+      
+      // Create notification and send email for new like (only if not already liked)
+      try {
+        if (post.author._id.toString() !== userId) { // Don't notify if liking own post
+          const liker = await User.findById(userId).select('username profilePicture');
+          
+          // Create notification
+          await Notification.create({
+            userId: post.author._id,
+            title: "New Like",
+            message: `${liker.username} liked your post "${post.title}"`,
+            type: "new_like",
+            metadata: {
+              actorId: userId,
+              actorName: liker.username,
+              actorAvatar: liker.profilePicture,
+              action: "liked",
+              targetType: "post",
+              targetId: postId,
+              postTitle: post.title
+            }
+          });
+
+          // Send email notification if post author has verified email
+          if (post.author.isEmailVerified && post.author.email) {
+            const { sendLikeNotificationEmail } = require("../utils/sendNotificationEmails");
+            await sendLikeNotificationEmail(post.author, liker, post);
+          }
+        }
+      } catch (notificationError) {
+        console.error("Failed to create like notification:", notificationError);
+        // Don't fail the like operation if notification fails
+      }
     }
     //resave the post
     await post.save();

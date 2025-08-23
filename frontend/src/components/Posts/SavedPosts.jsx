@@ -175,23 +175,28 @@ const SavedPosts = () => {
                 {/* Author & Meta */}
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center space-x-3">
-                    {post.author?.profilePicture ? (
-                      <img
-                        src={post.author.profilePicture.url || post.author.profilePicture.path || post.author.profilePicture}
-                        alt={post.author.name || post.author.username}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                        <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
-                          {(post.author?.name || post.author?.username || 'U').charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
+                    <Link to={`/user/${post.author?._id}`} className="flex-shrink-0">
+                      {post.author?.profilePicture ? (
+                        <img
+                          src={post.author.profilePicture.url || post.author.profilePicture.path || post.author.profilePicture}
+                          alt={post.author.name || post.author.username}
+                          className="w-8 h-8 rounded-full object-cover hover:ring-2 hover:ring-blue-500 transition-all"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center hover:ring-2 hover:ring-blue-500 transition-all">
+                          <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
+                            {(post.author?.name || post.author?.username || 'U').charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </Link>
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <Link 
+                        to={`/user/${post.author?._id}`}
+                        className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      >
                         {post.author?.name || post.author?.username || 'Anonymous'}
-                      </p>
+                      </Link>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(post.createdAt).toLocaleDateString('en-US', { 
                           month: 'short', 

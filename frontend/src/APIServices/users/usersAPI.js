@@ -112,18 +112,8 @@ export const unfollowUserAPI = async (userId) => {
 
   return response.data;
 };
-// ! send Email verification token
-export const sendEmailVerificatonTokenAPI = async () => {
-  const response = await axios.put(
-    `${BASE_URL}/users/account-verification-email`,
-    {},
-    {
-      withCredentials: true,
-    }
-  );
+// Removed email verification and password reset API functions
 
-  return response.data;
-};
 // ! updateEmailAPI
 export const updateEmailAPI = async (email) => {
   const response = await axios.put(
@@ -151,20 +141,6 @@ export const verifyUserAccountAPI = async (verifyToken) => {
 
   return response.data;
 };
-// !forgot password
-export const forgotPasswordAPI = async (email) => {
-  const response = await axios.post(
-    `${BASE_URL}/users/forgot-password`,
-    {
-      email,
-    },
-    {
-      withCredentials: true,
-    }
-  );
-
-  return response.data;
-};
 // !upload profile pic
 export const uplaodProfilePicAPI = async (formData) => {
   const response = await axios.put(
@@ -175,20 +151,6 @@ export const uplaodProfilePicAPI = async (formData) => {
     }
   );
 
-  return response.data;
-};
-
-// !reset password
-export const resetPasswordAPI = async (data) => {
-  const response = await axios.post(
-    `${BASE_URL}/users/reset-password`,
-    {
-      password: data?.password,
-    },
-    {
-      withCredentials: true,
-    }
-  );
   return response.data;
 };
 

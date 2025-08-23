@@ -168,7 +168,7 @@ const MyFollowing = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {posts.map((post) => {
-                    const imageUrl = typeof post.image === 'string' ? post.image : post.image?.path;
+                    const imageUrl = typeof post.image === 'string' ? post.image : post.image?.url;
                     const readingMins = estimateReadingTime(post?.description);
                     const postId = post?._id || post?.id;
                     return (
