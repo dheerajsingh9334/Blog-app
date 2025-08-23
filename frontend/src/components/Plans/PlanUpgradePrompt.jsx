@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FaLock, FaCrown, FaChartLine, FaInfinity } from "react-icons/fa";
 import { getPlanTier, PLAN_TIERS } from "../../utils/planUtils";
 
-const PlanUpgrade = ({ 
+const PlanUpgradePrompt = ({ 
   feature, 
   currentPlan, 
   requiredPlan = "Premium", 
@@ -138,5 +138,4 @@ const PlanUpgrade = ({
   );
 };
 
-export default  PlanUpgrade;
-;
+export default PlanUpgradePrompt;

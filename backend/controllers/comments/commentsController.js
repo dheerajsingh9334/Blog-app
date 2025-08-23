@@ -1,8 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Post = require("../../models/Post/Post");
 const Comment = require("../../models/Comment/Comment");
-const User = require("../../models/User/User");
-const Notification = require("../../models/Notification/Notification");
 
 const commentsController = {
   //!Create comments
@@ -10,7 +8,7 @@ const commentsController = {
     const { postId, content, parentCommentId } = req.body;
     
     // Find the post
-    const post = await Post.findById(postId).populate('author', 'email isEmailVerified username');
+    const post = await Post.findById(postId);
     if (!post) {
       throw new Error("Post not found");
     }
@@ -44,40 +42,6 @@ const commentsController = {
     // Push the comment to the post
     post.comments.push(commentCreated._id);
     await post.save();
-
-    // Create notification and send email for new comment
-    try {
-      if (post.author._id.toString() !== req.user) { // Don't notify if commenting on own post
-        const commenter = await User.findById(req.user).select('username profilePicture');
-        
-        // Create notification
-        await Notification.create({
-          userId: post.author._id,
-          title: "New Comment",
-          message: `${commenter.username} commented on your post "${post.title}"`,
-          type: "new_comment",
-          metadata: {
-            actorId: req.user,
-            actorName: commenter.username,
-            actorAvatar: commenter.profilePicture,
-            action: "commented",
-            targetType: "post",
-            targetId: postId,
-            postTitle: post.title,
-            commentContent: content.substring(0, 100) + (content.length > 100 ? '...' : '')
-          }
-        });
-
-        // Send email notification if post author has verified email
-        if (post.author.isEmailVerified && post.author.email) {
-          const { sendCommentNotificationEmail } = require("../utils/sendNotificationEmails");
-          await sendCommentNotificationEmail(post.author, commenter, post, { content, _id: commentCreated._id });
-        }
-      }
-    } catch (notificationError) {
-      console.error("Failed to create comment notification:", notificationError);
-      // Don't fail the comment operation if notification fails
-    }
 
     // Populate author details for response
     await commentCreated.populate('author', 'username profilePicture');

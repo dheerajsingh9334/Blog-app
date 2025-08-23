@@ -34,10 +34,9 @@ const PostLimitReached = () => {
       features: [
         "Unlimited posts",
         "Advanced analytics",
-        "SEO tools",
+
         "Content calendar",
-        "Priority support",
-        "Custom branding"
+    
       ],
       color: "green",
       icon: <FaChartLine className="text-2xl" />

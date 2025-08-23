@@ -111,7 +111,8 @@ const Login = () => {
             <FaGoogle /> Sign in with Google
           </a> */}
 
-          <div className="flex items-center justify-end text-sm">
+          <div className="flex items-center justify-between text-sm">
+            <Link to="/forgot-password" className="text-blue-600 hover:underline">Forgot password?</Link>
             <Link to="/register" className="text-gray-600 dark:text-gray-300 hover:underline">Create account</Link>
           </div>
         </form>

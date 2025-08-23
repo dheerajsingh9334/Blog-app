@@ -148,7 +148,7 @@ const CheckoutForm = () => {
           'Scheduled posts',
           'Draft saving',
           'Rich text editor',
-          'Image optimization',
+
           'Social media integration',
           'Newsletter integration',
           'Comment moderation',

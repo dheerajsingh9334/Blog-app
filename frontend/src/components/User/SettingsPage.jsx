@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaUserCircle, FaEnvelope, FaCheckCircle, FaCog, FaPalette } from "react-icons/fa";
+import { FaUserCircle, FaEnvelope, FaKey, FaCheckCircle, FaCog, FaPalette } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from 'react-router-dom';
@@ -144,7 +144,26 @@ const Settings = () => {
                   </div>
                 </Link>
 
-                {/* Removed change password link */}
+                <Link to="/reset-password">
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 group">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg group-hover:scale-110 transition-transform">
+                        <FaKey className="text-purple-600 dark:text-purple-400 text-lg" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                          Change Password
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Update your account password
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-gray-400 group-hover:text-purple-500 transition-colors">
+                      →
+                    </div>
+                  </div>
+                </Link>
               </div>
             </div>
 
