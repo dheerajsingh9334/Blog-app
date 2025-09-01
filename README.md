@@ -1,46 +1,73 @@
 # WisdomShare - MERN Blog Platform
 *Share Knowledge, Inspire Growth*
 
-```markdown
-Live Demo : https://blog-app-sigma-tan.vercel.app/ 
-![Admin Dashboard] : https://blog-app-sigma-tan.vercel.app/admin/dashboard
-```
-![License](https://img.shields.io/badge/license-ISC-blue.svg)
-![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
-![React](https://img.shields.io/badge/react-18-blue)
-![Express](https://img.shields.io/badge/express-4-lightgrey)
-![MongoDB](https://img.shields.io/badge/mongoDB-6-green)
-![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+[![License](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/react-18-blue)](https://reactjs.org/)
+[![Express](https://img.shields.io/badge/express-4-lightgrey)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/mongoDB-6-green)](https://mongodb.com/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/dheerajsingh9334/Blog-app/pulls)
 
-Monorepo for a production‑ready blog platform where creators publish, grow an audience, and monetize. It includes an analytics‑driven admin portal, subscription plans with Stripe, notifications, and scheduled publishing.
+🚀 **Live Demo**: [https://blog-app-sigma-tan.vercel.app/](https://blog-app-sigma-tan.vercel.app/)
 
-The repo contains two apps:
+🔧 **Admin Dashboard**: [https://blog-app-sigma-tan.vercel.app/admin/dashboard](https://blog-app-sigma-tan.vercel.app/admin/dashboard)
 
-- `backend/`: Express + Mongoose REST API
-- `frontend/`: React + Vite SPA
+A modern, full-stack blog platform built with the MERN stack. Features include user authentication, subscription plans, advanced analytics, admin dashboard, email verification, and much more.
 
-## Prerequisites
+## ✨ Features
 
+### 🎯 For Users
+- **Authentication**: Login/Register with email verification and Google OAuth
+- **Post Management**: Create, edit, and schedule posts with rich text editor
+- **Subscription Plans**: Free, Premium, and Pro tiers with different limits
+- **Social Features**: Follow users, like posts, comment, and save posts
+- **Analytics**: View post performance and engagement metrics
+- **Dark Mode**: Complete dark/light theme support
+- **Responsive Design**: Works perfectly on all devices
+
+### 👨‍💼 For Admins
+- **Dashboard Analytics**: User growth, post trends, and engagement insights
+- **User Management**: View, ban/unban users, assign plans
+- **Content Moderation**: Manage posts, comments, and categories
+- **Notification System**: Send broadcasts and manage notifications
+- **Plan Management**: Create and modify subscription plans
+
+### 💳 Subscription Plans
+
+| Feature | Free Plan | Premium Plan | Pro Plan |
+|---------|-----------|--------------|----------|
+| Posts per month | 30 | 100 | 300 |
+| Characters per post | 3,000 | 10,000 | 50,000 |
+| Categories | 1 | Multiple | Multiple |
+| Advanced Editor | ❌ | ✅ | ✅ |
+| Analytics | Basic | ✅ | ✅ |
+| Reader Analytics | ❌ | ❌ | ✅ |
+| Priority Support | ❌ | ❌ | ✅ |
+| **Price** | **Free** | **$29/month** | **$99/month** |
+
+## 🚀 Quick Start
+
+### Prerequisites
 - Node.js 18+
 - MongoDB (local or Atlas)
+- npm or yarn
 
-## Quick Start
-
-1) Backend
+### Backend Setup
 
 ```bash
 cd backend
 npm install
 
-# Configure environment
-copy .env.example .env  # create .env and set values (see below)
+# Create environment file
+cp .env.example .env
+# Edit .env with your configuration (see Environment Variables section)
 
 npm start
 ```
 
-The API runs on `http://localhost:5000`.
+The API server will run on `http://localhost:5000`
 
-2) Frontend
+### Frontend Setup
 
 ```bash
 cd frontend
@@ -48,159 +75,193 @@ npm install
 npm run dev
 ```
 
-The web app runs on `http://localhost:5173`.
+The web application will run on `http://localhost:5173`
 
-## Backend
+## 🔧 Environment Variables
 
-### Environment variables (`backend/.env`)
+Create a `.env` file in the backend directory with the following variables:
 
-Required keys (example):
-
-```
+```env
+# Database
 MONGO_URL=mongodb://localhost:27017/mern_blog
-JWT_SECRET=change_this_secret
+
+# JWT
+JWT_SECRET=your_super_secret_jwt_key
+
+# Client URL
 CLIENT_URL=http://localhost:5173
-STRIPE_SECRET_KEY=sk_test_xxx
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-EMAIL_HOST=smtp.example.com
+FRONTEND_URL=http://localhost:5173
+
+# Stripe (for payments)
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
+
+# Cloudinary (for image uploads)
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+# Email (for notifications)
+EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
-EMAIL_USER=example@example.com
-EMAIL_PASS=app_password
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+
+# Google OAuth (optional)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
-### Scripts
+## 📁 Project Structure
 
+```
+mern-blog/
+├── backend/                 # Express.js API
+│   ├── controllers/        # Route controllers
+│   ├── middlewares/        # Custom middlewares
+│   ├── models/            # MongoDB models
+│   ├── router/            # API routes
+│   ├── scripts/           # Database seeders
+│   ├── utils/             # Utility functions
+│   └── server.js          # Main server file
+├── frontend/              # React.js application
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   ├── APIServices/   # API integration
+│   │   ├── redux/         # State management
+│   │   ├── hooks/         # Custom hooks
+│   │   ├── contexts/      # React contexts
+│   │   └── utils/         # Utility functions
+│   └── public/            # Static assets
+└── diagrams/              # Architecture diagrams
+```
+
+## 🛠️ Available Scripts
+
+### Backend Scripts
 ```bash
-npm start                         # start API on port 5000
-npm run seed:plans                # seed subscription plans
-npm run create:admin              # create an admin user (interactive/utility)
-npm run check:admins              # list/check admin users
-npm run create:test-admin         # create a test admin
-npm run create:admin-collection   # setup admins collection user
-npm run setup:admin               # helper script to bootstrap admin
-npm run test:broadcast            # fix/diagnose broadcast notifications
+npm start                  # Start the server
+npm run dev               # Start with nodemon
+npm run seed:plans        # Seed subscription plans
+npm run create:admin      # Create admin user
 ```
 
-### API Highlights
-
-- Auth (users and admins)
-- Posts, Comments, Categories
-- Plans, Payments (Stripe)
-- Notifications, Earnings
-
-Routers are mounted at `/api/v1/*` (see `backend/server.js`).
-
-## What this project does
-
-This platform enables creators to publish posts, manage content, and grow an audience while offering admin tools and monetization:
-
-- User features: authentication, post creation/editing/scheduling, search, trending, saved posts, followers/following, notifications, profile, dark mode.
-- Plans and payments: subscription plans, upgrade prompts, Stripe checkout and success flows.
-- Admin portal: dashboard analytics, manage users/posts/comments/categories, system settings, notifications, and plan management.
-- Operational tasks: cron to auto‑publish scheduled posts and compute monthly earnings.
-
-## Why this project stands out (vs typical blog apps)
-
-- Analytics-first admin portal: rich charts (Recharts) for trends, user growth, category distribution, and engagement.
-- Subscription tiers and plan-aware UI: features like post limits, upgrade prompts, and Stripe checkout integrated end-to-end.
-- Operational tooling baked-in: cron jobs auto-publish scheduled posts and compute monthly earnings.
-- Robust data layer: React Query for network/cache + Redux Toolkit (with persist) for auth/session and plan usage.
-- Comprehensive notifications: multiple types with deep links; admin broadcast support in the backend.
-- Role-based access: guarded admin routes and polished `AdminGlobalLayout` for navigation, search, and notifications.
-- Production-ready patterns: rate limiting, cookie parsing, structured routers/controllers, and environment-driven config.
-- Modern UX: Tailwind CSS, dark mode, responsive layouts, and accessible components.
-
-## For recruiters and reviewers
-
-- Skim these entry points:
-  - Backend: `backend/server.js` (routers, middlewares, cron), `backend/controllers/*`, `backend/router/*`
-  - Frontend: `frontend/src/main.jsx`, `frontend/src/App.jsx` (routing and guards)
-  - State: `frontend/src/redux/slices/*`, `frontend/src/redux/store/store.js`
-  - Admin UI: `frontend/src/components/Admin/*`
-  - API calls: `frontend/src/APIServices/*`
-- 5‑minute demo:
-  1. Start API (`cd backend && npm i && npm start`)
-  2. Start app (`cd frontend && npm i && npm run dev`)
-  3. Register user → create posts → try scheduling
-  4. Explore `/admin/*` after creating an admin via backend scripts
-- Screenshots live in `frontend/public/screenshots` and are linked below.
-
-## Frontend
-
-React 18 + Vite + Tailwind CSS + React Query + Redux Toolkit.
-
-### Scripts
-
+### Frontend Scripts
 ```bash
-npm run dev       # start dev server (5173)
-npm run build     # production build
-npm run preview   # preview production build
-npm run lint      # run eslint
+npm run dev              # Start development server
+npm run build            # Build for production
+npm run preview          # Preview production build
+npm run lint             # Run ESLint
 ```
 
-### Configuration
+## 🏗️ Tech Stack
 
-- API base URL: `frontend/src/utils/baseEndpoint.js`
-- Admin views live under `frontend/src/components/Admin/*`
+### Backend
+- **Node.js** & **Express.js** - Server framework
+- **MongoDB** & **Mongoose** - Database
+- **JWT** - Authentication
+- **Stripe** - Payment processing
+- **Cloudinary** - Image hosting
+- **Nodemailer** - Email services
+- **Passport.js** - Google OAuth
 
-### Tech stack
+### Frontend
+- **React 18** - UI library
+- **Vite** - Build tool
+- **Tailwind CSS** - Styling
+- **Redux Toolkit** - State management
+- **React Query** - Server state
+- **React Router** - Navigation
+- **React Hook Form** - Form handling
+- **Recharts** - Data visualization
 
-- React 18, React Router, Redux Toolkit (+ persist), React Query
-- Tailwind CSS, Headless UI, Heroicons, React Icons
-- Recharts for analytics visualizations
+## 🔐 Authentication
 
-## Development Notes
+The platform supports multiple authentication methods:
 
-- CORS is configured to allow `http://localhost:5173` in `backend/server.js`.
-- A cron runs every minute to publish scheduled posts and a monthly job computes earnings.
-- Stripe publishable key is used on the frontend via `Elements`; set your own keys for production.
+1. **Email/Password**: Traditional registration with email verification
+2. **Google OAuth**: Quick login with Google account
+3. **JWT Tokens**: Secure session management
 
-## Screenshots
+## 💰 Payment Integration
 
-Place screenshots under `frontend/public/screenshots` and reference them here. Example:
+Stripe integration for subscription management:
+- Secure payment processing
+- Subscription management
+- Plan upgrades/downgrades
+- Billing history
 
+## 📧 Email System
 
-If you just took screenshots, drop them into that folder and rename the links above to match your filenames.
+Comprehensive email system with:
+- Account verification emails
+- Password reset emails
+- Notification emails
+- Admin broadcast emails
 
-## Repository structure
+## 📊 Analytics & Insights
 
+### User Analytics
+- Post views and engagement
+- Follower growth
+- Content performance
+- Reading analytics
+
+### Admin Analytics
+- User growth metrics
+- Content statistics
+- Platform usage insights
+- Revenue tracking
+
+## 🔒 Security Features
+
+- **Input Validation**: Comprehensive validation using Joi/Yup
+- **Rate Limiting**: API rate limiting to prevent abuse
+- **CORS Protection**: Configured for production
+- **JWT Security**: Secure token-based authentication
+- **Password Hashing**: bcrypt for password security
+- **Email Verification**: Required for account activation
+
+## 🚀 Deployment
+
+### Frontend (Vercel/Netlify)
+```bash
+npm run build
+# Deploy the dist/ folder
 ```
-mern Blog/
-  backend/               # Express API (routers, controllers, models, utils)
-  frontend/              # React app (components, API services, redux, hooks)
-  README.md              # You are here
-```
 
-High‑signal paths:
+### Backend (Render/Railway/Heroku)
+1. Set environment variables
+2. Deploy the backend/ folder
+3. Update CORS settings for production
 
-- Backend routers: `backend/router/*`
-- Backend controllers: `backend/controllers/*`
-- Models: `backend/models/*`
-- Cron + server wiring: `backend/server.js`
-- Frontend routing: `frontend/src/App.jsx`
-- Admin UI: `frontend/src/components/Admin/*`
-- API calls: `frontend/src/APIServices/*`
+## 🤝 Contributing
 
-## Cleanup Performed
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Removed unused/legacy frontend components and a stray backend file to keep the codebase lean:
-If you rely on any of the removed components, restore them from version control.
+## 📝 License
 
-Also removed backend testing/helper files as requested: `backend/test*.js`, `backend/utils/testBackend.js`, `backend/scripts/testAdmin.js`.
+This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
 
-## Deploy
+## 👨‍💻 Author
 
-- Frontend: build with `npm run build` and deploy `frontend/dist` to Netlify/Vercel.
-- Backend: deploy to Render/Fly/Heroku. Set env vars from the Backend section. Allow frontend origin in CORS.
+**Dheeraj Singh**
+- GitHub: [@dheerajsingh9334](https://github.com/dheerajsingh9334)
+- Email: dheerajsingh9334@gmail.com
 
-## Contributing
+## 🙏 Acknowledgments
 
-Issues and PRs are welcome. Please open an issue describing the change you propose. For larger changes, include context, screenshots, and rationale.
+- Built with love using the MERN stack
+- Icons by [React Icons](https://react-icons.github.io/react-icons/)
+- UI components inspired by modern design principles
+- Special thanks to the open source community
 
-## License
+---
 
-ISC (c) Masynctech coding school and contributors
+⭐ **If you found this project helpful, please give it a star!** ⭐
 
 
