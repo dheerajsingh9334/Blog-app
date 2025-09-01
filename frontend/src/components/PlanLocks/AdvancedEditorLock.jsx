@@ -87,15 +87,13 @@ const AdvancedEditorLock = ({ userPlan, children, isActive = false }) => {
             <div className="text-xs text-blue-200">
               {requiredPlan === PLAN_TIERS.PREMIUM ? (
                 <>
-                  <div>✨ Up to 50 posts • 5,000 characters</div>
-                  <div>📝 Advanced editor • Multiple categories</div>
-                  <div>⏰ Scheduled posts • Comments & likes</div>
+                  <div>✨ Enhanced features</div>
+                  <div>📝 Advanced editor</div>
                 </>
               ) : (
                 <>
-                  <div>🚀 Up to 100 posts • 10,000 characters</div>
-                  <div>📊 Advanced analytics • Reader insights</div>
-                  <div>🎨 Image customization • All features</div>
+                  <div>🚀 Premium features</div>
+                  <div>📊 Advanced tools</div>
                 </>
               )}
             </div>

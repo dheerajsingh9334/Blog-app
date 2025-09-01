@@ -1,14 +1,39 @@
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { fetchPlansAPI } from "../../APIServices/plans/plans";
+
+// Static plans configuration
+const STATIC_PLANS = [
+  {
+    _id: "free",
+    planName: "Free",
+    tier: "free",
+    price: 0,
+    postLimit: 30,
+    characterLimit: 3000,
+    features: ["Up to 30 posts per month", "View posts only", "Single category selection", "Up to 3,000 characters per post"]
+  },
+  {
+    _id: "premium",
+    planName: "Premium", 
+    tier: "premium",
+    price: 29,
+    postLimit: 100,
+    characterLimit: 10000,
+    features: ["Up to 100 posts per month", "View, Comment & Like posts", "Multiple categories selection", "Up to 10,000 characters per post", "Scheduled Posts"]
+  },
+  {
+    _id: "pro",
+    planName: "Pro",
+    tier: "pro", 
+    price: 99,
+    postLimit: 300,
+    characterLimit: 50000,
+    features: ["Up to 300 posts per month", "View, Comment & Like posts", "Multiple categories selection", "Up to 50,000 characters per post", "Scheduled Posts", "Advanced analytics", "See who reads your blog"]
+  }
+];
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const { data, isError, isLoading, error } = useQuery({
-    queryKey: ["pricing-lists"],
-    queryFn: fetchPlansAPI,
-  });
 
   const handlePlanSelection = (plan) => {
     const identifier = plan?._id || plan?.tier || plan?.planName;
@@ -23,67 +48,10 @@ const Pricing = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading plans...</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (isError) {
-    return (
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <p className="text-red-600 dark:text-red-400">Error loading plans: {error?.message}</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // Get plans by tier with fallback - matching the design image
-  const freePlan = data?.plans?.find((plan) => plan.tier === "free" || plan.planName === "Free") || {
-    _id: "free",
-    planName: "Free",
-    tier: "free",
-    price: 0,
-    postLimit: 10,
-    characterLimit: 1000,
-    features: ["Up to 10 posts", "View posts only", "Single category selection", "Up to 1,000 characters per post"]
-  };
-  
-  const premiumPlan = data?.plans?.find((plan) => plan.tier === "premium" || plan.planName === "Premium") || {
-    _id: "premium",
-    planName: "Premium", 
-    tier: "premium",
-    price: 29,
-    postLimit: 50,
-    characterLimit: 5000,
-    features: ["Up to 50 posts", "View, Comment & Like posts", "Multiple categories selection", "Up to 5,000 characters per post", "Scheduled Posts"]
-  };
-  
-  const proPlan = data?.plans?.find((plan) => plan.tier === "pro" || plan.planName === "Pro") || {
-    _id: "pro",
-    planName: "Pro",
-    tier: "pro", 
-    price: 99,
-    postLimit: 100,
-    characterLimit: 10000,
-    features: ["Up to 100 posts", "View, Comment & Like posts", "Multiple categories selection", "Up to 10,000 characters per post", "Scheduled Posts", "Advanced analytics", "See who reads your blog"]
-  };
+  // Use static plans directly
+  const freePlan = STATIC_PLANS[0];
+  const premiumPlan = STATIC_PLANS[1];
+  const proPlan = STATIC_PLANS[2];
 
   return (
     <section className="py-24 bg-gray-50 dark:bg-gray-900">
@@ -127,10 +95,10 @@ const Pricing = () => {
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 text-sm sm:text-base">What's included:</h4>
               <ul className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
                 {(freePlan?.features || [
-                  "Up to 10 posts",
+                  "Up to 30 posts per month",
                   "View posts only", 
                   "Single category selection",
-                  "Up to 1,000 characters per post"
+                  "Up to 3,000 characters per post"
                 ]).map((feature, index) => (
                   <li key={index} className="flex items-center">
                     <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -181,10 +149,10 @@ const Pricing = () => {
               <h4 className="font-semibold text-white mb-3 sm:mb-4 text-sm sm:text-base">What's included:</h4>
               <ul className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
                 {(premiumPlan?.features || [
-                  "Up to 50 posts",
+                  "Up to 100 posts per month",
                   "View, Comment & Like posts", 
                   "Multiple categories selection",
-                  "Up to 5,000 characters per post",
+                  "Up to 10,000 characters per post",
                   "Scheduled Posts"
                 ]).map((feature, index) => (
                   <li key={index} className="flex items-center">
@@ -233,10 +201,10 @@ const Pricing = () => {
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 text-sm sm:text-base">What's included:</h4>
               <ul className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
                 {(proPlan?.features || [
-                  "Up to 100 posts",
+                  "Up to 300 posts per month",
                   "View, Comment & Like posts",
                   "Multiple categories selection",
-                  "Up to 10,000 characters per post",
+                  "Up to 50,000 characters per post",
                   "Scheduled Posts",
                   "Advanced analytics", 
                   "See who reads your blog"

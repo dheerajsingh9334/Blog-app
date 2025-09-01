@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RiUserUnfollowFill, RiUserFollowLine } from "react-icons/ri";
 import { followUserAPI, unfollowUserAPI } from "../../APIServices/users/usersAPI";
@@ -29,8 +30,9 @@ const FollowButton = ({
       queryClient.invalidateQueries({ queryKey: ["followers"] });
       if (onFollowChange) onFollowChange(true);
     },
-    onError: () => {
+    onError: (error) => {
       setIsPending(false);
+      console.error('Follow error:', error);
     }
   });
 
@@ -46,8 +48,9 @@ const FollowButton = ({
       queryClient.invalidateQueries({ queryKey: ["followers"] });
       if (onFollowChange) onFollowChange(false);
     },
-    onError: () => {
+    onError: (error) => {
       setIsPending(false);
+      console.error('Unfollow error:', error);
     }
   });
 
@@ -91,6 +94,7 @@ const FollowButton = ({
   const variantClass = variantClasses[variant] || variantClasses.default;
 
   return (
+    <>
     <button
       onClick={handleFollow}
       disabled={isPending}
@@ -118,7 +122,18 @@ const FollowButton = ({
         : (localIsFollowing ? 'Unfollow' : 'Follow')
       }
     </button>
+  </>
   );
+};
+
+FollowButton.propTypes = {
+  targetUserId: PropTypes.string.isRequired,
+  currentUserId: PropTypes.string.isRequired,
+  isFollowing: PropTypes.bool.isRequired,
+  onFollowChange: PropTypes.func.isRequired,
+  size: PropTypes.oneOf(["sm", "md", "lg"]),
+  variant: PropTypes.oneOf(["default", "outline", "ghost"]),
+  className: PropTypes.string
 };
 
 export default FollowButton;

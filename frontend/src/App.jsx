@@ -29,11 +29,13 @@ import DashboardScheduled from "./components/User/DashboardScheduled";
 import Settings from "./components/User/SettingsPage";
 import AddEmailComponent from "./components/User/UpdateEmail";
 import UploadProfilePic from "./components/User/UploadProfilePic";
+import AccountVerification from "./components/User/AccountVerification";
 import GlobalLayout from "./components/User/GlobalLayout";
 import PostsList from "./components/Posts/PostsList";
 import PostDetails from "./components/Posts/PostDetails";
 import Login from "./components/User/Login";
 import Register from "./components/User/Register";
+import GoogleLoginError from "./components/User/GoogleLoginError";
 import Profile from "./components/User/Profile";
 // Dashboard component route is handled via nested routes below
 import { DarkModeProvider } from "./components/Navbar/DarkModeContext";
@@ -207,6 +209,8 @@ function App() {
           {/* Public routes without GlobalLayout */}
           <Route element={<GlobalLayout userAuth={userAuth}><Login /></GlobalLayout>} path="/login" />
           <Route element={<GlobalLayout userAuth={userAuth}><Register /></GlobalLayout>} path="/register" />
+          <Route element={<GlobalLayout userAuth={userAuth}><GoogleLoginError /></GlobalLayout>} path="/google-login-error" />
+          <Route element={<GlobalLayout userAuth={userAuth}><AccountVerification /></GlobalLayout>} path="/account/verify" />
           <Route element={<GlobalLayout userAuth={userAuth}><Pricing /></GlobalLayout>} path="/pricing" />
           <Route element={<GlobalLayout userAuth={userAuth}><PlanManagement /></GlobalLayout>} path="/plan-management" />
           <Route path="/user/:userId" element={<GlobalLayout userAuth={userAuth}><UserProfile /></GlobalLayout>} />
@@ -328,6 +332,14 @@ function App() {
                 </AuthRoute>
               }
               path="add-email"
+            />
+            <Route
+              element={
+                <AuthRoute>
+                  <AccountVerification />
+                </AuthRoute>
+              }
+              path="account-verification/:verifyToken"
             />
             <Route
               element={

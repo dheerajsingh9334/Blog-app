@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import { Link } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import ReactQuill from "react-quill";
@@ -39,20 +38,123 @@ const customQuillStyles = `
     border-color: #4b5563 !important;
   }
   
+  /* All toolbar icons - stroke elements */
+  .dark .ql-toolbar .ql-stroke {
+    stroke: #d1d5db !important;
+  }
+  
+  /* All toolbar icons - fill elements */
+  .dark .ql-toolbar .ql-fill {
+    fill: #d1d5db !important;
+  }
+  
+  /* All toolbar buttons */
+  .dark .ql-toolbar button {
+    color: #d1d5db !important;
+  }
+  
+  .dark .ql-toolbar button:hover {
+    color: #ffffff !important;
+    background-color: #4b5563 !important;
+  }
+  
+  .dark .ql-toolbar button:hover .ql-stroke {
+    stroke: #ffffff !important;
+  }
+  
+  .dark .ql-toolbar button:hover .ql-fill {
+    fill: #ffffff !important;
+  }
+  
+  /* Active/selected buttons */
+  .dark .ql-toolbar button.ql-active {
+    color: #60a5fa !important;
+    background-color: #1e40af !important;
+  }
+  
+  .dark .ql-toolbar button.ql-active .ql-stroke {
+    stroke: #60a5fa !important;
+  }
+  
+  .dark .ql-toolbar button.ql-active .ql-fill {
+    fill: #60a5fa !important;
+  }
+  
+  /* Dropdown arrows and specific icons */
+  .dark .ql-toolbar .ql-picker-label {
+    color: #d1d5db !important;
+  }
+  
+  .dark .ql-toolbar .ql-picker-label:hover {
+    color: #ffffff !important;
+  }
+  
+  .dark .ql-toolbar .ql-picker-options {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
+  }
+  
+  .dark .ql-toolbar .ql-picker-item {
+    color: #d1d5db !important;
+  }
+  
+  .dark .ql-toolbar .ql-picker-item:hover {
+    background-color: #4b5563 !important;
+    color: #ffffff !important;
+  }
+  
+  /* Container and editor area */
   .ql-container {
     border-color: #d1d5db !important;
   }
   
   .dark .ql-container {
     border-color: #4b5563 !important;
+    background-color: #111827 !important;
   }
   
+  .dark .ql-editor {
+    color: #ffffff !important;
+    background-color: #111827 !important;
+  }
+  
+  /* Placeholder text */
   .ql-editor.ql-blank::before {
     color: #9ca3af !important;
   }
   
   .dark .ql-editor.ql-blank::before {
-    color: #6b7280 !important;
+    color: #9ca3af !important;
+  }
+  
+  /* Tooltips and modals */
+  .dark .ql-tooltip {
+    background-color: #374151 !important;
+    border: 1px solid #4b5563 !important;
+    color: #ffffff !important;
+  }
+  
+  .dark .ql-tooltip input {
+    background-color: #111827 !important;
+    color: #ffffff !important;
+    border-color: #4b5563 !important;
+  }
+  
+  /* Color picker and other special elements */
+  .dark .ql-color-picker .ql-picker-options {
+    background-color: #374151 !important;
+  }
+  
+  .dark .ql-font .ql-picker-options,
+  .dark .ql-size .ql-picker-options,
+  .dark .ql-header .ql-picker-options {
+    background-color: #374151 !important;
+  }
+  
+  /* Selection highlight */
+  .dark .ql-editor ::selection {
+    background-color: #3b82f6 !important;
+    color: #ffffff !important;
   }
 `;
 
@@ -290,24 +392,16 @@ const CreatePost = () => {
                 'text-purple-700 dark:text-purple-300'
               }`}>
                 {userPlan === 'Free' && (
-                  <>📝 Up to 10 posts • 1,000 characters • Single category • Basic editor</>
+                  <>📝 Up to 30 posts • 3,000 characters • Single category • Basic editor</>
                 )}
                 {userPlan === 'Premium' && (
-                  <>🚀 Up to 50 posts • 5,000 characters • Multiple categories • Advanced editor • Scheduled posts</>
+                  <>🚀 Up to 100 posts • 10,000 characters • Enhanced features • Advanced editor</>
                 )}
                 {userPlan === 'Pro' && (
-                  <>👑 Up to 100 posts • 10,000 characters • Advanced analytics • Image customization • All features</>
+                  <>👑 Up to 300 posts • 50,000 characters • Advanced analytics • See who reads your blog</>
                 )}
               </div>
             </div>
-            {userPlan === 'Free' && (
-              <Link
-                to="/dashboard/billing"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              >
-                Upgrade
-              </Link>
-            )}
           </div>
         </div>
 
@@ -716,7 +810,7 @@ const CreatePost = () => {
               className="mb-3"
             />
             
-            <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+            <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-900">
               {hasAdvancedEditor(userPlan) ? (
                 <AdvancedEditorLock userPlan={userPlan} isActive={true}>
                   <ReactQuill
@@ -743,7 +837,7 @@ const CreatePost = () => {
                     }}
                     onBlur={formik.handleBlur}
                     disabled={isBanned}
-                    className={`w-full h-64 p-4 border-0 focus:ring-0 resize-none text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${isBanned ? 'opacity-50' : ''}`}
+                    className={`w-full h-64 p-4 border-0 focus:ring-0 resize-none text-gray-900 dark:text-white bg-white dark:bg-gray-900 placeholder-gray-500 dark:placeholder-gray-400 ${isBanned ? 'opacity-50' : ''}`}
                     placeholder="Write your story... (Simple text editor for Free plan)"
                   />
                   <div className="absolute bottom-2 right-2 text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">

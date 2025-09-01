@@ -6,17 +6,17 @@ const STATIC_PLANS = [
     planName: "Free",
     description: "Perfect for getting started with blogging",
     features: [
-  "Up to 100 posts per month",
-  "5,000 words per post",
+  "Up to 30 posts per month",
+  "3,000 characters per post",
       "1 category",
       "Basic post creation",
       "View posts"
     ],
     price: 0,
-  postLimit: 100, // per month
+  postLimit: 30, // per month
     tier: "free",
     isActive: true,
-  characterLimit: 5000,
+  characterLimit: 3000,
     categoryLimit: 1,
     analytics: false,
     advancedEditor: false,
@@ -30,8 +30,8 @@ const STATIC_PLANS = [
     planName: "Premium", 
     description: "Enhanced features for serious bloggers",
     features: [
-  "Up to 500 posts per month",
-  "10,000 words per post",
+  "Up to 100 posts per month",
+  "10,000 characters per post",
       "Multiple categories",
       "Advanced editor",
       "Scheduled posts",
@@ -39,7 +39,7 @@ const STATIC_PLANS = [
       "Comments and likes"
     ],
     price: 9.99,
-  postLimit: 500, // per month
+  postLimit: 100, // per month
     tier: "premium",
     isActive: true,
     characterLimit: 10000,
@@ -57,17 +57,17 @@ const STATIC_PLANS = [
     description: "Complete blogging solution for professionals",
     features: [
   "Everything in Premium",
-  "100,000 words per post", 
+  "50,000 characters per post", 
       "Advanced analytics",
       "Reader analytics",
       "Priority support",
       "All features unlocked"
     ],
-    price: 19.99,
-  postLimit: 1000, // per month
+    price: 99.99,
+  postLimit: 300, // per month
     tier: "pro", 
     isActive: true,
-    characterLimit: 100000,
+    characterLimit: 50000,
     categoryLimit: null,
     analytics: true,
     advancedEditor: true,

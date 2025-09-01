@@ -103,13 +103,22 @@ const Login = () => {
           >
             {userMutation.isPending ? "Signing in..." : "Login"}
           </button>
-{/* 
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-300 dark:border-gray-600" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">Or continue with</span>
+            </div>
+          </div>
+
           <a
             href={`${BASE_URL}/users/auth/google`}
-            className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
           >
-            <FaGoogle /> Sign in with Google
-          </a> */}
+            <FaGoogle className="text-red-500" /> Sign in with Google
+          </a>
 
           <div className="flex items-center justify-between text-sm">
             <Link to="/forgot-password" className="text-blue-600 hover:underline">Forgot password?</Link>

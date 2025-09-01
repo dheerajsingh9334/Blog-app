@@ -9,6 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { logoutAPI } from "../../APIServices/users/usersAPI";
 import { useNotifications } from "../../contexts/NotificationContext";
 import Avatar from "../User/Avatar";
+import UserPlanStatus from "./UserPlanStatus";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -139,6 +140,9 @@ const Navbar = () => {
                     </span>
                   )}
                 </Link>
+
+                {/* User Plan Status */}
+                <UserPlanStatus />
 
                 {/* Dark Mode Toggle */}
                 <button
@@ -323,6 +327,11 @@ const Navbar = () => {
                         {userAuth.email}
                       </p>
                     </div>
+                  </div>
+
+                  {/* Mobile Plan Status */}
+                  <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <UserPlanStatus />
                   </div>
 
                   {/* Mobile Menu Items */}

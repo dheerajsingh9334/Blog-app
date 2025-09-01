@@ -18,7 +18,6 @@ import {
   FaBars, 
   FaTimes, 
   FaSignOutAlt,
-  FaCog,
   FaUser,
   FaUsers,
   FaFileAlt,
@@ -273,12 +272,6 @@ const AdminGlobalLayout = ({ children }) => {
       icon: FaBell,
       path: '/admin/notifications',
       description: 'Send notifications'
-    },
-    {
-      name: 'System Settings',
-      icon: FaCog,
-      path: '/admin/settings',
-      description: 'Platform configuration'
     }
   ];
 
@@ -712,14 +705,6 @@ const AdminGlobalLayout = ({ children }) => {
                       >
                         <FaUser className="h-4 w-4 mr-2" />
                         Profile
-                      </Link>
-                      <Link
-                        to="/admin/settings"
-                        className="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        <FaCog className="h-4 w-4 mr-2" />
-                        Settings
                       </Link>
                     </div>
                     <div className="border-t border-gray-200 dark:border-gray-700 pt-1">

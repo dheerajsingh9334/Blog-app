@@ -34,21 +34,19 @@ const UserPlanStatus = () => {
   const hasReachedLimit = posts.unlimited ? false : posts.current >= posts.limit;
 
   return (
-    <div className="flex items-center space-x-3">
-      {/* Plan Badge (hidden for Free plan) */}
-      {!isFreePlan && (
-        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${planBadge.className}`}>
-          {plan.tier === 'pro' && <FaCrown className="mr-1" />}
-          {plan.tier === 'premium' && <FaChartLine className="mr-1" />}
-          {planBadge.text}
-        </div>
-      )}
+    <div className="flex items-center space-x-2">
+      {/* Plan Badge - Always show current plan */}
+      <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${planBadge.className}`}>
+        {plan.tier === 'pro' && <FaCrown className="mr-1" />}
+        {plan.tier === 'premium' && <FaChartLine className="mr-1" />}
+        {planBadge.text}
+      </div>
 
-      {/* Usage Status */}
+      {/* Usage Status for non-unlimited plans */}
       {!posts.unlimited && (
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <div className="text-xs text-gray-600 dark:text-gray-400">
-            {posts.current}/{posts.limit} posts
+            {posts.current}/{posts.limit}
           </div>
           {hasReachedLimit && (
             <FaExclamationTriangle className="text-red-500 text-xs" title="Post limit reached" />
@@ -59,11 +57,11 @@ const UserPlanStatus = () => {
         </div>
       )}
 
-      {/* Upgrade Button */}
-      {upgradeButton && (
+      {/* Upgrade Button for Free plan only */}
+      {isFreePlan && upgradeButton && (
         <Link
           to="/dashboard/plan-management"
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white ${upgradeButton.className} hover:opacity-90 transition-opacity`}
+          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ${upgradeButton.className} hover:opacity-90 transition-opacity`}
         >
           {upgradeButton.text}
         </Link>

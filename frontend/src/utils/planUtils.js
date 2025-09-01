@@ -8,8 +8,8 @@ export const PLAN_TIERS = {
 
 export const PLAN_LIMITS = {
   [PLAN_TIERS.FREE]: {
-    posts: 10,
-    characters: 600,
+    posts: 30,
+    characters: 3000,
     categories: 1,
     features: {
       viewPosts: true,
@@ -24,8 +24,8 @@ export const PLAN_LIMITS = {
     }
   },
   [PLAN_TIERS.PREMIUM]: {
-    posts: -1, // Unlimited
-    characters: 5000,
+    posts: 100, // Per month
+    characters: 10000,
     categories: -1, // Multiple/Unlimited
     features: {
       viewPosts: true,
@@ -40,8 +40,8 @@ export const PLAN_LIMITS = {
     }
   },
   [PLAN_TIERS.PRO]: {
-    posts: -1, // Unlimited everything
-    characters: 10000,
+    posts: 300, // Per month
+    characters: 50000,
     categories: -1, // Unlimited
     features: {
       viewPosts: true,

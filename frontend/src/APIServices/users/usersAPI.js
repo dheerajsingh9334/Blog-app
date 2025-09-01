@@ -113,7 +113,7 @@ export const unfollowUserAPI = async (userId) => {
   return response.data;
 };
 // ! send Email verification token
-export const sendEmailVerificatonTokenAPI = async () => {
+export const sendEmailVerificationTokenAPI = async () => {
   const response = await axios.put(
     `${BASE_URL}/users/account-verification-email`,
     {},

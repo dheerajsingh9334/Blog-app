@@ -18,11 +18,11 @@ const postRouter = express.Router();
 postRouter.post(
   "/create",
   isAuthenticated,
+  isAccountVerified,
   checkUserBan,
   checkUserPlan,
   checkPostLimit,
   postRateLimiter,
-  // isAccountVerified,
   upload.single("image"),
   postController.createPost
 );
@@ -67,10 +67,10 @@ postRouter.get("/:postId", optionalAuth, postController.getPost);
 postRouter.delete("/:postId", isAuthenticated, postController.delete);
 
 //---like post----
-postRouter.put("/likes/:postId", isAuthenticated, checkUserBan, commentRateLimiter, postController.like);
+postRouter.put("/likes/:postId", isAuthenticated, isAccountVerified, checkUserBan, commentRateLimiter, postController.like);
 
 //---dislike post----
-postRouter.put("/dislikes/:postId", isAuthenticated, checkUserBan, commentRateLimiter, postController.dislike);
+postRouter.put("/dislikes/:postId", isAuthenticated, isAccountVerified, checkUserBan, commentRateLimiter, postController.dislike);
 
 //---track post view---
 postRouter.post("/track-view/:postId", isAuthenticated, postController.trackPostView);

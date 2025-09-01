@@ -33,10 +33,8 @@ const PostLimitReached = () => {
       description: "Unlimited posts & advanced features",
       features: [
         "Unlimited posts",
-        "Advanced analytics",
-
-        "Content calendar",
-    
+        "Advanced features",
+        "Priority support"
       ],
       color: "green",
       icon: <FaChartLine className="text-2xl" />
@@ -48,12 +46,10 @@ const PostLimitReached = () => {
       period: "month",
       description: "Everything unlimited + team features",
       features: [
-        "Everything in Premium",
+        "All Premium features",
         "Team collaboration",
         "API access",
-        "White-label solution",
-        "Dedicated support",
-        "Custom integrations"
+        "Dedicated support"
       ],
       color: "indigo",
       icon: <FaInfinity className="text-2xl" />

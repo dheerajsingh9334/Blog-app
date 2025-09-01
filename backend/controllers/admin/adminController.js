@@ -491,13 +491,13 @@ const adminController = {
   
   // Get all plans
   getAllPlans: asyncHandler(async (req, res) => {
-    const tierDefaults = { free: 20, premium: 50, pro: 200 };
+    const tierDefaults = { free: 30, premium: 100, pro: 300 };
     const plans = await Plan.find().sort({ price: 1 });
     const enriched = plans.map(p => {
       const obj = p.toObject();
       const tier = (obj.tier || obj.planName || '').toString().toLowerCase();
       obj.effectivePostLimit = (typeof obj.postLimit === 'number') ? obj.postLimit : (tierDefaults[tier] ?? null);
-      obj.limitPeriod = 'per_day';
+      obj.limitPeriod = 'per_month';
       // Remove deprecated/undesired feature label if present in features
       if (Array.isArray(obj.features)) {
         obj.features = obj.features.filter(f => {
@@ -521,7 +521,7 @@ const adminController = {
       features,
       isActive
     } = req.body;
-    const tierDefaults = { free: 20, premium: 50, pro: 200 };
+    const tierDefaults = { free: 30, premium: 100, pro: 300 };
     const normalizedTier = (tier || planName || 'free').toString().toLowerCase();
     const finalPostLimit = (typeof postLimit === 'number') ? postLimit : (tierDefaults[normalizedTier] ?? null);
     const cleanedFeatures = Array.isArray(features)
@@ -556,7 +556,7 @@ const adminController = {
   // Update plan
   updatePlan: asyncHandler(async (req, res) => {
     const { planId } = req.params;
-    const tierDefaults = { free: 20, premium: 50, pro: 200 };
+    const tierDefaults = { free: 30, premium: 100, pro: 300 };
     const existing = await Plan.findById(planId);
     if (!existing) {
       return res.status(404).json({ message: "Plan not found" });

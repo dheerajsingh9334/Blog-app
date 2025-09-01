@@ -129,21 +129,28 @@ const UserManagement = () => {
   };
 
   const getPlanDisplayName = (user) => {
-    if (!user.plan) return 'No Plan';
-    
-    // Check if plan is populated
-    if (typeof user.plan === 'object' && user.plan.planName) {
+    // Check if plan is populated as an object
+    if (typeof user.plan === 'object' && user.plan && user.plan.planName) {
       return `${user.plan.planName} (${user.plan.tier})`;
     }
     
-    // Fallback if plan is just an ID
-    return 'Plan Assigned';
+    // If plan exists but not populated, return a basic display
+    if (user.plan) {
+      return 'Free Plan'; // Default assumption since all users have at least free plan
+    }
+    
+    // Fallback (should rarely happen since all users get free plan by default)
+    return 'Free Plan';
   };
 
   const getPlanBadgeColor = (user) => {
-    if (!user.plan) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
+    // Default to free plan styling if no plan info available
+    let tier = 'free';
     
-    const tier = user.plan.tier || 'free';
+    if (typeof user.plan === 'object' && user.plan && user.plan.tier) {
+      tier = user.plan.tier;
+    }
+    
     switch (tier) {
       case 'premium':
         return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200';
@@ -783,7 +790,7 @@ const UserManagement = () => {
                   onChange={(e) => setSelectedPlanId(e.target.value)}
                   className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  <option value="">No Plan</option>
+                  <option value="">Free Plan (Default)</option>
                   {plansData?.plans?.map((plan) => (
                     <option key={plan._id} value={plan._id}>
                       {plan.planName} ({plan.tier}) - ${plan.price}

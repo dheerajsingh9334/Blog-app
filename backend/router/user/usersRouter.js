@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const userController = require("../../controllers/users/userController");
 const isAuthenticated = require("../../middlewares/isAuthenticated");
+const isAccountVerified = require("../../middlewares/isAccountVerified");
 const storage = require("../../utils/fileupload");
 
 const usersRouter = express.Router();
@@ -19,6 +20,7 @@ usersRouter.get("/profile", isAuthenticated, userController.profile);
 usersRouter.put(
   "/follow/:followId",
   isAuthenticated,
+  isAccountVerified,
   userController.followUser
 );
 usersRouter.put("/update-email", isAuthenticated, userController.updateEmail);
@@ -39,6 +41,7 @@ usersRouter.put(
 usersRouter.put(
   "/unfollow/:unfollowId",
   isAuthenticated,
+  isAccountVerified,
   userController.unFollowUser
 );
 usersRouter.put(

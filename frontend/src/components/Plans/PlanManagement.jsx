@@ -347,7 +347,7 @@ const PlanManagement = () => {
               </div>
               <div className="mb-4 sm:mb-6">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 ${r.text.bodySmall} text-gray-700 dark:text-gray-300`}>
-                  Limit: 10 posts
+                  Limit: 30 posts
                 </span>
               </div>
               <Link
@@ -365,7 +365,7 @@ const PlanManagement = () => {
               <ul className="space-y-3">
                 <li className="flex items-center">
                   <FaCheck className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
-                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 10 posts</span>
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 30 posts per month</span>
                 </li>
                 <li className="flex items-center">
                   <FaCheck className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
@@ -377,7 +377,7 @@ const PlanManagement = () => {
                 </li>
                 <li className="flex items-center">
                   <FaCheck className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
-                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 1,000 characters per post</span>
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 3,000 characters per post</span>
                 </li>
               </ul>
             </div>
@@ -404,11 +404,9 @@ const PlanManagement = () => {
               <div className="mb-4 sm:mb-6">
                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 text-sm text-white mr-2">
                   <FaInfinity className="mr-1" />
-                  Unlimited posts
+                 
                 </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-white text-green-600 text-xs font-semibold">
-                  PREMIUM
-                </span>
+              
               </div>
               <Link
                 to={`/checkout/${premiumPlan?._id || 'premium'}`}
@@ -423,9 +421,13 @@ const PlanManagement = () => {
                 What's included:
               </h4>
               <ul className="space-y-3">
+                {/* <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
+                  <span className={`text-green-100 ${r.text.bodySmall}`}>Up to 100 posts</span>
+                </li> */}
                 <li className="flex items-center">
                   <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
-                  <span className={`text-green-100 ${r.text.bodySmall}`}>Up to 50 posts</span>
+                  <span className={`text-green-100 ${r.text.bodySmall}`}>Up to 100 posts per month</span>
                 </li>
                 <li className="flex items-center">
                   <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
@@ -437,7 +439,7 @@ const PlanManagement = () => {
                 </li>
                 <li className="flex items-center">
                   <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
-                  <span className={`text-green-100 ${r.text.bodySmall}`}>Up to 5,000 characters per post</span>
+                  <span className={`text-green-100 ${r.text.bodySmall}`}>Up to 10,000 characters per post</span>
                 </li>
                 <li className="flex items-center">
                   <FaCheck className="w-4 h-4 text-green-200 mr-3 flex-shrink-0" />
@@ -468,7 +470,6 @@ const PlanManagement = () => {
               <div className="mb-4 sm:mb-6">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 ${r.text.bodySmall}`}>
                   <FaRocket className="mr-1" />
-                  Unlimited everything
                 </span>
               </div>
               <Link
@@ -484,9 +485,13 @@ const PlanManagement = () => {
                 What's included:
               </h4>
               <ul className="space-y-3">
+                {/* <li className="flex items-center">
+                  <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 300 posts</span>
+                </li> */}
                 <li className="flex items-center">
                   <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
-                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 100 posts</span>
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 300 posts per month</span>
                 </li>
                 <li className="flex items-center">
                   <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
@@ -498,7 +503,7 @@ const PlanManagement = () => {
                 </li>
                 <li className="flex items-center">
                   <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />
-                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 10,000 characters per post</span>
+                  <span className={`text-gray-600 dark:text-gray-400 ${r.text.bodySmall}`}>Up to 50,000 characters per post</span>
                 </li>
                 <li className="flex items-center">
                   <FaCheck className="w-4 h-4 text-indigo-500 mr-3 flex-shrink-0" />

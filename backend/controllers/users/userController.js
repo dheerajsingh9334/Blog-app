@@ -6,7 +6,7 @@ const passport = require("passport");
 const User = require("../../models/User/User");
 const Notification = require("../../models/Notification/Notification");
 const Post = require("../../models/Post/Post");
-const sendAccVerificationEmail = require("../../utils/sendAccVerificationEmail");
+// const sendAccVerificationEmail = require("../../utils/sendAccVerificationEmail"); // DISABLED
 const sendPasswordEmail = require("../../utils/sendPasswordEmail");
 
 //-----User Controller---
@@ -62,9 +62,9 @@ const userController = {
       }
     }
     
-    // Regular user registration only - generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    // Regular user registration only - EMAIL VERIFICATION DISABLED
+    // const verificationToken = crypto.randomBytes(32).toString('hex');
+    // const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     // Register the user (only as regular user)
     const userRegistered = await User.create({
@@ -74,19 +74,21 @@ const userController = {
       plan: freePlan._id,
       hasSelectedPlan: true,
       role: "user", // Always create as regular user
-      isEmailVerified: false,
-      verificationToken,
-      verificationTokenExpiry
+      isEmailVerified: true, // Set to true to skip email verification
+      // verificationToken,
+      // verificationTokenExpiry
     });
     
-    // Send verification email
-    try {
-      await sendAccVerificationEmail(email, verificationToken);
-      console.log("✅ Verification email sent to:", email);
-    } catch (emailError) {
-      console.error("❌ Failed to send verification email:", emailError.message);
-      // Don't fail registration if email fails, but log it
-    }
+    // Send verification email - DISABLED FOR NOW
+    // try {
+    //   await sendAccVerificationEmail(email, verificationToken);
+    //   console.log("✅ Verification email sent to:", email);
+    // } catch (emailError) {
+    //   console.error("❌ Failed to send verification email:", emailError.message);
+    //   // Don't fail registration if email fails, but log it
+    // }
+
+    console.log("✅ User registered successfully - Email verification DISABLED");
 
     // Send admin notification for new user registration
     try {
@@ -144,7 +146,7 @@ const userController = {
     })(req, res, next);
   }),
   // ! googleAuth-->
-  googleAuth: passport.authenticate("google", { scope: ["profile"] }),
+  googleAuth: passport.authenticate("google", { scope: ["profile", "email"] }),
   // ! GoogleAuthCallback
   googleAuthCallback: asyncHandler(async (req, res, next) => {
     passport.authenticate(
@@ -363,14 +365,14 @@ const userController = {
     if (!user?.email) {
       throw new Error("Email not found");
     }
-    //use the method from the model
-    const token = await user.generateAccVerificationToken();
-    //resave the user
+    
+    // EMAIL VERIFICATION DISABLED - Auto-verify user
+    user.isEmailVerified = true;
     await user.save();
-    //send the email
-    sendAccVerificationEmail(user?.email, token);
+    
+    console.log("✅ Email verification disabled - User auto-verified");
     res.json({
-      message: `Account verification email sent to ${user?.email} token expires in 10 minutes`,
+      message: `Email verification is currently disabled. Your account is automatically verified.`,
     });
   }),
   //! Verify email account
@@ -488,16 +490,14 @@ const userController = {
     const user = await User.findById(req.user);
     //update the user email
     user.email = email;
-    user.isEmailVerified = false;
+    user.isEmailVerified = true; // Auto-verify since email verification is disabled
     //save the user
     await user.save();
-    //use the method from the model
-    const token = await user.generateAccVerificationToken();
-    //send the verification email
-    sendAccVerificationEmail(user?.email, token);
+    
+    console.log("✅ Email updated and auto-verified (verification disabled)");
     //send the response
     res.json({
-      message: `Account verification email sent to ${user?.email} token expires in 10 minutes`,
+      message: `Email updated successfully. Email verification is currently disabled.`,
     });
   }),
   //! Update profile picture
@@ -578,8 +578,8 @@ getUserProfileById: asyncHandler(async (req, res) => {
     const currentPostCount = user.posts?.length || 0;
   const userPlan = user.plan;
   const tier = (userPlan?.tier || userPlan?.planName || 'free').toString().toLowerCase();
-  const tierDefaults = { free: 20, premium: 50, pro: 200 };
-  const effectiveLimit = (typeof userPlan?.postLimit === 'number') ? userPlan.postLimit : tierDefaults[tier] ?? 20;
+  const tierDefaults = { free: 30, premium: 100, pro: 300 };
+  const effectiveLimit = (typeof userPlan?.postLimit === 'number') ? userPlan.postLimit : tierDefaults[tier] ?? 30;
     
     // Calculate usage and limits
     const usage = {

@@ -125,13 +125,22 @@ const Register = () => {
           >
             {userMutation.isPending ? "Creating..." : "Sign Up"}
           </button>
-{/* 
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-300 dark:border-gray-600" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">Or continue with</span>
+            </div>
+          </div>
+
           <a
-       //     href={`${BASE_URL}/users/auth/google`}
-         //   className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+            href={`${BASE_URL}/users/auth/google`}
+            className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
           >
-            <FaGoogle /> Sign up with Google
-          </a> */}
+            <FaGoogle className="text-red-500" /> Sign up with Google
+          </a>
 
           <div className="text-sm text-center">
             <span className="text-gray-600 dark:text-gray-300">Already have an account?</span>{" "}
