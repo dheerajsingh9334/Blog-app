@@ -191,13 +191,6 @@ Stripe integration for subscription management:
 - Plan upgrades/downgrades
 - Billing history
 
-## 📧 Email System
-
-Comprehensive email system with:
-- Account verification emails
-- Password reset emails
-- Notification emails
-- Admin broadcast emails
 
 ## 📊 Analytics & Insights
 
