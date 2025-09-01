@@ -1,0 +1,19 @@
+{
+  "name": "wisdomshare-blog",
+  "version": "1.0.0",
+  "description": "A modern MERN stack blog platform",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "start": "cd frontend && npm run preview"
+  },
+  "keywords": ["blog", "mern", "react", "nodejs", "mongodb"],
+  "author": "Dheeraj Singh",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
