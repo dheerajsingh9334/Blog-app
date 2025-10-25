@@ -1,71 +1,81 @@
-import CreatePost from "./components/Posts/CreatePost";
-import UpdatePost from "./components/Posts/UpdatePost";
-import { BrowserRouter, Route, Routes,Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { checkAuthStatusAPI } from "./APIServices/users/usersAPI";
 import { checkAdminAuthStatusAPI } from "./APIServices/admin/adminAuthAPI";
 import { useQuery } from "@tanstack/react-query";
 import { isAuthenticated } from "./redux/slices/authSlices";
 import { adminAuthStatus } from "./redux/slices/adminAuthSlice";
-import { useEffect } from "react";
-import AuthRoute from "./components/AuthRoute/AuthRoute";
-import AccountSummaryDashboard from "./components/User/AccountSummary";
-// import AddCategory from "./components/Category/AddCategory";
-import Pricing from "./components/Plans/Pricing";
-import PlanManagement from "./components/Plans/PlanManagement";
-import CheckoutForm from "./components/Plans/CheckoutForm";
-import PaymentSuccess from "./components/Plans/PaymentSuccess";
-import PayingFreePlan from "./components/Plans/PayingFreePlan";
-import PostLimitReached from "./components/Plans/PostLimitReached";
-// import RequestResetPassword from "./components/User/RequestResetPassword";
-import ResetPassword from "./components/User/ResetPassword";
-import Rankings from "./components/User/CreatorsRanking";
-import Notifications from "./components/Notification/Notifications";
-import MyFollowing from "./components/User/MyFollowing";
-import MyFollowers from "./components/User/MyFollowers";
-import DashboardPosts from "./components/User/DashboardPosts";
-import DashboardDrafts from "./components/User/DashboardDrafts";
-import DashboardScheduled from "./components/User/DashboardScheduled";
-import Settings from "./components/User/SettingsPage";
-import AddEmailComponent from "./components/User/UpdateEmail";
-import UploadProfilePic from "./components/User/UploadProfilePic";
-import AccountVerification from "./components/User/AccountVerification";
-import GlobalLayout from "./components/User/GlobalLayout";
-import PostsList from "./components/Posts/PostsList";
-import PostDetails from "./components/Posts/PostDetails";
-import Login from "./components/User/Login";
-import Register from "./components/User/Register";
-import GoogleLoginError from "./components/User/GoogleLoginError";
-import Profile from "./components/User/Profile";
-// Dashboard component route is handled via nested routes below
+import { useEffect, lazy, Suspense } from "react";
 import { DarkModeProvider } from "./components/Navbar/DarkModeContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
-import TrendingPosts from "./components/Posts/TrendingPosts";
-import SavedPosts from "./components/Posts/SavedPosts";
-import UserProfile from "./components/User/UserProfile";
-import UserFollowers from "./components/User/UserFollowers";
-import UserFollowing from "./components/User/UserFollowing";
-import SearchResults from "./components/Search/SearchResults";
-import Analytics from "./components/Analytics/Analytics";
-import MyPostsAnalytics from "./components/Posts/MyPostsAnalytics";
-import UserPostManagement from "./components/Posts/PostManagement";
-import ContentCalendar from "./components/Calendar/ContentCalendar";
 
-import AdminAuthLogin from "./components/Admin/AdminAuthLogin";
-import AdminAuthRegister from "./components/Admin/AdminAuthRegister";
-import AdminGlobalLayout from "./components/Admin/AdminGlobalLayout";
-import AdminAuthRoute from "./components/Admin/AdminAuthRoute";
-import AdminMainDashboard from "./components/Admin/AdminMainDashboard";
-import AdminAnalytics from "./components/Admin/AdminAnalytics";
+// Eagerly load critical components
+import AuthRoute from "./components/AuthRoute/AuthRoute";
+import GlobalLayout from "./components/User/GlobalLayout";
+import Login from "./components/User/Login";
+import Register from "./components/User/Register";
+import PostsList from "./components/Posts/PostsList";
 
-import UserManagement from "./components/Admin/UserManagement";
-import PostManagement from "./components/Admin/PostManagement";
-import CommentManagement from "./components/Admin/CommentManagement";
-import CategoryManagement from "./components/Admin/CategoryManagement";
-import NotificationManagement from "./components/Admin/NotificationManagement";
-import SystemSettings from "./components/Admin/SystemSettings";
-import AdminProfile from "./components/Admin/AdminProfile";
-// Dark
+// Lazy load non-critical components
+const CreatePost = lazy(() => import("./components/Posts/CreatePost"));
+const UpdatePost = lazy(() => import("./components/Posts/UpdatePost"));
+const AccountSummaryDashboard = lazy(() => import("./components/User/AccountSummary"));
+const Pricing = lazy(() => import("./components/Plans/Pricing"));
+const PlanManagement = lazy(() => import("./components/Plans/PlanManagement"));
+const CheckoutForm = lazy(() => import("./components/Plans/CheckoutForm"));
+const PaymentSuccess = lazy(() => import("./components/Plans/PaymentSuccess"));
+const PayingFreePlan = lazy(() => import("./components/Plans/PayingFreePlan"));
+const PostLimitReached = lazy(() => import("./components/Plans/PostLimitReached"));
+const ResetPassword = lazy(() => import("./components/User/ResetPassword"));
+const Rankings = lazy(() => import("./components/User/CreatorsRanking"));
+const Notifications = lazy(() => import("./components/Notification/Notifications"));
+const MyFollowing = lazy(() => import("./components/User/MyFollowing"));
+const MyFollowers = lazy(() => import("./components/User/MyFollowers"));
+const DashboardPosts = lazy(() => import("./components/User/DashboardPosts"));
+const DashboardDrafts = lazy(() => import("./components/User/DashboardDrafts"));
+const DashboardScheduled = lazy(() => import("./components/User/DashboardScheduled"));
+const Settings = lazy(() => import("./components/User/SettingsPage"));
+const AddEmailComponent = lazy(() => import("./components/User/UpdateEmail"));
+const UploadProfilePic = lazy(() => import("./components/User/UploadProfilePic"));
+const AccountVerification = lazy(() => import("./components/User/AccountVerification"));
+const PostDetails = lazy(() => import("./components/Posts/PostDetails"));
+const GoogleLoginError = lazy(() => import("./components/User/GoogleLoginError"));
+const Profile = lazy(() => import("./components/User/Profile"));
+const TrendingPosts = lazy(() => import("./components/Posts/TrendingPosts"));
+const SavedPosts = lazy(() => import("./components/Posts/SavedPosts"));
+const UserProfile = lazy(() => import("./components/User/UserProfile"));
+const UserFollowers = lazy(() => import("./components/User/UserFollowers"));
+const UserFollowing = lazy(() => import("./components/User/UserFollowing"));
+const SearchResults = lazy(() => import("./components/Search/SearchResults"));
+const Analytics = lazy(() => import("./components/Analytics/Analytics"));
+const MyPostsAnalytics = lazy(() => import("./components/Posts/MyPostsAnalytics"));
+const UserPostManagement = lazy(() => import("./components/Posts/PostManagement"));
+const ContentCalendar = lazy(() => import("./components/Calendar/ContentCalendar"));
+
+// Lazy load admin components
+const AdminAuthLogin = lazy(() => import("./components/Admin/AdminAuthLogin"));
+const AdminAuthRegister = lazy(() => import("./components/Admin/AdminAuthRegister"));
+const AdminGlobalLayout = lazy(() => import("./components/Admin/AdminGlobalLayout"));
+const AdminAuthRoute = lazy(() => import("./components/Admin/AdminAuthRoute"));
+const AdminMainDashboard = lazy(() => import("./components/Admin/AdminMainDashboard"));
+const AdminAnalytics = lazy(() => import("./components/Admin/AdminAnalytics"));
+const UserManagement = lazy(() => import("./components/Admin/UserManagement"));
+const PostManagement = lazy(() => import("./components/Admin/PostManagement"));
+const CommentManagement = lazy(() => import("./components/Admin/CommentManagement"));
+const CategoryManagement = lazy(() => import("./components/Admin/CategoryManagement"));
+const NotificationManagement = lazy(() => import("./components/Admin/NotificationManagement"));
+const SystemSettings = lazy(() => import("./components/Admin/SystemSettings"));
+const AdminProfile = lazy(() => import("./components/Admin/AdminProfile"));
+
+// Loading component
+const LoadingFallback = () => (
+  <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+    </div>
+  </div>
+);
 
 function App() {
   const { data: userData, isLoading: authLoading } = useQuery({
@@ -125,6 +135,7 @@ function App() {
       <NotificationProvider>
         <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
           <BrowserRouter>
+          <Suspense fallback={<LoadingFallback />}>
           <Routes>
           {/* Admin Routes - MUST come first to avoid conflicts */}
           <Route path="/admin" element={<Navigate to="/admin/auth/login" replace />} />
@@ -510,6 +521,7 @@ function App() {
         {/* Catch-all route for unmatched paths */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
     
     </div>

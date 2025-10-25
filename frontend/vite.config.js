@@ -13,24 +13,22 @@ export default defineConfig({
     minify: 'terser',
     cssMinify: true,
     sourcemap: false,
+    // Increase chunk size warning limit
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunks
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          ui: ['@heroicons/react', 'react-icons'],
-          state: ['@reduxjs/toolkit', 'react-redux', '@tanstack/react-query'],
-          utils: ['axios', 'formik', 'yup'],
-          editor: ['react-quill', 'quill'],
-          charts: ['recharts'],
-          // Admin chunk
-          admin: [
-            './src/components/Admin/AdminGlobalLayout.jsx',
-            './src/components/Admin/AdminMainDashboard.jsx',
-            './src/components/Admin/UserManagement.jsx',
-            './src/components/Admin/PostManagement.jsx'
-          ]
+          // Vendor chunks - split by usage pattern
+          'react-core': ['react', 'react-dom', 'react-router-dom'],
+          'redux': ['@reduxjs/toolkit', 'react-redux', 'redux-persist'],
+          'query': ['@tanstack/react-query'],
+          'ui-icons': ['@heroicons/react', 'react-icons'],
+          'forms': ['formik', 'yup'],
+          'stripe': ['@stripe/react-stripe-js', '@stripe/stripe-js'],
+          'editor': ['react-quill', 'quill'],
+          'charts': ['recharts'],
+          'markdown': ['react-markdown', 'remark-gfm', 'rehype-raw'],
+          'utils': ['axios', 'react-hot-toast', 'html-to-text'],
         },
         chunkFileNames: (chunkInfo) => {
           const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop().replace('.jsx', '').replace('.js', '') : 'chunk';
@@ -49,6 +47,14 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 2,
+      },
+      mangle: {
+        safari10: true,
+      },
+      format: {
+        comments: false,
       },
     },
   },
@@ -62,5 +68,6 @@ export default defineConfig({
       '@tanstack/react-query',
       'axios'
     ],
+    exclude: ['@tanstack/react-query-devtools'],
   },
 });

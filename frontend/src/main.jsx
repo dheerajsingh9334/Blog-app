@@ -4,13 +4,21 @@ import App from "./App.jsx";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import "./index.css";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "./redux/store/store.js";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import { STRIPE_PUBLISHABLE_KEY } from "./config/stripe.js";
+
+// Lazy load React Query Devtools only in development
+const ReactQueryDevtools = import.meta.env.DEV
+  ? React.lazy(() =>
+      import("@tanstack/react-query-devtools").then((m) => ({
+        default: m.ReactQueryDevtools,
+      }))
+    )
+  : null;
 
 
 
@@ -68,7 +76,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             </Elements>
           </PersistGate>
         </Provider>
-        <ReactQueryDevtools initialIsOpen={false} />
+        {ReactQueryDevtools && (
+          <React.Suspense fallback={null}>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </React.Suspense>
+        )}
       </QueryClientProvider>
     </ErrorBoundary>
   </React.StrictMode>
