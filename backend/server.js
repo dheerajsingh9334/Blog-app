@@ -1,5 +1,6 @@
 require("dotenv").config();
 const corse = require("cors");
+const compression = require("compression");
 const passport = require("./utils/passport-config");
 const express = require("express");
 const cron = require("node-cron");
@@ -126,6 +127,20 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 //Middlewares
+// Compression middleware (gzip) - should be early in the middleware chain
+app.use(compression({
+  level: 6, // Balance between speed and compression ratio
+  threshold: 1024, // Only compress responses larger than 1KB
+  filter: (req, res) => {
+    // Don't compress if the request includes a 'x-no-compression' header
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Use compression filter function
+    return compression.filter(req, res);
+  }
+}));
+
 app.use(express.json()); //Pass json data
 // trust proxy for correct secure cookies on Render
 app.set('trust proxy', 1);
