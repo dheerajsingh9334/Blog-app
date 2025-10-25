@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 
 /**
  * Optimized Image Component with lazy loading and error handling
@@ -40,6 +41,13 @@ const OptimizedImage = ({
       />
     </div>
   );
+};
+
+OptimizedImage.propTypes = {
+  src: PropTypes.string.isRequired,
+  alt: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  fallbackSrc: PropTypes.string,
 };
 
 export default OptimizedImage;
