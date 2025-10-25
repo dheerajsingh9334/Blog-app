@@ -48,6 +48,8 @@ OptimizedImage.propTypes = {
   alt: PropTypes.string.isRequired,
   className: PropTypes.string,
   fallbackSrc: PropTypes.string,
+  // Note: Additional props are spread to the img element via ...props
+  // Supports all standard img attributes (width, height, style, etc.)
 };
 
 export default OptimizedImage;

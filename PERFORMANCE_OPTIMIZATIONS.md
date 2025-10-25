@@ -116,14 +116,14 @@ Created utilities for:
 - **First Load (brotli)**: ~600KB (71% reduction)
 - **Repeat Load**: Only HTML (~2KB), rest cached
 
-### Expected Load Time Improvements
-| Connection | Before | After | Improvement |
-|------------|--------|-------|-------------|
-| Fast 3G (1.6 Mbps) | ~18s | ~5s | 72% faster |
-| 4G (10 Mbps) | ~3s | ~0.8s | 73% faster |
-| Broadband (50 Mbps) | ~0.6s | ~0.2s | 67% faster |
+### Expected Load Time Improvements (Based on Bundle Size Reduction)
+| Connection | Estimated Before | Estimated After | Projected Improvement |
+|------------|------------------|-----------------|----------------------|
+| Fast 3G (1.6 Mbps) | ~18s | ~5s | ~72% faster |
+| 4G (10 Mbps) | ~3s | ~0.8s | ~73% faster |
+| Broadband (50 Mbps) | ~0.6s | ~0.2s | ~67% faster |
 
-*Note: Times are estimates based on bundle size reduction only. Actual improvements may vary.*
+*Note: These are **projected estimates** based on bundle size reduction calculations. Actual performance improvements will vary based on network conditions, server configuration, browser caching, and user device capabilities. Real-world testing is recommended to measure actual improvements.*
 
 ## Verification
 
