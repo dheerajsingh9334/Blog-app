@@ -1,9 +1,26 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import compression from "vite-plugin-compression";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Gzip compression for static assets
+    compression({
+      algorithm: 'gzip',
+      ext: '.gz',
+      threshold: 1024, // Only compress files larger than 1KB
+      deleteOriginFile: false,
+    }),
+    // Brotli compression for better compression ratio
+    compression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+      threshold: 1024,
+      deleteOriginFile: false,
+    }),
+  ],
   base: '/',
   server: {
     port: 5173,
